@@ -1242,6 +1242,7 @@ function dataSheetButtonAction(){
 	}
 }
 
+//also referred to as "similar to"
 function addReverseFiltering($tableToFilter){
 	_log('addReverseFiltering() Start',DLOG);
 	var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
@@ -1266,7 +1267,7 @@ function addReverseFiltering($tableToFilter){
 		hoverOver : formRowsTD, 
 		highlight : false,
 		//height : '420px', 
-		//width :'815px', 
+		//width :'815pxx', 
 		interactive : true, 
 		my : 'left top',
 		at : 'right top', 
