@@ -1,0 +1,640 @@
+#content {
+	position: relative;
+	top: 45px;
+}
+
+#headForm {
+	padding-top: 5px;
+	z-index: 12;
+}
+
+#productTable th:first-child {
+	border-top-left-radius: 5px;
+	border-spacing:0;
+}
+#productTable th:last-child {
+	border-top-right-radius: 5px
+}
+#productTable {
+	border-radius: 5px;
+	border-spacing: 0;
+	border: 0px solid #ccc;
+}
+#productTable td,#productTable th {
+	border: 1px solid #ccc;
+}
+
+/**********************/
+#productTable.lightblue th {
+	/*light blue gradient*/
+	/*background:-moz-linear-gradient(top,  lightblue,  #fff);*/
+	/*background:-webkit-gradient(linear, left top, left bottom, from(lightblue), to(#fff));*/
+	background: linear-gradient(to bottom, lightblue 0%, #fff 100%);
+}
+/**********************/
+/**********************/
+#productTable.red th, #productTable.red th a, #productTable.red th a span {
+	/*red gradient*/
+	background: linear-gradient(to bottom, #ff3019 0%,#cf0404 100%);
+	font: bold 11px/1 "helvetica neue", helvetica, arial, sans-serif;
+	text-shadow: 0px -1px 1px rgba(0, 0, 0, 0.8);
+	line-height: 1.2em;
+	color: #fff;
+}
+#productTable.red th a {
+	color: #fff;
+}
+#productTable.red a{
+	color: red;
+}
+/***********************/
+
+#productTable.gray td , #productTable.gray  a, #productTable.gray td a span{
+	font: normal 12px/1 "helvetica neue", helvetica, arial, sans-serif;
+	line-height: 1.2em;
+}
+#productTable.gray th  {
+	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+	font: bold 11px/1 "helvetica neue", helvetica, arial, sans-serif;
+} #productTable.gray th a {
+	/*color: #fff;*/
+	font: bold 11px/1 "helvetica neue", helvetica, arial, sans-serif;
+}
+
+#productTable th:hover {
+	background: repeating-linear-gradient(-45deg, red, red 5px, white 5px, white 10px);
+	/*transition-delay:1s;*/
+}
+
+#productTable tbody>tr:nth-child(odd) {background-color:#f0f0f0}
+
+.tabbedbutton {
+	margin-left:20px; 
+	z-index:6; 
+	border-width:1px 1px 0px 1px; 
+	border-color:rgba(10,0,0,.3); 
+	border-style:solid; 
+	border-radius: 5px 5px 0px 0px; 
+	padding: 7px;
+	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+}
+
+#mainform b{
+/*	border-radius: 5px;
+	border: 1px solid #F7F7F7;
+	background:#F7F7F7;*/
+	font: bold 11px/1 "helvetica neue", helvetica, arial, sans-serif;
+}
+
+input[type="text"]{
+	font-family: Consolas;
+	border-radius:2px;
+	border:1px solid gray;
+	background: rgba(250,250,240,1);
+	box-shadow: 1px 1px 1px rgba(0,0,0,.1);
+	padding-right: 10px;
+}
+input[type="text"]:focus{
+	/*border:2px solid lightblue;*/
+	background: rgba(250,240,240,1);
+	box-shadow: 2px 1px 1px rgba(0,0,0,.2);
+}
+
+
+/*hover highlight css*/
+.explorehhl {
+ 	box-shadow: 3px 0px 10px #F00;
+ 	position: relative;
+	z-index: 51;
+}
+
+.zlevelhhl{
+	position: relative;
+	z-index: 51;
+	box-shadow: 3px 0px 10px #F00;
+	background: white;
+}
+.cwhhl{
+	-moz-column-width:300px;
+	-webkit-column-width:300px;
+}
+
+.textenlarge{
+	font-size: 16px
+	font-weight: bolder;
+}
+
+#qpDiv.rightside {
+	position: fixed;
+	right: 0px;
+	top: 55px;
+	left: 600px;
+	bottom: -2px;
+	background: lightgrey;
+	border-radius: 8px 0 0 8px;
+	padding: 8px 15px 15px 0px;
+	box-shadow: inset 3px 0px 10px #AAA;
+	z-index: 6;
+}
+#qpDiv.topside {
+	position: relative;
+	/*right: 0px;*/
+	top: 70px;
+	
+	bottom: -2px;
+	background: lightgrey;
+	border-radius: 0 0 8px 8px;
+	padding: 8px 15px 15px 8px;
+	box-shadow: inset 3px 0px 10px #AAA;
+	-moz-column-width:300px;
+	-webkit-column-width:300px;
+}
+
+#page-cover {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	background-color: #000;
+	opacity: 0.6;
+	z-index: 50;
+	top: 0;
+	left: 0;
+}
+
+.beablock {
+	border-radius: 5px;
+	border: 1px solid #ccc;
+}
+
+
+.clearfix:after {visibility: hidden;display: block;font-size: 0;content: " ";clear: both;height: 0;} * html .clearfix { zoom: 1; } /* IE6 */ *:first-child+html .clearfix { zoom: 1; } /* IE7 */
+
+.totop {
+	border: 1px solid blue;
+	position: fixed;
+	z-index: 4;
+	right: 0px;
+	top: 75%;
+	background: lightblue;
+	cursor: pointer;
+	border-radius: 10px 0px 0px 10px;
+	opacity:.4;
+	}
+.totop:hover {
+	opacity: .9;
+}
+
+.close {
+		/*position: relative;*/
+		margin: 2px;
+		float: right;
+		padding:4px;
+}
+
+.gray-grad {
+	background: -moz-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
+	background: -webkit-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
+}
+.gray-grad2 {
+	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%); 
+}
+
+.centerme {
+	display:block;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+.hoverborder {
+	margin: 2px;
+}
+
+.hoverborder:hover {
+	border: 2px solid red;
+	margin: 0px;
+}
+
+#cHeader {
+	position: fixed;
+	width: 100%;
+	z-index: 6;
+	height: 50px;
+	top: 0px;
+	left: 5px;
+	background: white;
+}
+
+#resnum>p {
+	position: fixed;
+	left: 99px;
+	top: 15px;
+	color: red;
+	font-size: 14px;
+	background: white;
+}
+
+.seohtagbold {
+		position: fixed;
+		left: 430px;
+		top: 28px;
+		z-index: 7;
+		background: white;
+		padding-right: 100px;
+}
+
+.seohtagbold>a{
+	font-size: 11px;
+}
+
+#quicklinks {
+	position: fixed;
+	right: 0px;
+	margin-right: 10px;
+	top: 2px;
+	color: black;
+	font-size: 12px;
+	background: white;
+}
+
+/*for squished filters addon*/
+.fullwidth {
+	width: 50px;
+	-moz-transition: width .4s;
+	-webkit-transition: width .4s;
+}
+.fullwidth:hover {
+	width: 200px;
+	-moz-transition: width .4s;
+	-webkit-transition: width .4s;
+
+}
+
+.pointer{
+	cursor: pointer;
+}
+
+.compdivs {
+	box-shadow: ;
+	padding: 5px;
+	width:100px;
+	border: 1px solid lightgray;
+	-moz-transition: box-shadow .4s;
+	-webkit-transition: box-shadow .4s;
+}
+
+.compdivs:hover {
+	box-shadow:inset 0 0 1px 1px red;
+	-moz-transition: box-shadow .4s;
+	-webkit-transition: box-shadow .4s;
+}
+
+#handlewrapper:hover {
+	box-shadow: 0 0 2px 2px gray;
+	cursor: pointer;
+}
+
+.open{	
+	overflow: auto;	
+}
+.closed{
+	overflow: hidden,
+}
+
+.columnized1 {
+	-moz-column-count:1; /* Firefox */
+	-webkit-column-count:1; /* Safari and Chrome */
+	column-count:1;
+
+	-moz-column-gap:40px; /* Firefox */
+	-webkit-column-gap:40px; /* Safari and Chrome */
+	column-gap:40px;
+}
+.columnized2 {
+
+	column-width:300px;
+	-moz-column-width:300px;
+	-moz-column-count:2; 
+	-webkit-column-count:2; 
+	column-count:2;
+	/*-moz-column-gap:40px; *//* Firefox */
+	/*-webkit-column-gap:40px; *//* Safari and Chrome */
+	/*column-gap:40px;*/
+}
+
+.columnized3 {
+	-moz-column-count:3; /* Firefox */
+	-webkit-column-count:3; /* Safari and Chrome */
+	column-count:3;
+
+	-moz-column-gap:40px; /* Firefox */
+	-webkit-column-gap:40px; /* Safari and Chrome */
+	column-gap:40px;
+}
+
+.columnized5 {
+	-moz-column-count:5; /* Firefox */
+	-webkit-column-count:5; /* Safari and Chrome */
+	column-count:5;
+
+	-moz-column-gap:10px; /* Firefox */
+	-webkit-column-gap:10px; /* Safari and Chrome */
+	column-gap:10px;
+}
+
+.blockdivon {
+	display: inline-block;
+}
+.blockdivon > h2 ,.blockdivon2 > h2{
+	background: lightgray;
+	border-radius: 8px;
+	padding-left: 10px;
+	padding-bottom: 16px;
+}
+.blockdivon > h2 {
+	width: 300px;
+}
+
+/*h2:first-child{
+	position: relative;
+	top:-15px;
+}
+*/
+.blockdivon2 > ul {
+	/*display: inline-block;*/
+	-moz-column-width:300px;
+	-webkit-column-width:300px;
+	-moz-column-gap:10px; 
+	-webkit-column-gap:10px;
+}
+
+/*.blockdivon:after {visibility: hidden;display: block;font-size: 0;content: " ";clear: both;height: 0;}*/
+
+.cw300{
+	-moz-column-width:300px;
+	-webkit-column-width:300px;
+}
+
+
+
+.shadowhighlight {
+	border: solid 2px;
+	border-color: red;
+	box-shadow: 0 0 10px 5px #888;
+}
+
+.carouselClass{
+	height: 150px;
+	width: 600px;
+	position: relative;
+	left : 3px;
+	overflow: hidden;
+	box-shadow: 1px 2px 2px 2px #888;
+	border : 1px solid gray;
+	border-radius: 5px;
+	z-index : 5;
+}
+
+
+.carouselContClass {
+	background: white;
+	position	: absolute;
+	left : 25px;
+	z-index : 6;
+	height: 598px;
+	width: 550px;
+	overflow: hidden;
+	font-size: 2em;
+	font-weight: bold;
+	border : 1px solid lightgray;
+}
+
+
+.arrow{
+	background: -moz-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
+	background: -webkit-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
+	height: 148px;
+	width: 25px;
+	font-size: 2em;
+	font-weight: bold;
+	line-height: 150px;
+	border : 1px solid lightgray;
+	z-index : 7;
+	cursor: pointer;
+}
+.leftarrow{
+	float: left;
+	border-radius: 5px 0 0 5px;
+}
+
+.rightarrow{
+	float: right;
+	border-radius: 0 5px 5px 0;
+}
+.carTitle{
+	position: relative;
+	left: 28px;
+}
+
+.selectboxdivclass{
+	display: inline-block; 
+	margin:5px; 
+	white-space: normal;
+}
+.clearselect{
+	display: inline-block;
+}
+.adv{
+	height: 12px;
+	padding: 2px;
+	cursor: pointer;
+	display: inline-block;
+	float: right;
+}
+
+/*addAccelerator CSS*/
+#bigpic {
+	position: absolute;
+	z-index: 9;
+	background-color: white;
+	padding: 10px;
+	border: 2px solid grey;
+	box-shadow: 0 0 2px 2px #888;
+}
+
+#itemInfo {
+	position: absolute;
+	z-index: 8;
+	background-color: white;
+	padding: 10px;
+	border: 2px solid grey;
+	min-width: 200;
+	box-shadow: 0 0 3px 2px #888;
+}
+
+/*form and filters*/
+#mainform select{
+	border-radius: 3px;
+	font-size: .9em;
+}
+
+option:hover{
+	background:  #D8DEF2;
+}
+
+.trueReset {
+	font-weight: bolder;
+}
+.trueReset:nth-child(odd) {
+	background: lightgray;
+}
+.trueResetButton{
+	margin-right: 20px;
+	width:20px;
+	height: 20px;
+	padding:2px;
+}
+
+.lessfilters{
+	height: 100%;
+
+	/*transition:height 5s;*/
+}
+
+.morefilters{
+	overflow:hidden;
+	height : 240px;
+	width : 100%;
+	/*transition:height 5s;*/
+}
+
+.wsnowrap{
+	white-space: nowrap;
+}
+#mainformdiv{
+	display:inline-block; 
+	margin:0px 10px 4px 0px; 
+	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%); 
+	border: 1px solid rgba(0,0,0,0.1); 
+	border-radius: 5px; 
+	/*width: 100%;*/
+}
+
+#floatApply{
+	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+	border:1px 0px 0px 0px solid rgba(10,0,0,.3);
+	border-radius: 0px 0px 4px 4px;
+	position:relative; 
+	/*margin: 1px 1px;*/
+	width: auto;
+	/*max-width: 95%;*/
+	padding: 5px;
+}
+
+
+/*button sizing*/
+
+#exploremodechooser button, 
+#columnchooser button, 
+#qpchooser button,
+#wrapfilterschooser button 
+{
+	width: 40px;
+	height: 20px;
+}
+
+.mediaColumnizer {
+	-moz-column-width:300px;
+	-webkit-column-width:300px;
+	-moz-column-gap:40px; /* Firefox */
+	-webkit-column-gap:40px; /* Safari and Chrome */
+	column-gap:40px;
+}
+
+/*
+@media screen and (min-width:1080px) and (max-width: 1200px) {
+	.mediaColumnizer {
+		-moz-column-count:2; 
+		-webkit-column-count:2; 
+		column-count:2;
+
+		-moz-column-gap:40px; 
+		-webkit-column-gap:40px; 
+		column-gap:40px;
+	}
+}
+
+@media (min-width:1201px), screen and (min-width:1080px) and (max-width: 1200px) and (max-height: 800px) {
+	.mediaColumnizer {
+		-moz-column-count:3; 
+		-webkit-column-count:3; 
+		column-count:3;
+
+		-moz-column-gap:40px; 
+		-webkit-column-gap:40px; 
+		column-gap:40px;
+	}
+}*/
+
+/* Generated by http://css.spritegen.com CSS Sprite Generator */
+
+.cableswires, .hardwarefastenersaccessories, .prototypingproducts, .boxesenclosuresracks, .connectorsinterconnects2, 
+.semiconductormodules, .networkingsolutions, .filters, .opticalinspectionequipment, .powersuppliesboardmount, 
+.programmersdevelopmentsystems, .switches, .optoelectronics, .industrialcontrolsmeters, .connectorsinterconnects, 
+.relays, .embeddedcomputers, .tapesadhesives, .circuitprotection, .cableassemblies, 
+.powersupplies-boardmount, .integratedcircuitsics, .capacitors, .motorssolenoidsdriverboardsmodules, .potentiometersvariableresistors, 
+.discretesemiconductorproducts, .resistors, .testandmeasurement, .powersupplies-externalinternaloff-board, .rfifandrfid, 
+.cableassemblies2, .memorycardsmodules, .kits, .isolators, .sensorstransducers, 
+.transformers, .tools, .solderingdesolderingreworkproducts, .audioproducts, .computersoffice-componentsaccessories, 
+.fansthermalmanagement, .staticcontrolesdcleanroomproducts, .inductorscoilschokes, .crystalsandoscillators, .batteryproducts, 
+.lineprotectiondistributionbackups, .cableswires-management, .undefinedcategory
+{ display: block; background: url('https://dl.dropboxusercontent.com/u/26263360/img/caticons/catsprites.png') no-repeat; }
+
+.cableswires { background-position: -0px -0px; width: 25px; height: 25px; }
+.hardwarefastenersaccessories { background-position: -25px -0px; width: 25px; height: 25px; }
+.prototypingproducts { background-position: -50px -0px; width: 25px; height: 25px; }
+.boxesenclosuresracks { background-position: -75px -0px; width: 25px; height: 25px; }
+.connectorsinterconnects2 { background-position: -100px -0px; width: 25px; height: 25px; }
+.semiconductormodules { background-position: -125px -0px; width: 25px; height: 25px; }
+.networkingsolutions { background-position: -0px -25px; width: 25px; height: 25px; }
+.filters { background-position: -25px -25px; width: 25px; height: 25px; }
+.opticalinspectionequipment { background-position: -50px -25px; width: 25px; height: 25px; }
+.powersuppliesboardmount { background-position: -75px -25px; width: 25px; height: 25px; }
+.programmersdevelopmentsystems { background-position: -100px -25px; width: 25px; height: 25px; }
+.switches { background-position: -125px -25px; width: 25px; height: 25px; }
+.optoelectronics { background-position: -0px -50px; width: 25px; height: 25px; }
+.industrialcontrolsmeters { background-position: -25px -50px; width: 25px; height: 25px; }
+.connectorsinterconnects { background-position: -50px -50px; width: 25px; height: 25px; }
+.relays { background-position: -75px -50px; width: 25px; height: 25px; }
+.embeddedcomputers { background-position: -100px -50px; width: 25px; height: 25px; }
+.tapesadhesives { background-position: -125px -50px; width: 25px; height: 25px; }
+.circuitprotection { background-position: -0px -75px; width: 25px; height: 25px; }
+.cableassemblies { background-position: -25px -75px; width: 25px; height: 25px; }
+.powersupplies-boardmount { background-position: -50px -75px; width: 25px; height: 25px; }
+.integratedcircuitsics { background-position: -75px -75px; width: 25px; height: 25px; }
+.capacitors { background-position: -100px -75px; width: 25px; height: 25px; }
+.motorssolenoidsdriverboardsmodules { background-position: -125px -75px; width: 25px; height: 25px; }
+.potentiometersvariableresistors { background-position: -0px -100px; width: 25px; height: 25px; }
+.discretesemiconductorproducts { background-position: -25px -100px; width: 25px; height: 25px; }
+.resistors { background-position: -50px -100px; width: 25px; height: 25px; }
+.testandmeasurement { background-position: -75px -100px; width: 25px; height: 25px; }
+.powersupplies-externalinternaloff-board { background-position: -100px -100px; width: 25px; height: 25px; }
+.rfifandrfid { background-position: -125px -100px; width: 25px; height: 25px; }
+.cableassemblies2 { background-position: -0px -125px; width: 25px; height: 25px; }
+.memorycardsmodules { background-position: -25px -125px; width: 25px; height: 25px; }
+.kits { background-position: -50px -125px; width: 25px; height: 25px; }
+.isolators { background-position: -75px -125px; width: 25px; height: 25px; }
+.sensorstransducers { background-position: -100px -125px; width: 25px; height: 25px; }
+.transformers { background-position: -125px -125px; width: 25px; height: 25px; }
+.tools { background-position: -0px -150px; width: 25px; height: 25px; }
+.solderingdesolderingreworkproducts { background-position: -25px -150px; width: 25px; height: 25px; }
+.audioproducts { background-position: -50px -150px; width: 25px; height: 25px; }
+.computersoffice-componentsaccessories { background-position: -75px -150px; width: 25px; height: 25px; }
+.fansthermalmanagement { background-position: -100px -150px; width: 25px; height: 25px; }
+.staticcontrolesdcleanroomproducts { background-position: -125px -150px; width: 25px; height: 25px; }
+.inductorscoilschokes { background-position: -0px -175px; width: 25px; height: 25px; }
+.crystalsandoscillators { background-position: -25px -175px; width: 25px; height: 25px; }
+.batteryproducts { background-position: -50px -175px; width: 25px; height: 25px; }
+.lineprotectiondistributionbackups { background-position: -75px -175px; width: 25px; height: 25px; }
+.cableswires-management { background-position: -100px -175px; width: 25px; height: 25px; }
+.undefinedcategory { background-position: -125px -175px; width: 25px; height: 25px; }
