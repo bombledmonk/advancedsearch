@@ -1,6 +1,6 @@
 The advancedsearch userscript is intended to enhance user experience while browsing www.digikey.com  and associated international websites.  
 
-Highlights include:
+Highlights include:<br>
 	-Voltage Range Parsing
 	-Keyword Highlighting
 	-Hovering Cart / In-line Cart Qty Changes
