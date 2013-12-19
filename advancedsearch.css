@@ -13,7 +13,7 @@
 	border-spacing:0;
 }
 #productTable th:last-child {
-	border-top-right-radius: 5px
+	border-top-right-radius: 5px;
 }
 #productTable {
 	border-radius: 5px;
@@ -22,6 +22,9 @@
 }
 #productTable td,#productTable th {
 	border: 1px solid #ccc;
+	border-top: 0px;
+/*	border-right:0px;
+	border-bottom: 0px;*/
 }
 
 /**********************/
