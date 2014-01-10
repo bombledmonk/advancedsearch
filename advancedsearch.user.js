@@ -2,9 +2,10 @@
 // @name		advancedsearch
 // @namespace	advancedsearch
 // @description an advanced search
-// @include	 http://www.digikey.*/product-search*
-// @include	 http://www.digikey.*/scripts/dksearch*
-// @include	 http://search.digikey.*/*
+// @include		http://www.digikey.*/product-search*
+// @include		http://digikeytest.digikey.com/product-search/en*
+// @include		http://www.digikey.*/scripts/dksearch*
+// @include		http://search.digikey.*/*
 // @include		http://www.digikey.*/product-detail/en/*
 // @include		http://ordering.digikey.*/Ordering/AddPart.aspx*
 // @include		http*digikey.*/classic/Ordering/AddPart*
@@ -28,87 +29,115 @@
 // @grant		GM_addStyle
 // @grant		GM_xmlhttpRequest
 // @grant		GM_getResourceText
-// @version		2.5.1
+// @version		2.5.2
 // ==/UserScript==
+
+// Copyright (c) 2013, Ben Hest
+// All rights reserved.
+
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met: 
+
+// 1. Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer. 
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution. 
+
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+// ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// The views and conclusions contained in the software and documentation are those
+// of the authors and should not be interpreted as representing official policies, 
+// either expressed or implied, of the FreeBSD Project.
 
 //author can be emailed at gmail.com   bombledmonk@
 
 
-//1.7.3 	gave the detail page a softer look, changed the text voltage input helper to be more user friendly
-//1.7.6 	Download link changed to bit.ly to keep track of downloads.	https://dl.dropbox.com/u/26263360/advancedsearch.user.js
-//1.7.7 	Userscripts.org release http://userscripts.org/scripts/show/157205
-//1.7.8 	Added more alternate highlighting terms.  ie search for "10k" and all the resistors and pots will be highlighted, 
+//1.7.3     gave the detail page a softer look, changed the text voltage input helper to be more user friendly
+//1.7.6     Download link changed to bit.ly to keep track of downloads.	https://dl.dropbox.com/u/26263360/advancedsearch.user.js
+//1.7.7     Userscripts.org release http://userscripts.org/scripts/show/157205
+//1.7.8     Added more alternate highlighting terms.  ie search for "10k" and all the resistors and pots will be highlighted, 
 //			started checkboxes feature, changed the "initially sort by price" feature to re-filter on desired quantity when changed
-//1.7.9 	Added indexInstantFilter function.  Instantly filter down product families as user types in search box.	Disabled by default.
-//1.8.0 	Added Cart Hover and item count in header.	
-//1.8.1 	Fixed sort by price @ Qty bug. Improved cart hover. Added price break popup when hovering over prices.
-//1.8.2 	Added simple column hiding. Refactored code, bug fixes.
-//1.8.2.1 	Added some error catching code
-//1.8.3 	Added Hover function to Associated Products Links, For Use With Links, and added a browse and filter function to both spots on the Product detail page.
-//1.8.3.1 	Fixed Chrome problems by using runat document-end instead of document-start. 
+//1.7.9     Added indexInstantFilter function.  Instantly filter down product families as user types in search box.	Disabled by default.
+//1.8.0     Added Cart Hover and item count in header.	
+//1.8.1     Fixed sort by price @ Qty bug. Improved cart hover. Added price break popup when hovering over prices.
+//1.8.2     Added simple column hiding. Refactored code, bug fixes.
+//1.8.2.1   Added some error catching code
+//1.8.3     Added Hover function to Associated Products Links, For Use With Links, and added a browse and filter function to both spots on the Product detail page.
+//1.8.3.1   Fixed Chrome problems by using runat document-end instead of document-start. 
 //			Fixed breadcrumbs to include sort order/in stock/lead free/rohs and quantity modifiers
-//1.8.4 	Added Breadcrumb Category Hover. Made Jump to Category scrollable. Fixed some bugs introduced by styling changes made by DK.
-//1.8.5 	Added Associated Product Carousel on product detail pages.  Fixed the chrome auto scrolling bug.  Added jquery plugins as "at require".
+//1.8.4     Added Breadcrumb Category Hover. Made Jump to Category scrollable. Fixed some bugs introduced by styling changes made by DK.
+//1.8.5     Added Associated Product Carousel on product detail pages.  Fixed the chrome auto scrolling bug.  Added jquery plugins as "at require".
 //			Added Compare Feature
-//1.8.6 	Added Reverse Filtering from product Detail pages
-//1.8.6.1 	Added feedback to the reverse filtering and compare features and exposed a more intuitive interface
-//1.8.6.2 	Fixed issue where multiple product families messed with the Carousel.
-//1.8.7 	Started bringing in CSS externally, Added wrapping feature for Parameter Multiselect Boxes, Added accordion select box tech demo
-// 			Added show hidden columns button
-//1.8.7.1 	New version of compare, pops up from bottom, no more hoverover.
-//1.8.7.2 	Fixed annoying headers not lining up, 
-//1.8.8 	Added icons in jump to area
-//1.8.8.1 	Turned Icons into sprites.  Fixed bugs with carousel. Rearranged some of the Controls menu
-//1.8.9 	Revamped the cart quantity changing.  Added the main cart page to the script added functionality.
+//1.8.6     Added Reverse Filtering from product Detail pages
+//1.8.6.1   Added feedback to the reverse filtering and compare features and exposed a more intuitive interface
+//1.8.6.2   Fixed issue where multiple product families messed with the Carousel.
+//1.8.7     Started bringing in CSS externally, Added wrapping feature for Parameter Multiselect Boxes, Added accordion select box tech demo
+//			Added show hidden columns button
+//1.8.7.1   New version of compare, pops up from bottom, no more hoverover.
+//1.8.7.2   Fixed annoying headers not lining up, 
+//1.8.8     Added icons in jump to area
+//1.8.8.1   Turned Icons into sprites.  Fixed bugs with carousel. Rearranged some of the Controls menu
+//1.8.9     Revamped the cart quantity changing.  Added the main cart page to the script added functionality.
 //1.8.9.1	Added pictures to the cart areas.
-//1.9.0 	Added Explore Mode - gives little popups with pictures of each parameter when hovered
-//1.9.0.1 	Tweaked Explore Mode - gave a medium preview box in the Explore Mode hover
-//2.0.0 	Fixed bugs introduced by updates to digikey's site
-//2.0.0.1 	Fixed more bugs introduced by updates to digikey's site
-//2.0.1 	Added horizontal scrolling feature to Apply Filters, Added feature allow checkbox inputs to comma separated values in a multiselect input.
-//2.0.2 	Added Search Within: feature on Drill Down Results Page. Bug Fixes
-//2.0.2.1 	Hid some lengthy text to improve density
-//2.0.3 	First Attempt at Internationalizing the script.  In theory it should work on all English digikey websites from now on.
-//2.0.3.1 	Fixed Sorting bugs
-//2.0.4  	Fixed the bloated sequential timing to get script loadtime down to 10%, Introduced applied filters removal
-//2.0.4.1  	Fixed cart bug, added some more speed optimizations. 
-//2.0.4.2 	Tuned some of the hover over timings.
-//2.0.4.3 	Fixed No records matching bug.
-//2.0.5 	Added index column feature, fixed category highlighting with Jump To Category feature
-//2.0.5.1 	Refined some of the index page features, including column
-//2.0.5.2 	Added a control for location of quick pick box
-//2.0.5.3 	Some quick fixes
-//2.0.5.4 	Refinement of quick pick controls, fixed bug with forward slash in breadcrumb
-//2.0.6 	Finished wrapping the filters to avoid side scrolling.
-//2.0.6.1 	Added some more parameter titles to work with the voltage helper, added button to switch on explore mode
-//2.0.6.2 	Fixed the voltage helper used with wrapping, fixed clear buttons, added control for wrapping divs
-//2.0.6.3 	Style changes, gray headers
-//2.0.7 	Polished. Changed style of the filters, input text boxes, fixed buttons, changed the floating apply buttons
-// 			fixed applyfilters bug, put buttons in tabs
-//2.0.7.1 	fixed a few display bugs in Chrome
-//2.0.7.2 	fixed formatFilterResults page error
-//2.0.8 	added datasheet autoloader
-//2.0.8.1 	fixed some errors introduced by changes on digikey's website
-//2.0.8.2 	minor cleanup, error alerts, and fixes
-//2.0.8.5 	weekend refactoring
-//2.0.9 	fixed compare parts feature
-//2.0.10 	fixed error occurring on the detail page where user could not delete parts, added always expand checkbox to wrapping filters
-//2.1.0 	added customizable delay time for Explore mode in the control panel
-//2.1.1 	added jump down to datasheet button
-//2.1.2 	fixed errors where filters cannot be removed
-//2.1.3 	added back caching for the removable filters
-//2.1.4 	hopefully fixed errors associated with foreign languages
-//2.2 		Added query term highlighting on the filter results page, fixed formatting errors introduced by new defualt font. 
-//			Changed color of help icon, changes also in CSS
-//2.2.1 	added null string check to fix bug with query term highlighting
-//2.2.2 	made the header respond better to different size windows
-//2.2.3 	added partial .jp support for range search
-//2.3 		reworked the voltage range search algorithm to include comma separated values
-//2.4		Added search button highlighting, fixed so all floating filters appear in-line, added next price break calculator.
-// 			Fixed errors due to Digi-Key website changes
-//2.4.1 	Fixed doubling up bug in the quick picks box, fixed stacked explore mode box in chrome
-//2.5 	 	Added ORing checkboxes to the package type inputs
-//2.5.1 	Fixed bug on fastadd page, added quickpaste function on fastadd page
+//1.9.0     Added Explore Mode - gives little popups with pictures of each parameter when hovered
+//1.9.0.1   Tweaked Explore Mode - gave a medium preview box in the Explore Mode hover
+//2.0.0     Fixed bugs introduced by updates to digikey's site
+//2.0.0.1   Fixed more bugs introduced by updates to digikey's site
+//2.0.1     Added horizontal scrolling feature to Apply Filters, Added feature allow checkbox inputs to comma separated values in a multiselect input.
+//2.0.2     Added Search Within: feature on Drill Down Results Page. Bug Fixes
+//2.0.2.1   Hid some lengthy text to improve density
+//2.0.3     First Attempt at Internationalizing the script.  In theory it should work on all English digikey websites from now on.
+//2.0.3.1   Fixed Sorting bugs
+//2.0.4     Fixed the bloated sequential timing to get script loadtime down to 10%, Introduced applied filters removal
+//2.0.4.1   Fixed cart bug, added some more speed optimizations. 
+//2.0.4.2   Tuned some of the hover over timings.
+//2.0.4.3   Fixed No records matching bug.
+//2.0.5     Added index column feature, fixed category highlighting with Jump To Category feature
+//2.0.5.1   Refined some of the index page features, including column
+//2.0.5.2   Added a control for location of quick pick box
+//2.0.5.3   Some quick fixes
+//2.0.5.4   Refinement of quick pick controls, fixed bug with forward slash in breadcrumb
+//2.0.6     Finished wrapping the filters to avoid side scrolling.
+//2.0.6.1   Added some more parameter titles to work with the voltage helper, added button to switch on explore mode
+//2.0.6.2   Fixed the voltage helper used with wrapping, fixed clear buttons, added control for wrapping divs
+//2.0.6.3   Style changes, gray headers
+//2.0.7     Polished. Changed style of the filters, input text boxes, fixed buttons, changed the floating apply buttons
+//          fixed applyfilters bug, put buttons in tabs
+//2.0.7.1   fixed a few display bugs in Chrome
+//2.0.7.2   fixed formatFilterResults page error
+//2.0.8     added datasheet autoloader
+//2.0.8.1   fixed some errors introduced by changes on digikey's website
+//2.0.8.2   minor cleanup, error alerts, and fixes
+//2.0.8.5   weekend refactoring
+//2.0.9     fixed compare parts feature
+//2.0.10    fixed error occurring on the detail page where user could not delete parts, added always expand checkbox to wrapping filters
+//2.1.0     added customizable delay time for Explore mode in the control panel
+//2.1.1     added jump down to datasheet button
+//2.1.2     fixed errors where filters cannot be removed
+//2.1.3     added back caching for the removable filters
+//2.1.4     hopefully fixed errors associated with foreign languages
+//2.2       Added query term highlighting on the filter results page, fixed formatting errors introduced by new defualt font. 
+//          Changed color of help icon, changes also in CSS
+//2.2.1     added null string check to fix bug with query term highlighting
+//2.2.2     made the header respond better to different size windows
+//2.2.3     added partial .jp support for range search
+//2.3       reworked the voltage range search algorithm to include comma separated values
+//2.4       Added search button highlighting, fixed so all floating filters appear in-line, added next price break calculator.
+//          Fixed errors due to Digi-Key website changes
+//2.4.1     Fixed doubling up bug in the quick picks box, fixed stacked explore mode box in chrome
+//2.5       Added ORing checkboxes to the package type inputs
+//2.5.1     Fixed bug on fastadd page, added quickpaste function on fastadd page
+//2.5.2		Code cleanup, added BSD license
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -229,8 +258,8 @@ function askpermission(){
 			addpiwik();
 			localStorage.setItem('achoice', 1);
 			localStorage.setItem('analytics', 1);
-			$('#analytics').prop('checked', 1)
-			$('#analytics').val(1)
+			$('#analytics').prop('checked', 1);
+			$('#analytics').val(1);
 		}else{
 			localStorage.setItem('achoice', false);
 		}
@@ -376,7 +405,7 @@ function addControlWidget() {
 function addpiwik(){
 	var webref = document.referrer.toString();//.replace(/\&/g, '_');
 	var docloc = document.location.toString().replace(/\&/g, 'xxx');
-	_log(docloc,true)
+	_log(docloc, DLOG);
 	var imgsrc = ('http://he-st.com/p/piwik.php?idsite=1&amp;rec=1'+
 		'&amp;url='+ encodeURIComponent( docloc) +
 		// '&amp;action_name='+ webref +
@@ -388,8 +417,8 @@ function addpiwik(){
 
 function hoveringHelpHighlighter(){
 	// var hlarray = [
-	// 	[$('#exploremodecheckbox').parent(), $('select[multiple]')],
-	// 	[$('#qtydefault').parent(), $('select[multiple]')],
+	// [$('#exploremodecheckbox').parent(), $('select[multiple]')],
+	// [$('#qtydefault').parent(), $('select[multiple]')],
 	// ];
 	var zind = $('#headKeySearch').css('z-index');
 
@@ -399,9 +428,9 @@ function hoveringHelpHighlighter(){
 		interval: 2,
 	});	
 	// $('#columnchooser>button').hoverIntent({
-	// 	over: function(){$('#content').addClass('cwhhl'); },
-	// 	out: function(){$('#content').removeClass('cwhhl'); },
-	// 	interval: 2,
+	//	over: function(){$('#content').addClass('cwhhl'); },
+	//	out: function(){$('#content').removeClass('cwhhl'); },
+	//	interval: 2,
 	// });
 	$('#instantfilter, #spellcheck').parent().hoverIntent({
 		over: function(){$('#cHeader').addClass('zlevelhhl'); },
@@ -410,27 +439,27 @@ function hoveringHelpHighlighter(){
 	});		
 	$('#qfControl').parent().hoverIntent({
 		over: function(){$('#qpDiv').addClass('zlevelhhl');},
-		out: function(){$('#qpDiv').removeClass('zlevelhhl')},
+		out: function(){$('#qpDiv').removeClass('zlevelhhl');},
 		interval: 2,
 	});	
 	$('#combinePN').parent().hoverIntent({
 		over: function(){$('td:contains("-ND")').addClass('zlevelhhl');},
-		out: function(){$('td:contains("-ND")').removeClass('zlevelhhl')},
+		out: function(){$('td:contains("-ND")').removeClass('zlevelhhl');},
 		interval: 2,
 	});	
 	$('#pricehoverControl').parent().hoverIntent({
 		over: function(){$('a:contains(.)').addClass('zlevelhhl');},
-		out: function(){$('a:contains(.)').removeClass('zlevelhhl')},
+		out: function(){$('a:contains(.)').removeClass('zlevelhhl');},
 		interval: 2,
 	});
 	$('#qtydefault').parent().hoverIntent({
 		over: function(){$('input[name=quantity]').addClass('zlevelhhl');},
-		out: function(){$('input[name=quantity]').removeClass('zlevelhhl')},
+		out: function(){$('input[name=quantity]').removeClass('zlevelhhl');},
 		interval: 2,
 	});
 	$('#exploremodecheckbox, #stickyfilters, #wrapFilters, #squishedFilters').parent().hoverIntent({
 		over: function(){$('select[multiple]').addClass('explorehhl');},
-		out: function(){$('select[multiple]').removeClass('explorehhl')},
+		out: function(){$('select[multiple]').removeClass('explorehhl');},
 		interval: 100,
 	});
 }
@@ -448,7 +477,7 @@ function addControlWidgetActions2(){
 
 	$('#exploreModeDelay').change(function() {	
 		localStorage.setItem('exploreModeDelay', $('#exploreModeDelay').val());
-	})
+	});
 	$('#qtydefaulttext').change(function() {
 		localStorage.setItem('qtydefaulttext', $('#qtydefaulttext').val());
 		_log('quantity storage set to ' + localStorage.getItem('qtydefaulttext'));
@@ -528,9 +557,17 @@ function formatFilterResultsPage(){
 		}
 		setTimeout(function(){addPartCompare();}, 150);
 		if(localStorage.getItem('pricehoverControl') == 1) {
-			setTimeout(function(){addPriceHover()}, 3000);
+			setTimeout(function(){addPriceHover();}, 3000);
 		}
-		setTimeout(function(){addPersistHeader();}, 2500);
+		// if($('.stickyThead').length === 0){  //conditional statement feature being rolled into the website
+		// 	setTimeout(function(){addPersistHeader();}, 2500);
+		// }else{
+		// 	addStickyHeader();
+		// 	$('#ColSort1000002,#ColSort-1000002,#ColSort1000001,#ColSort-1000001,').hide();
+		// }
+		setTimeout(function(){addStickyHeader()}, 2500);
+
+
 		formatQtyBox();
 		addColumnHider();
 		updateTableHeaders();
@@ -547,7 +584,7 @@ function formatFilterResultsPage(){
 			addStickyFilters();
 		}
 
-		addgetRecMatchEventToOptions();
+		
 		fixImageHover();
 
 		$('input[value=Reset]').addClass('minimal').css({'height':'18px', 'padding':'1px', 'margin':'0px'}).click(function(){
@@ -586,7 +623,7 @@ function formatQtyBox(){
 	//$('form[name=srform]').children().addBack().css({'display':'inline'});
 	$('form[name=srform]').attr('title', $('form[name=srform]>p').text());
 	$('#productTable').before($('#srformdiv'));
-	$('form[name=srform]>p').hide(); 	// hide descriptive paragraph
+	$('form[name=srform]>p').hide();	// hide descriptive paragraph
 	$('p:contains("To see real-time pricing")').html('');	//hide the "To see reel-time pricing" paragraph
 	_log('formatQtyBox() End',DLOG);
 }
@@ -740,7 +777,7 @@ function getParamList(){
 			myobject = {
 				'lastupdate' : Date.getTime(),
 				'selectlist' : $('#filterResetDiv').find('select')
-			}
+			};
 			return myobject.selectlist;
 		});
 	}
@@ -776,16 +813,16 @@ function wrapFilterTable(){
 	'</span>';
 	
 	$('.filters-panel').prepend(thehtml);	
-	addChooserButtonAction($('#wrapfilterschooser'), wrapFilterClickFunc)
+	addChooserButtonAction($('#wrapfilterschooser'), wrapFilterClickFunc);
 	//end button code
 
 	var selectlist = $('#mainform select');
 	selectlist.each(function(ind){
 		$(this).data('pname', $(this).closest('table').find('th:eq('+ind+')').text());
-	 	// _log('pv '+ $(this).attr('name') + ' columnname ' + 
+		// _log('pv '+ $(this).attr('name') + ' columnname ' + 
 		//		$(this).closest('table').find('th:eq('+ind+')').text()
-		// );
-	 });
+			// );
+		});
 	$('#mainform').prepend('<div id=selectboxdiv class="morefilters" />');
 	$(selectlist.get().reverse()).each(function(){
 		$('#selectboxdiv').prepend('<div class="selectboxdivclass" style="max-width:'+ ($(this).width()*1.6)+'px;"><b>'+
@@ -813,7 +850,7 @@ function wrapFilterTable(){
 	);
 	restoreInputState($('#filterAlwaysExpand'));
 	if($('#filterAlwaysExpand').val() == 1){
-		_log('filteralwaysexpand' + $('#filterAlwaysExpand').val(), true)
+		_log('filteralwaysexpand' + $('#filterAlwaysExpand').val(), true);
 		$('#selectboxdiv').toggleClass('morefilters lessfilters');
 		$('#morefiltersbutton>span').toggle();
 	}
@@ -1063,7 +1100,7 @@ function addIndexPicPrev(){
 			out: hideIndexPicPrev,
 			selector: '.catfilterlink',
 			interval: 300
-		}
+		};
 		$('#content').hoverIntent(hovercfg);
 	}
 
@@ -1182,7 +1219,7 @@ function addPriceBreakHelper(){
 	// check if part is not orderable
 	if(ptable.filter(':contains(call)').size() == 0){
 		var pricingrows = ptable.find('tr:gt(0)');
-		var firstpb = parseFloat(pricingrows.eq(0).find('td:eq(0)').text(pricingrows.eq(0).find('td:eq(0)').text().replace(/,/g,'')).text())
+		var firstpb = parseFloat(pricingrows.eq(0).find('td:eq(0)').text(pricingrows.eq(0).find('td:eq(0)').text().replace(/,/g,'')).text());
 		pricingrows.each(function(index){
 			if(pricingrows.eq(index+1)){
 				var pricebreak =  parseFloat(pricingrows.eq(index).find('td:eq(0)').text(pricingrows.eq(index).find('td:eq(0)').text().replace(/,/g,'')).text());
@@ -1224,7 +1261,7 @@ function addDataSheetLoader(){
 		
 		if($('tr:contains("Datasheet") td>a:first').length > 0 && $('#datasheetchooserinput').val() == 1){
 			setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
-			$('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="thoughtbot" style="width:40px; font-size:11px; padding:2px; margin:0px" >&darr;&darr;&darr;&darr;</button></a>').parent().localScroll()
+			$('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="thoughtbot" style="width:40px; font-size:11px; padding:2px; margin:0px" >&darr;&darr;&darr;&darr;</button></a>').parent().localScroll();
 			// $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
 		}
 		_log('addDataSheetLoader() End',DLOG);
@@ -1325,12 +1362,12 @@ function getReverseFilterLink(formRowsTD){
 function addBreadcrumLink(){
 	_log('addBreadcrumLink() Start',DLOG);
 	// $('.seohtagbold').css({
-	// 	'position': 'fixed',
-	// 	'left': '430px',
-	// 	'top': '28px',
-	// 	'z-index': 7,
-	// 	'background': 'white',
-	// 	'padding-right': '100px'
+	//	'position': 'fixed',
+	//	'left': '430px',
+	//	'top': '28px',
+	//	'z-index': 7,
+	//	'background': 'white',
+	//	'padding-right': '100px'
 	// })//.insertAfter('#content');
 	if ($('#productTable').size() > 0) {
 		var thesplit = $('h1.seohtagbold').html().split(/&gt;/g);
@@ -1339,7 +1376,7 @@ function addBreadcrumLink(){
 		mypop = '<a id="famBreadCrumb" href="'+finalhref+'">'+mypop+'</a>';
 		thesplit.push(mypop);
 		$('h1.seohtagbold').html(thesplit.join('&nbsp;&gt;&nbsp;'));
-		$('h1.seohtagbold').find('a:eq(1)').append(' <img src="https://dl.dropboxusercontent.com/u/26263360/img/downarrowred.png">')
+		$('h1.seohtagbold').find('a:eq(1)').append(' <img src="https://dl.dropboxusercontent.com/u/26263360/img/downarrowred.png">');
 	}
 
 	addBreadcrumbHover();
@@ -1364,6 +1401,104 @@ function getFamilyLink(){
 	_log('getFamilyLink() End',DLOG);
 	return finalhref;
 }
+
+function addStickyHeader () {
+		location.assign("javascript:$(window).unbind('scroll resize');void(0)");
+		$('div.stickyHeader').remove();
+        CreateFloatingHeader();
+        $(window).scroll(function () { UpdateFloatingHeader(); });
+        $(window).resize(function () { UpdateFloatingHeader(); });
+   //      $('#productTable thead>tr:first th').attr('border', 0).css({
+			// 'border-top-left-radius': '5px',
+			// "border-spacing":0
+   //      });
+		$("#productTable thead").css('background-color', 'white');
+		$('#productTable thead>tr:eq(1)').css('background-color','#e8e8e8');
+		$('.stickyThead>tr:eq(1)').css('background-color','#e8e8e8');
+}
+function CreateFloatingHeader() {
+    var origTable = $('#productTable');
+    var tableClone = $(origTable).clone(true).empty().removeClass('stickyHeader');
+    tableClone.css('margin-bottom', '');
+    var theadClone = $(origTable).find('thead').clone(true);
+    theadClone.addClass('stickyThead');
+    var stickyHeader = $('<div></div>').addClass('stickyHeader hide').attr('aria-hidden', 'true');
+    stickyHeader.append(tableClone).find('table').append(theadClone);
+    $(origTable).after(stickyHeader);
+
+    var widthValues = ['padding-left', 'padding-right', 'border-left-width', 'border-right-width'];
+    var tableWidth = $(origTable).width();
+    var tableHeight = $(origTable).height();
+
+    for (var i = 0; i < widthValues.length; i++) {
+        var parsedValue = Number($('#productTable').css(widthValues[i]).replace(/px/ig, ""));
+        if (!isNaN(parsedValue)) {
+            tableWidth += parsedValue;
+        }
+    }
+
+    var headerCells = $(origTable).find('thead th');
+    var headerCellHeight = $(headerCells[0]).height();
+
+    var stickyHeaderCells = stickyHeader.find('th');
+    stickyHeader.css('width', tableWidth);
+    for (var i = 0, l = headerCells.length; i < l; i++) {
+        $(stickyHeaderCells[i]).css('width', $(headerCells[i]).css('width'));
+        // $(stickyHeaderCells[i]).css('background-color', '#E1E0E0');
+    }
+
+    var cutoffTop = $(origTable).offset().top;
+    var cutoffBottom = tableHeight + cutoffTop - headerCellHeight;
+    var leftInit = $(origTable).offset().left;
+    var currentPosition = $(window).scrollTop()+50;
+    $(stickyHeader).offset({ left: leftInit, top: currentPosition });
+
+    // Fix to make sure it's visible on refresh
+    if (currentPosition > cutoffTop && currentPosition < cutoffBottom) {
+        stickyHeader.removeClass('hide');
+        $(stickyHeader).offset({ left: leftInit, top: currentPosition });
+    }
+    else {
+        stickyHeader.addClass('hide');
+    }
+}
+
+function UpdateFloatingHeader() {
+    var stickyHeader = $('div.stickyHeader');
+    var headerCells = $('#productTable').find('thead th');
+    var headerCellHeight = $(headerCells[0]).height();
+    var widthValues = ['padding-left', 'padding-right', 'border-left-width', 'border-right-width'];
+    var tableWidth = $('#productTable').width();
+    var tableHeight = $('#productTable').height();
+    for (var i = 0; i < widthValues.length; i++) {
+        var parsedValue = Number($('#productTable').css(widthValues[i]).replace(/px/ig, ""));
+        if (!isNaN(parsedValue)) {
+            tableWidth += parsedValue;
+        }
+    }
+    var stickyHeaderCells = stickyHeader.find('th');
+    stickyHeader.css("width", tableWidth);
+    for (var i = 0, l = headerCells.length; i < l; i++) {
+        $(stickyHeaderCells[i]).css('width', $(headerCells[i]).css('width'));
+        // $(stickyHeaderCells[i]).css('background-color', '#E1E0E0');
+    }
+    var cutoffTop = $('#productTable').offset().top;
+    var cutoffBottom = tableHeight + cutoffTop - headerCellHeight;
+    var currentTopPosition = $(window).scrollTop()+50;
+    var currentLeftPosition = $(window).scrollLeft();
+    var cutoffLeft = $('#productTable').offset().left;
+
+    if (currentTopPosition > cutoffTop && currentTopPosition < cutoffBottom) {
+        stickyHeader.removeClass('hide');
+        $(stickyHeader).offset({ left: cutoffLeft, top: currentTopPosition });
+    }
+    else {
+        stickyHeader.addClass('hide');
+    }
+}
+
+
+
 
 //adds floating table header in the productTable search results
 function addPersistHeader() {
@@ -2015,8 +2150,8 @@ function addQuickFilter2(){
 					$('#qpDivCont').append( 
 						'<div class="clearfix" sortme="'+parseInt(myregex.exec($(this).parent('li').text()),10)+'">'+ 
 							$(this).parent('li').html() + ' ' + 
-							$(this).parent('li').prev('.catfiltertopitem').text() + ' in ' 
-							+ $(this).closest('ul').prev().text() + 
+							$(this).parent('li').prev('.catfiltertopitem').text() + ' in ' +
+							$(this).closest('ul').prev().text() +
 							// '<div style="float:left; top:0px" class="'+
 							//	$(this).closest('ul').prev().text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase()+'">'+
 							// '</div>'+
@@ -2062,7 +2197,7 @@ function addQuickFilter2(){
 function createQuickFilterDiv(){
 	_log('createQuickFilterDiv() Start',DLOG);
 	if($('.catfilterlink').size() > 0) {
-		var handleIMG = '<img id=handlewrapper style="margin:auto; position:absolute; top:0; bottom:0;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAeCAMAAAAiq38CAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMAUExURQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALMw9IgAAAEAdFJOU////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wBT9wclAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGnRFWHRTb2Z0d2FyZQBQYWludC5ORVQgdjMuNS4xMDD0cqEAAAAySURBVChTY/gPBwxACAVoTCgHHxPMwc8EcshjMpDAhDMIMrE7Es4EAzQmFKAwoeD/fwC2DNMtYKiDTgAAAABJRU5ErkJggg==" />'
+		var handleIMG = '<img id=handlewrapper style="margin:auto; position:absolute; top:0; bottom:0;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAeCAMAAAAiq38CAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMAUExURQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALMw9IgAAAEAdFJOU////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wBT9wclAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGnRFWHRTb2Z0d2FyZQBQYWludC5ORVQgdjMuNS4xMDD0cqEAAAAySURBVChTY/gPBwxACAVoTCgHHxPMwc8EcshjMpDAhDMIMrE7Es4EAzQmFKAwoeD/fwC2DNMtYKiDTgAAAABJRU5ErkJggg==" />';
 
 		$('#content').before(
 			'<div id="qpDiv" class="open">'+
@@ -2097,14 +2232,14 @@ function createQuickFilterDiv(){
 				$('#qpDiv').animate({'left':600}, 700).toggleClass('open closed');
 			}
 		});	
-	 }
-	 _log('createQuickFilterDiv() End',DLOG);
+	}
+	_log('createQuickFilterDiv() End',DLOG);
 }
 
 function addKeywordMatchedSprites(){
 	$('.quickpick').each(function(){
-		$(this).next('br').before('<div class=/>')
-	})
+		$(this).next('br').before('<div class=/>');
+	});
 }
 
 function addCategorySprites(){
@@ -2414,12 +2549,12 @@ function getRecordsMatching(page) {
 				}
 				$('#resnum').html('<p>Records matching criteria: 1 P/N: ' + $('.seohtag').text() + '<br> Apply Filters view product page</p>');
 				// $('#resnum>p').css({
-				// 	'position': 'fixed',
-				// 	'left': '160px',
-				// 	'top': '15px',
-				// 	'color': 'red',
-				// 	'font-size': '14px',
-				// 	'backgroundColor': 'white'
+				//	'position': 'fixed',
+				//	'left': '160px',
+				//	'top': '15px',
+				//	'color': 'red',
+				//	'font-size': '14px',
+				//	'backgroundColor': 'white'
 				// });
 			});
 		}
@@ -2427,14 +2562,7 @@ function getRecordsMatching(page) {
 	});
 }
 
-function addgetRecMatchEventToOptions(){
-	// $('#mainform').on('mouseup','option', function(e){
-	// 	if(!e.ctrlKey){
-	// 		_log('option ' +$(this).parent().val()+' in '+$(this).parent().attr('name')+' changed by click');
-	// 		// setTimeout(function(){getRecordsMatching();}, 100);// sets priority to let stickyfilters go first.
-	// 	}
-	// });
-}
+
 function addStickyFilters(){
 	//adds stickyfilters to multi select boxes 
 	
@@ -2466,7 +2594,7 @@ _log('addApplyFiltersButtonHighlight() Start',DLOG);
 
 function buttonHighlightAction() {
 	if($('#mainform option:selected').length>0){
-		$('input[value="Apply Filters"]').toggleClass('thoughtbot',true)
+		$('input[value="Apply Filters"]').toggleClass('thoughtbot',true);
 		$('input[value="Apply Filters"]').toggleClass('minimal',false);
 		//_log('options selected length '+$('option:selected').length);
 	}else{
@@ -2483,27 +2611,9 @@ function searchButtonHighlight(){
 
 function addEvents(){
 	_log('addEvents() Start',DLOG);
-	// calls getRecordsMatching when mouseup fires on any Multi-select Option
 
 	
-	_log('ADD EVENT for drill down form checkbox click', DLOG);
-	// $('#mainform').on('click','input:checkbox', function(e){
-	// 	if(!e.ctrlKey){
-	// 		_log($(this).attr('name')+' checkbox click');
-	// 		getRecordsMatching();
-	// 	}
-	// });	
-	
-	// _log('ADD EVENT for CTRL keyup',DLOG);
-	// $('#mainform').keyup(function(e){
-	// 	if(e.keyCode==17){
-	// 		_log('ctrlUP');
-	// 		getRecordsMatching();
-	// 	}
-	// });	
-	
 	$('#expand2').click(function(e){
-		
 			_log($(this).attr('id')+' acc expand click');
 			if($('#accDiv.expanded').length){
 				$('#accDiv').animate({height:'65px'}, 300);
@@ -2532,7 +2642,6 @@ function addEvents(){
 			}
 		});
 	}
-
 
 	_log('addEvents() End',DLOG);
 }
@@ -2630,7 +2739,7 @@ function addBottomCompare(){
 		'<button class="close minimal" >hide</button>'+
 		'<div id=bottomCompareCont style="height:100%">bottom world</div></div>');
 
-	 $('#bottomCompare').css({
+	$('#bottomCompare').css({
 		'position': 'fixed',
 		'bottom' : '0px',
 		'width': '100%',
@@ -2638,14 +2747,14 @@ function addBottomCompare(){
 		//'background': 'white',
 		'border-top': '3px solid red',
 		'box-shadow': '0px -1px 2px 2px #888',
-	 }).hide();
+	}).hide();
 
-	 $('#bottomCompare .close').click(function(){
+	$('#bottomCompare .close').click(function(){
 		$('#bottomCompare').hide('slide', {'direction':'down'}, 500);
-	 });
+	});
 
-	 $('#complink').after($('#compare-button').attr('value','Compare\n Now').addClass('minimal').css('height','50px'));
-	 _log('addBottomCompare() End',DLOG);
+	$('#complink').after($('#compare-button').attr('value','Compare\n Now').addClass('minimal').css('height','50px'));
+	_log('addBottomCompare() End',DLOG);
 }
 
 function addPriceHover(){
@@ -2699,6 +2808,8 @@ function combinePN(){
 	$('#productTable').find('th:contains("Number")').each(function() {
 		$(this).text($(this).text().replace('Number', '#'));
 	});
+	$('#ColSort1000002,#ColSort-1000002,#ColSort1000001,#ColSort-1000001').parent().parent().empty();
+
 	_log('combinePN() End',DLOG);
 }
 
@@ -2711,9 +2822,9 @@ function picsToAccel() {
 	pictureSet.each(function(mykey, myvalue) {
 		//if statement to cull out consecutive images
 		if(pictureSet.eq(mykey - 1).attr('src') != $(this).attr('src')) { 
-			 var imganchor = $(this).parent();
-			 imganchor.attr('id', 'popthumb' + mykey);
-			 piclinkhtml = piclinkhtml +'<a href="#popthumb'+ mykey +'">'+ imganchor.html() + '</a>';
+			var imganchor = $(this).parent();
+			imganchor.attr('id', 'popthumb' + mykey);
+			piclinkhtml = piclinkhtml +'<a href="#popthumb'+ mykey +'">'+ imganchor.html() + '</a>';
 		} else {}
 	});
 	$('#accContent').append(piclinkhtml);
@@ -2993,7 +3104,7 @@ function fillCarousel($productCell){
 		link = link + '&part=' + $(this).text();
 	});
 	//_log('loadmylink '+ link);
-	$carContent.html('Loading...')
+	$carContent.html('Loading...');
 	$carContent.load(link + ' #productTable,.catfilterlink,table[itemtype="http://schema.org/Product"]', function(){
 		//alert('hi');
 		if($('#productTable').length){
@@ -3014,8 +3125,8 @@ function fillCarousel($productCell){
 					}else if($(this).find('#reportpartnumber').length){
 						filterDetailPageForCar($(this), $carContent); 
 					}
-				 });
-				 $(this).remove();
+				});
+				$(this).remove();
 			});
 		}
 	});
@@ -3047,13 +3158,13 @@ function filterDetailPageForCar($carContent, $targetDiv){
 function filterTableForCar($carContent, $targetDiv){
 	//$targetDiv = $targetDiv.length ? $targetDiv : $carContent;
 	if($targetDiv == undefined){
-		var $targetDiv = $carContent;
+		$targetDiv = $carContent;
 	}
 	var imgIndex = $carContent.find('#productTable th:contains("Image")').index() + 1;
 	_log('imgIndex' + imgIndex);
 	var imgLinkSet = $carContent.find('#productTable tr td:nth-child('+imgIndex+')').find('a');
-	var descSet =	 $carContent.find('#productTable tr td:nth-child('+(imgIndex + 3)+')');
-	var pnSet =	 $carContent.find('#productTable tr td:nth-child('+(imgIndex + 1)+')').find('a');
+	var descSet =    $carContent.find('#productTable tr td:nth-child('+(imgIndex + 3)+')');
+	var pnSet =      $carContent.find('#productTable tr td:nth-child('+(imgIndex + 1)+')').find('a');
 	imgLinkSet.each(function(ind){
 			$targetDiv.append(
 				'<div class="carItems">' + 
@@ -3104,7 +3215,7 @@ function loadDashNDHover($hoveredObj, wcon){
 			collision : 'fit fit'
 		});
 
-		$(this).find('form').attr('method')
+		$(this).find('form').attr('method');
 	});
 }
 
@@ -3132,7 +3243,7 @@ function addCartHover(){
 function loadCartDetails(serialstring){
 	_log('loadCartDetails() Start',DLOG);
 	if(serialstring == undefined){
-		var serialstring = '';
+		serialstring = '';
 	}
 	var ordet = ' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
 	$('#cartHoverContent').append('<span>Completing Quantity Change</span>');
@@ -3476,9 +3587,9 @@ function _log(somestring, detailed_logging){
 
 jQuery.expr.filters.offscreen = function(el) {
 	return (
-			(el.offsetLeft + el.offsetWidth) < 0 
-			|| (el.offsetTop + el.offsetHeight) < 0
-			|| (el.offsetLeft > window.innerWidth || el.offsetTop > window.innerHeight)
+			(el.offsetLeft + el.offsetWidth) < 0 ||
+			(el.offsetTop + el.offsetHeight) < 0 ||
+			(el.offsetLeft > window.innerWidth || el.offsetTop > window.innerHeight)
 	);
 };
 
@@ -3548,7 +3659,7 @@ jQuery.expr.filters.offscreen = function(el) {
 				callback();
 			}
 		});
-	}
+	};
 })(jQuery);
 //highlighting function
 (function($) {
@@ -3617,7 +3728,7 @@ jQuery.expr[':'].contains = function(a, i, m) {
 //SAVE FOR REFERENCE
 // var tablelen = $('#mainform>th').length;
 // var maxHeight = Math.max.apply(null, $('#mainform>table>tbody').map(function (){
-//	 return $(this).height();
+// return $(this).height();
 // }).get());
 
 function addDocRetrieve(){//No longer used, but here for reference
@@ -3642,7 +3753,7 @@ function addDocRetrieve(){//No longer used, but here for reference
 	createHoverWindow(docConfig);
 }
 function loadDocs($hoveredObj){//No longer used, but here for reference
-	$('#docHoverContent').text('Loading....')
+	$('#docHoverContent').text('Loading....');
 	var mylink = $hoveredObj.closest('tr').find('a[href*=-ND]:first').attr('href');
 	$('#docHoverContent').load(mylink+ ' table:contains("Datasheets"):first', function(){
 		$(this).find('tr')
@@ -3674,12 +3785,12 @@ function formatFastAddPage(){
 						cols = line.split(/\t/g);
 						if (cols[0].indexOf('-ND') != -1){
 							farray.push([cols[0],cols[1]]);
-							_log('DK# in first column, adding to farray '+ [cols[0],cols[1]] )
+							_log('DK# in first column, adding to farray '+ [cols[0],cols[1]] );
 						}else if (cols[1].indexOf('-ND') != -1){
 							farray.push([cols[1],cols[0]]);
-							_log('DK# in second column, adding to farray '+ [cols[1],cols[0]] )
+							_log('DK# in second column, adding to farray '+ [cols[1],cols[0]] );
 						}else {
-							alert('not finding -nd')
+							alert('not finding -nd');
 						}
 					}
 
@@ -3702,10 +3813,10 @@ function formatFastAddPage(){
 function addMoreRows(farray){
 	if(farray.length > 20){
 		for(var x=21; x<farray.length; x++){
-			 $('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_tblAddParts').find('tr:last').after(
-			 	'<tr class="evenrow" style="border-width:1px;border-style:solid;">'+
-			 	'<td class="tblborder" style="border-width:1px;border-style:solid;">'+ x +
-			 	'</td>'+
+			$('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_tblAddParts').find('tr:last').after(
+				'<tr class="evenrow" style="border-width:1px;border-style:solid;">'+
+				'<td class="tblborder" style="border-width:1px;border-style:solid;">'+ x +
+				'</td>'+
 				'<td class="tblborder" style="border-width:1px;border-style:solid;">'+
 				'<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtQty'+x+
 				'" type="text" style="width:65px;" maxlength="9" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtQty'+x+'">'+
@@ -3716,7 +3827,7 @@ function addMoreRows(farray){
 				'<td class="tblborder" style="border-width:1px;border-style:solid;">'+
 				'<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtCref'+x+'" type="text" style="width:145px;" maxlength="48" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtCref'+x+'">'+
 				'</td>'
-			 );
+			);
 		}
 	}
 }
@@ -3837,7 +3948,7 @@ function saveProductDrawer(){//No longer used, but here for reference
 		$(this).find('.catfiltertopitem').removeClass('catfiltertopitem').addClass('category');
 		$(this).find('ul').css({
 			'display': 'none',
-		})
+		});
 		$(this).find('.category>a').each(function(){
 			$(this).before('<span class="toggler plus">+ </span><span class="toggler minus" style="display:none">- </span>'+$(this).text()+' ');
 			$(this).text('(link)');
@@ -3922,9 +4033,9 @@ function createSpan(matchedTextNode) {
 // The main function
 function wrapText(container, text) {
 	var wordsToHighlight = text.trim().split(' ');
-	 _log(wordsToHighlight, DLOG);
+	_log(wordsToHighlight, DLOG);
 	for (var x=0; x < wordsToHighlight.length; x++){
-    	surroundInElement(container, new RegExp(wordsToHighlight[x], "gi"), createSpan);
+		surroundInElement(container, new RegExp(wordsToHighlight[x], "gi"), createSpan);
 	}
 }
 

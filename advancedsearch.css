@@ -13,7 +13,7 @@
 	border-spacing:0;
 }
 #productTable th:last-child {
-	border-top-right-radius: 5px;
+	border-top-right-radius: 5px
 }
 #productTable {
 	border-radius: 5px;
@@ -22,11 +22,17 @@
 }
 #productTable td,#productTable th {
 	border: 1px solid #ccc;
-	border-top: 0px;
-/*	border-right:0px;
-	border-bottom: 0px;*/
 }
 
+#productTable>thead {
+	background-color: white;
+}
+.stickyThead>thead{
+	background-color: white;
+}
+.stickyThead>thead tr:last-child {
+	background-color: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+}
 /**********************/
 #productTable.lightblue th {
 	/*light blue gradient*/
