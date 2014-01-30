@@ -155,8 +155,13 @@ input[type="text"]:focus{
 	border-radius: 0 0 8px 8px;
 	padding: 8px 15px 15px 8px;
 	box-shadow: inset 3px 0px 10px #AAA;
-	-moz-column-width:300px;
-	-webkit-column-width:300px;
+/*	-moz-column-width:400px;
+	-webkit-column-width:400px;*/
+}
+#qpDiv.topside>#qpDivCont {
+
+	-moz-column-width:400px;
+	-webkit-column-width:400px;
 }
 
 #page-cover {
