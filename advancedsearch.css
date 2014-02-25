@@ -22,6 +22,11 @@
 }
 #productTable td,#productTable th {
 	border: 1px solid #ccc;
+	border-right: 0px;
+	border-bottom: 0px;
+}
+#productTable tr:last-child td{
+	border-bottom: 1px !important;
 }
 
 #productTable>thead {

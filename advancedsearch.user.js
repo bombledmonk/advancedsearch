@@ -28,7 +28,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.6
+// @version     2.6.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -138,6 +138,8 @@
 //2.5.1     Fixed bug on fastadd page, added quickpaste function on fastadd page
 //2.5.2     Code cleanup, added BSD license
 //2.6       Quick Fix for Quick Picks update on dk site
+//2.6.1     Fix for digikey site bug.
+//2.6.2     Added My Digi-Key link
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -156,6 +158,7 @@ var MAX_PAGE_LOAD = 20;
 var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
 var sitemaplink = $('#header').find('a:contains("Site Map"):first').attr('href');
+var mydklink = getMyDigiKeyLink();
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var cacheflag = false;
@@ -173,6 +176,7 @@ var customform = '<div id="cHeader" style="display:block;"><a href="http://digik
     '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
     '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form><span id="resnum"></span>'+
     '<span id=quicklinks><a href="http://www.digikey.'+theTLD+'/product-search/en">Product Index</a> | '+
+    '<a href="'+mydklink+'">My Digi-Key</a> | '+
     '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><img src="https://dl.dropboxusercontent.com/u/26263360/img/carticon.png"> Cart<span id=cartquant></span> <img src="http://he-st.com/img/downarrowred.png"></img></a> | '+
     '<a href="'+sitemaplink+'">Site Map</a></span>'+
 '</div>';
@@ -190,13 +194,20 @@ function preloadFormat(){
 
     $('#header').remove();
     $('#footer').remove();
+
+    //TODO remove once website 
+    $('.catfilteritem').find('li>a').addClass('catfilterlink');
+
+
     _log('preloadFormat() End',DLOG);
+
+
 }
 
 preloadFormat();
 
 $(document).ready(function() {
-    _log('[ready] advanced search starts here ');
+    _log('[ready] advanced search starts here. Jquery version '+ jQuery.fn.jquery);
     _log('[ready] hostname is '+ window.location.hostname,DLOG);
     _log('[ready] pathname is '+ window.location.pathname,DLOG);
     _log('[ready] search is '+ window.location.search,DLOG);
@@ -206,7 +217,7 @@ $(document).ready(function() {
 });
 
 
-function tc(thefunc, name){
+function tc(thefunc, name){ // tc = try catch
     try{
         thefunc();
     }catch(err){
@@ -235,6 +246,13 @@ function formatPages() {
     _log('formatPages() End',DLOG);
 } 
 
+function getMyDigiKeyLink(){
+    var retval ='';
+    tc(function(){
+        retval = $('.top-header .myMenu:first').html().split("','")[0].split("open('")[1];
+    }, 'getMyDigiKeyLink');
+    return retval;
+}
 function replaceQuestionMark(){
     $('img[src*="help.png"]').attr('src', 'https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png');
 }
@@ -294,6 +312,10 @@ function addCustomHeader(){
         $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
         $('#content .dkdirchanger').closest('form').remove();
 
+        $('.matching-records:contains("Results")').delegate(function(){
+            $(this).text($(this).text().replace('Results', 'awesome'));
+        });
+
         tc(searchButtonHighlight, 'searchButtonHighlight');
         _log('addCustomHeader() End',DLOG);
 }
@@ -310,8 +332,8 @@ function addControlWidget() {
                 '<label><input type=checkbox id=qtydefault class="saveState" value="1">Always initially sort by price @ Qty</input></label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
                 '<label><input type=checkbox id=combinePN class="saveState" value="1"> Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
                 '<label><input type=checkbox id=pricehoverControl class="saveState" value="1">Turn on price break popup on hovering over prices </input></label><br>' + 
-                '<label>Explore Mode Popup Delay time<input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
                 '<label><input type=checkbox id=queryHighlight class="saveState" value="1">Turn on query term highlighting in on filter pages </input></label><br>' +   
+                '<label>Explore Mode Popup Delay time<input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
                 // '<label><input type=checkbox id=wrapFilters class="saveState" value="0">Turn on screen wrapping for multiselect filters (in progress)</input></label><br>' + 
                 //'<label><input type=checkbox id=pagesControl >Default number of extra pages to load on filter (drill down) pages</input></label> <input type=text id="pageloadnumberbox" value="4" size="4" ><br>' +
                 //'<label><input type=checkbox id=keepstock> Keep In stock,Lead free, and RoHS checkboxes between visits (not working yet)</label><br>'+
@@ -1979,15 +2001,21 @@ function checkboxHelper(name, $selectElem){
         //_log(masterarray);
     });
     masterarray = uniqueArray(masterarray);
-    for(var y=0; y<masterarray.length; y++){
-        masterarray[y] = trim(masterarray[y]);
-    }
+    masterarray.forEach(function(e, i, a){
+    	e = trim(e);
+    });
+    // for(var y=0; y<masterarray.length; y++){
+    //     masterarray[y] = trim(masterarray[y]);
+    // }
     masterarray = uniqueArray(masterarray).sort();
 
     $('#helperBoxContent').addClass('columnized5');
-    for( var x=0; x<masterarray.length; x++){
-        $('#helperBoxContent').append('<label><input type="checkbox"> '+masterarray[x]+' </input></label><br> ');
-    }
+    masterarray.forEach(function(e,i,a){
+       $('#helperBoxContent').append('<label><input type="checkbox"> '+e+' </input></label><br> ');
+    });
+    // for( var x=0; x<masterarray.length; x++){
+    //     $('#helperBoxContent').append('<label><input type="checkbox"> '+masterarray[x]+' </input></label><br> ');
+    // }
 
     $('#helperBoxContent').after('ok');
     $('#helperBoxContent').find('input[type=checkbox]').change(function(){
@@ -2221,23 +2249,14 @@ function addQuickFilter3(){
             return e;
         });
 
-                //checkCategoryQF(qarray);
-        for(var x = 0; x < qarray.length; x++) {
-            // $('#productIndexList .catfilterlink:contains("' + qarray[x] + '")').add($('catfiltertopitem:contains("' + qarray[x] + '")').parent().find('.catfilterlink')).each(function() {
-            $('#productIndexList .catfilterlink:contains("' + qarray[x] + '")').parent().find('.catfilterlink').each(function() {
-                _log('highlighting word ' +qarray[x] + ' for ' + $(this).html(),DLOG);
+        for(var z = 0; z < qarray.length; z++) {
+            // $('#productIndexList .catfilterlink:contains("' + qarray[z] + '")').add($('catfiltertopitem:contains("' + qarray[z] + '")').parent().find('.catfilterlink')).each(function() {
+            $('#productIndexList .catfilterlink:contains("' + qarray[z] + '")').parent().find('.catfilterlink').each(function() {
+                _log('highlighting word ' +qarray[z] + ' for ' + $(this).html(),DLOG);
                 $(this).addClass('quickpick');
                 _log('top item ' + $(this).closest('ul').prev().text(),DLOG);
                 if($('#quickPicksDisplay').length != 0) {
-                //  $('#qpDivCont').append( 
-                //      '<div class="clearfix" sortme="'+parseInt(myregex.exec($(this).parent('li').text()),10)+'">'+ 
-                //          $(this).parent('li').html() + ' ' + 
-                //          $(this).parent('li').prev('.catfiltertopitem').text() + ' in ' +
-                //          $(this).closest('ul').prev().text() +
-                //          // '<div style="float:left; top:0px" class="'+
-                //          //  $(this).closest('ul').prev().text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase()+'">'+
-                //          // '</div>'+
-                //      '</div>');
+
                 }
                 if(localStorage.getItem('familyHighlight') == 1) {
                     $(this).css({
@@ -2253,38 +2272,15 @@ function addQuickFilter3(){
             $('#quickPicksDisplayClone').remove();
             $('#qpDiv li').add('.catfiltersub li, .catfilteritem').css('white-space','');
             $('#productIndexList').css('width','100%');
-            // $('#qpLinkList .catfilterlink').addClass('quickpick');
-
         }
         else{
             addJumpToCategory();
         }
         // remove list bullets
         $('#productIndexList').css({'list-style-type':' none'});
-
-        // var list = $('#qpDivCont');
-        // var listItems = list.find('div.clearfix').sort(function(a,b){ 
-        //  return parseInt($(b).attr('sortme')) - parseInt($(a).attr('sortme')); 
-        // });
-        // list.append(listItems);
-        // $('#qpDivCont a.quickpick').removeClass('catfilterlink');
-        // //$('#qpDivCont a.quickpick:odd').parent().css('background', 'white');
-        // $('#qpDivCont a.quickpick').parent().wrapAll('<ul />').wrap('<li />');
-
-
-        if($('#qpDivCont').find('a').size() == 0) {
-            
-        }
+        $('.catfilteritem').css({'list-style-type':' none'});
 
         addCategorySprites();
-
-        // if($('#qpDivCont').find('a.quickpick').size() > 25) { 
-        //     $('#qpTitle').html('<b>Quick Pick:</b> (most to least results) <br>' + 
-        //         '<br> Search not specific enough for a quick pick there were ' + 
-        //         $('#qpDivCont').find('a.quickpick').size() + ' families that matched, only the top 25 will be displayed<a>.</a>'
-        //     );
-        //     $('#qpDivCont li:gt(25)').remove();
-        // }
     }
     _log('addQuickFilter3() End',DLOG);
 }
@@ -2595,7 +2591,6 @@ function addEngQtyTocatfilterlinks() {
 }
 
 function indexInstantFilter(){
-
     if($('a.catfilterlink').size()>0){
         $('#headKeySearch').keyup(function(){
             $('.catfilterlink').parent().hide();
@@ -4136,3 +4131,5 @@ function wrapText(container, text) {
     }
 }
 
+//useful for unbinding functions that are outside of the scope of greasemonkey
+// location.assign("javascript:$(window).unbind('scroll resize');void(0)");
