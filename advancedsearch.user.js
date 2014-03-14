@@ -28,7 +28,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.6.2
+// @version     2.7
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -140,6 +140,9 @@
 //2.6       Quick Fix for Quick Picks update on dk site
 //2.6.1     Fix for digikey site bug.
 //2.6.2     Added My Digi-Key link
+//2.6.3     My Digi-Key link international bug fix
+//2.6.4     Fix for Explore mode and example pictures on some sites
+//2.7       Fixed issues introduced by cart changes, code cleanup
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -148,7 +151,7 @@
 //TODO split family names on "\s-\s" and stick into subcats
 //TODO fix associated products hover 'add to cart' button
 //TODO Add button to hide columns with all dashes
-// [at]include      http*digikey.*/classic/Ordering/FastAdd* add the fastadd features
+// [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
 var lastUpdate = '10/18/13';
@@ -197,6 +200,7 @@ function preloadFormat(){
 
     //TODO remove once website 
     $('.catfilteritem').find('li>a').addClass('catfilterlink');
+    // $(document).tooltip();
 
 
     _log('preloadFormat() End',DLOG);
@@ -241,6 +245,7 @@ function formatPages() {
     tc(addBreadcrumLink, 'addBreadcrumLink');
     tc(addCartHover, 'addCartHover');
     tc(replaceQuestionMark, 'replaceQuestionMark');
+    tc(lazyLoadFix, 'lazyLoadFix');
     
     cleanup();
     _log('formatPages() End',DLOG);
@@ -249,7 +254,9 @@ function formatPages() {
 function getMyDigiKeyLink(){
     var retval ='';
     tc(function(){
-        retval = $('.top-header .myMenu:first').html().split("','")[0].split("open('")[1];
+        if ($('.top-header .myMenu:first').html()){
+            retval = $('.top-header .myMenu:first').html().split("','")[0].split("open('")[1];
+        }
     }, 'getMyDigiKeyLink');
     return retval;
 }
@@ -581,14 +588,8 @@ function formatFilterResultsPage(){
         if(localStorage.getItem('pricehoverControl') == 1) {
             setTimeout(function(){addPriceHover();}, 3000);
         }
-        // if($('.stickyThead').length === 0){  //conditional statement feature being rolled into the website
-        //  setTimeout(function(){addPersistHeader();}, 2500);
-        // }else{
-        //  addStickyHeader();
-        //  $('#ColSort1000002,#ColSort-1000002,#ColSort1000001,#ColSort-1000001,').hide();
-        // }
-        setTimeout(function(){addStickyHeader()}, 2500);
 
+        setTimeout(function(){addStickyHeader()}, 2500);  // wait for the page native javascript to load then reapply modified code
 
         formatQtyBox();
         addColumnHider();
@@ -1131,7 +1132,7 @@ function addIndexPicPrev(){
 
 function showIndexPicPrev() {
     _log('link hovered showIndexPicPrev()');
-    var queryCheckedURL = ($(this).attr('href').indexOf('?') != -1) ? ($(this).attr('href') + '&stock=1&pageSize=100') : ($(this).attr('href') + '?stock=1&pageSize=100');
+    var queryCheckedURL = ($(this).attr('href').indexOf('?') != -1) ? ($(this).attr('href') + '&stock=1&pageSize=100&akamai-feo=off') : ($(this).attr('href') + '?stock=1&pageSize=100&akamai-feo=off');
     var onlink = $(this);
     $('#picPrev').html('** loading pictures**<br><img style="margin-left:60px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
     $('#picPrev').show( "fade", 200 ).position({
@@ -1143,8 +1144,11 @@ function showIndexPicPrev() {
         collision : 'fit',
     });
     
-    $('#picPrev').load(queryCheckedURL + ' img[src*="tmb"]', function() {
-        $('#picPrev').prepend('<span style="vertical-align:top" height="100%"> Example pictures of <b>'+ onlink.text() +'</b> (up to first 100 in stock):</span><br> ');
+    $('#picPrev').load(queryCheckedURL + ' img.pszoomer', function() {
+    // $('#picPrev').load(queryCheckedURL + ' img[src*="tmb"]', function() {
+        $('#picPrev').prepend('<span style="vertical-align:top" height="100%"> Example pictures of <b>'+
+            onlink.text() +'</b> (up to first 100 in stock):</span><br> '
+         );
         $('#picPrev').find('img').each(function() {
             $('img[src="'+$(this).attr('src')+'"]:gt(0)').hide();
             $('this').attr('alt','').attr('title', '');
@@ -1262,7 +1266,8 @@ function addDataSheetLoader(){
         _log('addDataSheetLoader() Start',DLOG);
         var dslink = $('tr:contains("Datasheet") td>a:first').attr('href');
         var hidenav = '#navpanes=0&zoom=100';
-        //different methods  KEEP*************>>>>
+        
+        //KEEP different methods  KEEP*************>>>>
         //$('#content').append('<embed src="'+dslink+'" width=100% height=800px>');
         // $('#content').append('<embed src="'+dslink+'#toolbar=0&navpanes=0&scrollbar=0" width=100% height=auto>');
         // $('#content').append('<object data="'+dslink+'" type="application/pdf" width=100% height=10000px>');
@@ -1411,7 +1416,8 @@ function getFamilyLink(){
     var myhtml = $('h1.seohtagbold').html();
     var thesplit = myhtml.split(/&gt;/g);
     var mypop = thesplit.pop();
-    var modifiers = $('#mainform input[type=checkbox], #mainform input[name=quantity], #mainform input[name=ColumnSort]').serialize();
+    var modifiers = $('#mainform input[type=checkbox], #mainform input[name=quantity], #mainform input[name=ColumnSort]').serialize()+'&akamai-feo=off';
+    //this needs to remain in this logical order of replacement to get desired results.  Do not combine.
     var finalhref = myhref+'/'+mypop.toLowerCase().trim()
         .replace('&nbsp;','')
         .replace('\/', '-')
@@ -1519,9 +1525,6 @@ function UpdateFloatingHeader() {
     }
 }
 
-
-
-
 //adds floating table header in the productTable search results
 function addPersistHeader() {
     _log('addPersistHeader() Start',DLOG);
@@ -1610,7 +1613,6 @@ function addImageBar() {
             'text-align': 'center',
             'cursor': 'pointer'
         });
-
     }
 
     $('#content').after('<div id="itemInfo"></div>');
@@ -1717,7 +1719,7 @@ function getExplorePreview(thisanchor){
 function loadExploreWindow($hoveredObj){
     if($('#exploremodecheckbox').val() == 1){
         var optionVal = $hoveredObj.val();
-        var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&' + $hoveredObj.parent().attr('name')+'='+$hoveredObj.val();
+        var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $hoveredObj.parent().attr('name')+'='+$hoveredObj.val();
         _log( optionVal +' loadExploreWindow mylink is ' + mylink);
 
         $('#exploreModeContent').html('<img style="margin-left:60px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">'+
@@ -2141,84 +2143,18 @@ function getAttributeExampleImgs(name,$selectElem) {
 
 }
 
-// TODO scheduled for deletion, quickfilter3 now handles this
-// function addQuickFilter2(){
-//     _log('addQuickFilter2() Start',DLOG);
-//     if($('.catfilterlink').size() > 0) {
-//         createQuickFilterDiv(); 
-//         var qarray = getQuerystring('keywords').replace(/[\+]|%20|%7c/ig, ' ').trim().split(' ');
-//         // replace %20 representation of spaces, and plus signs with a plain space then split
-//         var q2 = [];
-//         var result;
-//         var myregex = new RegExp("[0-9]+ items", 'i');
 
-//         for(var x = 0; x < qarray.length; x++) {
-//             result = getQFAlts(qarray[x]).trim().split(' ');
-//             for(var y = 0; y < result.length; y++) {
-//                 q2.push(result[y]);
-//             }
-//         }
-
-//         for(var y = 0; y < q2.length; y++) {
-//             qarray.push(result[y]);
-//         }
-
-//         qarray = qarray.filter(function(e) {
-//             return e;
-//         });
-
-//                 //checkCategoryQF(qarray);
-//         for(var x = 0; x < qarray.length; x++) {
-//             $('.catfilterlink:contains("' + qarray[x] + '")').add($('catfiltertopitem:contains("' + qarray[x] + '")').parent().find('.catfilterlink')).each(function() {
-//                 _log('highlighting word ' +qarray[x] + ' for ' + $(this).html(),DLOG);
-//                 $(this).addClass('quickpick');
-//                 _log('top item ' + $(this).closest('ul').prev().text(),DLOG);
-//                 if(($(this).closest('ul').prev().text() != false) && $('#qpDivCont a[href="' + $(this).attr('href') + '"]').size() == 0) {
-//                     $('#qpDivCont').append( 
-//                         '<div class="clearfix" sortme="'+parseInt(myregex.exec($(this).parent('li').text()),10)+'">'+ 
-//                             $(this).parent('li').html() + ' ' + 
-//                             $(this).parent('li').prev('.catfiltertopitem').text() + ' in ' +
-//                             $(this).closest('ul').prev().text() +
-//                             // '<div style="float:left; top:0px" class="'+
-//                             //  $(this).closest('ul').prev().text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase()+'">'+
-//                             // '</div>'+
-//                         '</div>');
-//                 }
-//                 if(localStorage.getItem('familyHighlight') == 1) {
-//                     $(this).css({
-//                         'fontSize': ((parseInt($(this).css('fontSize'),10) < 17) ? (parseInt($(this).css('fontSize'),10) + 2) : (parseInt($(this).css('fontSize'),10))),
-//                         "font-weight": 'bold'
-//                     });
-//                 }
-//             });
-//         }
-
-//         var list = $('#qpDivCont');
-//         var listItems = list.find('div.clearfix').sort(function(a,b){ 
-//             return parseInt($(b).attr('sortme')) - parseInt($(a).attr('sortme')); 
-//         });
-//         list.append(listItems);
-//         $('#qpDivCont a.quickpick').removeClass('catfilterlink');
-//         //$('#qpDivCont a.quickpick:odd').parent().css('background', 'white');
-//         $('#qpDivCont a.quickpick').parent().wrapAll('<ul />').wrap('<li />');
+function lazyLoadFix(){
+    
+    $('.catfilterlink').each(function(){
+            var querycheckedURL = ($(this).attr('href').indexOf('?') != -1) ? ($(this).attr('href') + '&akamai-feo=off&"') : ($(this).attr('href') + '?akamai-feo=off');
+            $(this).attr('href', querycheckedURL);
+    });
 
 
-//         if($('#qpDivCont').find('a').size() == 0) {
-//             addJumpToCategory();
-//         }
+    $('#mainform').append('<input type=hidden value="off" name="akamai-feo">');
 
-//         addCategorySprites();
-
-//         if($('#qpDivCont').find('a.quickpick').size() > 25) { 
-//             $('#qpTitle').html('<b>Quick Pick:</b> (most to least results) <br>' + 
-//                 '<br> Search not specific enough for a quick pick there were ' + 
-//                 $('#qpDivCont').find('a.quickpick').size() + ' families that matched, only the top 25 will be displayed<a>.</a>'
-//             );
-//             $('#qpDivCont li:gt(25)').remove();
-//         }
-//     }
-//     _log('addQuickFilter2() End',DLOG);
-// }
+}
 
 
 // adds and populates the quickpick box
@@ -2609,7 +2545,7 @@ function getURL(stripQuery, inclFormData) {
     // strip query 
     // included serialized form data
     //$('mainform')
-    var querycheckedURL = (window.location.toString().indexOf('?') != -1) ? (window.location.toString() + '&') : (window.location.toString() + '?');
+    var querycheckedURL = (window.location.toString().indexOf('?') != -1) ? (window.location.toString() + '&"') : (window.location.toString() + '?');
     if(stripQuery) {
         querycheckedURL = (window.location.toString().split('?')[0] + '?');
     }
@@ -2617,42 +2553,6 @@ function getURL(stripQuery, inclFormData) {
     var myloc = inclFormData ? (querycheckedURL + serializedFormData) : querycheckedURL;
     return myloc;
 }
-
-function getRecordsMatching(page) {
-    //*********** put in check to remove filters from URL if PV value is being further refined in select box
-    var myloc = getURL(true, true);
-    _log('getRecordsMatching('+page+'), myloc is '+myloc);
-    $('#resnum>p').text('Looking....');
-    if(myloc.length > 2000) {
-        // to stop the get method when get request can't handle much over 2000 characters
-        $('#mainform').attr('method', 'post');
-        $('#resnum>p').text('Looking.... there may be too many options selected to get preview results. Press apply to see results.');
-    }
-
-    $('#resnum').load(myloc + ' #content>p:first', function() {
-        _log('loaded myloc'+ $('#resnum').html(),DLOG);
-        if($('#resnum').is(':empty')) {
-            _log('resnum was empty, trying to find seohtag',DLOG);
-            $('#resnum>p').text('Looking....');
-            $('#resnum').load(myloc + ' h1.seohtag', function() {
-                if($('.seohtag').text() === '') {
-                    getRecordsMatching();
-                }
-                $('#resnum').html('<p>Records matching criteria: 1 P/N: ' + $('.seohtag').text() + '<br> Apply Filters view product page</p>');
-                // $('#resnum>p').css({
-                //  'position': 'fixed',
-                //  'left': '160px',
-                //  'top': '15px',
-                //  'color': 'red',
-                //  'font-size': '14px',
-                //  'backgroundColor': 'white'
-                // });
-            });
-        }
-        $('#resnum:contains("/")').html('<p>No records match your search criteria.</p>');
-    });
-}
-
 
 function addStickyFilters(){
     //adds stickyfilters to multi select boxes 
@@ -2736,21 +2636,6 @@ function addEvents(){
 
     _log('addEvents() End',DLOG);
 }
-
-//TODO REMOVE
-// function highightSortArrow() {
-//     _log('highightSortArrow() Start',DLOG);
-//     //check which column on which the sort has been applied and highlight the sort arrow with a color
-//     if((window.location.toString().indexOf('ColumnSort') != -1)) {
-//         var whichColumn = parseInt(window.location.toString().split("ColumnSort=")[1],10);
-//         $('a[href*="javascript:sort(' + whichColumn + ')"]>img').css({
-//             'backgroundColor': 'orange'
-//         });
-//         //_alert('a[href*="javascript:sort(' + whichColumn + ')"]>img');
-//     }
-//     _log('highightSortArrow() End',DLOG);
-// }
-
 
 function addColumnHider(){
     // TODO store across visits.
@@ -2909,7 +2794,8 @@ function picsToAccel() {
     _log('picsToAccel() Start',DLOG);
     $('#accContent').empty();
     //var pictureLinkSet = $('img[src*="_tmb"]').parent(); // find the links wrapping all tmb images
-    var pictureSet = $('img[src*="_tmb"]'); // find the links wrapping all tmb images
+    // var pictureSet = $('img[src*="_tmb"]'); // find the links wrapping all tmb images
+    var pictureSet = $('.pszoomer'); // find the links wrapping all tmb images
     var piclinkhtml ='';
     pictureSet.each(function(mykey, myvalue) {
         //if statement to cull out consecutive images
@@ -2920,6 +2806,7 @@ function picsToAccel() {
         } else {}
     });
     $('#accContent').append(piclinkhtml);
+    $('#accContent img').each(function(){ $(this).attr('src', $(this).attr('data-blzsrc'));});
     _log('picsToAccel() afterpicturelinkset ',DLOG);
 
     $('#accContent').append('<< last one');
@@ -3312,146 +3199,46 @@ function loadDashNDHover($hoveredObj, wcon){
 }
 
 function addCartHover(){
+    //avoid applying cart logic to the cart page
     if(window.location.pathname.indexOf('Ordering') == -1 ){
         var cartHoverConfig = {
             id:'cartHover', 
             title : 'Hover Cart: ',
             message : 'Loading....', 
-            hoverOver : $('#cartlink'), 
-            //height : '220px', 
-            //width :'215px', 
+            hoverOver : $('#cartlink'),  
             interactive : true, 
             my : 'right top',
-            at : 'right bottom', 
-            offset : '30 5', 
+            at : 'right bottom',
+            offset : '0 5', 
+            collision: 'fit',
             someFunc : function(){}
         };
         createHoverWindow(cartHoverConfig);
         loadCartDetails();
-    }else{ inlineChangeQty();}
-
+    }
 }
 
 function loadCartDetails(serialstring){
     _log('loadCartDetails() Start',DLOG);
-    if(serialstring == undefined){
-        serialstring = '';
-    }
+    if(serialstring == undefined){serialstring = '';}
     var ordet = ' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
-    $('#cartHoverContent').append('<span>Completing Quantity Change</span>');
     $('#cartHoverContent').gmload('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(){
-        $('#cartHoverContent .tblhead').html($('.tblhead').html().replace(/\<\/?span\>/g,'')).find('th').each(function(){ 
-            $(this).html($(this).html().replace(' ','<br>'));
-        });
-        inlineChangeQty();
-        getCartImages();
-        $('#cartquant').text( ' ('+($('#cartHover').find('tr.oddrow').length+$('#cartHover').find('tr.evenrow').length)+')');
+        $('#cartquant').text( ' ('+($('img[src*="close-x"]').length)+')');
         _log('loadCartDetails() loaded',DLOG);
     });
     _log('loadCartDetails() End',DLOG);
 }
 
-function getCartImages(){
-//TODO remember images to avoid making calls to individual pages
-    var ordidtext = '#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
-    var $orderTable = $(ordidtext);
-    $orderTable.find('thead tr.tblhead').prepend('<th>pic</th>');
-    $orderTable.find('tbody tr.oddrow,tbody tr.evenrow').each(function(index){
-
-        $(this).prepend('<td>loading</td>');
-        $(this).find('td:first').gmload($(this).find('a[href*=itemSeq]').attr('href')+' img[itemprop="image"],img[src*=nophoto]',function(){
-            $('#cartHoverContent img[itemprop=image]')
-                .add('#cartHoverContent img[src*=nophoto]')
-                .add(ordidtext+' img[itemprop=image]')
-                .add(ordidtext+' img[src*=nophoto]')
-                .width('50px');
-        });
-    });
-    _log($orderTable.find('th').index());
-}
 
 function formatOrderingPage(){
     if($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails').length){
         _log('inlineChangeQty() Start',DLOG);
         $('form').show();
-        getCartImages();
+        // getCartImages();
         _log('inlineChangeQty() End',DLOG);
     }
 }
 
-function inlineChangeQty(){
-    _log('inlineChangeQty() Start',DLOG);
-    var $orderTable = $('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails');
-    var qtyindex = $orderTable.find('th:contains("Quantity"):first').index();
-    _log('inlineChangeQty qtyindex ' + qtyindex, DLOG);
-
-    $orderTable.find('tbody tr.oddrow,tbody tr.evenrow').each(function(){
-        $(this).find('td:eq('+qtyindex+')').html(
-            '<form action="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx" method="post" name="detform1">'+
-                '<input type="text" class="qtyinput" autocomplete="off" name="qty" size="6" value='+$(this).find('td:eq('+qtyindex+')').text()+'>'+
-                '<input type="hidden" value="'+$(this).find('a[href*=itemSeq]').attr('href').split('itemSeq=')[1].split('&')[0]+'" name="itemSeq">'+
-                '<input type="hidden" value="0" name="enterprise">'+
-                '<input type="hidden" value="search" name="source">'+
-            '</form>'
-        );
-    });
-
-    $('.qtyinput').focus(function(){
-        $(this).val($(this).val().replace(/\,/gi, '')).select();
-    });
-    $('.qtyinput').keydown(function(e){
-        _log('keydown button' );
-        if($(this).parent().find('button').length){
-            if(e.keyCode == 13){
-                _log('enter key!');
-                if($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_btnFastAdd').length){
-                    
-                    $(this).closest('form').submit();
-                }
-                else{
-                    //submit handler takes care of this
-                }
-            }
-        }
-        else{
-            $(this).after('<br><button class="minimal" type="submit" style="height:18px; margin:2px; padding:3px;">update</button>');
-        }
-    });
-
-    $('#cartHover form[name=detform]').submit( function(e){
-        if($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_btnFastAdd').length){
-            //$(this).submit();
-        }
-        else{
-            $(this).attr('name', 'detform');
-            e.preventDefault();
-            loadCartDetails($(this).serialize());
-        }
-    });
-    _log('inlineChangeQty() End',DLOG);
-}
-
-function loadQtyChangeForm($hoveredObj){
-    _log('loadthis '+ $hoveredObj.next().find('a').attr('href'));
-    $('#qtyHoverContent').text('Loading....');
-    $('#qtyHover').css('z-index', 50);
-    $('#qtyHoverContent').gmload($hoveredObj.next().find('a').attr('href')+' form[action="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx"]', function(){
-        $('#qtyHoverContent').find('input[value="Return To Previous Page"]').remove();
-        $('#qtyHoverContent').find('input:first').focus().select();
-        $('#qtyHoverContent').find('form').attr('method','get');
-        $('#qtyHoverContent').find('input[value="Delete"]').click(function(e){
-            e.preventDefault();
-            $('#qtyHoverContent').find('input[name=qty]').val('0');
-            loadCartDetails($('#qtyHoverContent').find('form').serialize());
-            $('#qtyHover').remove();
-        });
-        $('#qtyHoverContent').find('input[value="Update"]').click(function(e){
-            e.preventDefault();
-            loadCartDetails($('#qtyHoverContent').find('form').serialize());
-            $('#qtyHover').remove();
-        });
-    });
-}
 
 //general function to create hover content windows
 // windowconfig = {id='priceHover', hoverOver = $(a:contains(".")), height = '100px', width ='100px', interactive = false, my = 'right top', offset ='10 10'}
