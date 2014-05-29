@@ -28,7 +28,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.7
+// @version     2.7.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -143,6 +143,7 @@
 //2.6.3     My Digi-Key link international bug fix
 //2.6.4     Fix for Explore mode and example pictures on some sites
 //2.7       Fixed issues introduced by cart changes, code cleanup
+//2.7.1     Code cleanup, added id
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -204,8 +205,6 @@ function preloadFormat(){
 
 
     _log('preloadFormat() End',DLOG);
-
-
 }
 
 preloadFormat();
@@ -219,7 +218,6 @@ $(document).ready(function() {
 
     _log('[ready] end of document ready function');
 });
-
 
 function tc(thefunc, name){ // tc = try catch
     try{
@@ -260,6 +258,7 @@ function getMyDigiKeyLink(){
     }, 'getMyDigiKeyLink');
     return retval;
 }
+
 function replaceQuestionMark(){
     $('img[src*="help.png"]').attr('src', 'https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png');
 }
@@ -280,13 +279,14 @@ function askpermission(){
     if(localStorage.getItem('achoice') == undefined){
         var conf = confirm('---- Message from advancedsearch Greasemonkey userscript author ----\n\n Can I collect some analytics to help improve this script?  \n\n Please say yes (OK)... It will make a big difference in the future. To opt out click Cancel.\n\nYou can turn this on or off in the +controls+ menu at any point in the future.');
         if (conf){
+
             addpiwik();
             localStorage.setItem('achoice', 1);
             localStorage.setItem('analytics', 1);
             $('#analytics').prop('checked', 1);
             $('#analytics').val(1);
         }else{
-            localStorage.setItem('achoice', false);
+            localStorage.setItem('achoice', 0);
         }
     }else if (localStorage.getItem('analytics') == 1){
         addpiwik();
@@ -432,14 +432,17 @@ function addControlWidget() {
 }
 
 function addpiwik(){
+	var theuid = getID();
     var webref = document.referrer.toString();//.replace(/\&/g, '_');
     var docloc = document.location.toString().replace(/\&/g, 'xxx');
+    // var docloc = document.location.toString().replace(/\&/g, '&');
     _log(docloc, DLOG);
     var imgsrc = ('http://he-st.com/p/piwik.php?idsite=1&amp;rec=1'+
         '&amp;url='+ encodeURIComponent( docloc) +
+        '&amp;_id='+ encodeURIComponent( theuid) +
         // '&amp;action_name='+ webref +
         '&amp;res='+ window.screen.availHeight + 'x' + window.screen.availWidth +
-        '&amp;_cvar='+ '{"1":["test1", "awesome"]}'
+        '&amp;_cvar='+ '{1:[\'test1\', \'awesome\']}'
     );
     $('body').append('<img src="'+imgsrc+'" style="border:0" alt="" />');
 }
@@ -636,7 +639,6 @@ function formatFilterResultsPage(){
 }
 
 function highlightKeywords(){
-
 }
 
 function formatQtyBox(){
@@ -697,7 +699,6 @@ function addSearchWithin(){
 }
 
 function addFilterHider(){
-
 }
 
 function addtrueFilterReset(){
@@ -789,7 +790,6 @@ function htmlUnescape(value){
         .replace(/&gt;/g, '>')
         .replace(/&amp;/g, '&');
 }
-
 
 function getParamList(){
     //TODO finish
@@ -1167,7 +1167,6 @@ function hideIndexPicPrev() {
     $('#picPrev').hide( );
 }
 
-
 function formatDetailPage(){
     if($('#reportpartnumber').length){
         _log('formatDetailPage() Start',DLOG);
@@ -1388,14 +1387,6 @@ function getReverseFilterLink(formRowsTD){
 
 function addBreadcrumLink(){
     _log('addBreadcrumLink() Start',DLOG);
-    // $('.seohtagbold').css({
-    //  'position': 'fixed',
-    //  'left': '430px',
-    //  'top': '28px',
-    //  'z-index': 7,
-    //  'background': 'white',
-    //  'padding-right': '100px'
-    // })//.insertAfter('#content');
     if ($('#productTable').size() > 0) {
         var thesplit = $('h1.seohtagbold').html().split(/&gt;/g);
         var mypop = thesplit.pop();
@@ -1444,6 +1435,7 @@ function addStickyHeader () {
         $('#productTable thead>tr:eq(1)').css('background-color','#e8e8e8');
         $('.stickyThead>tr:eq(1)').css('background-color','#e8e8e8');
 }
+
 function CreateFloatingHeader() {
     var origTable = $('#productTable');
     var tableClone = $(origTable).clone(true).empty().removeClass('stickyHeader');
@@ -1647,7 +1639,6 @@ function addChooserButtonAction(somespan, clickfunc){
             somespan.find('button').not('[value='+somespan.find('input').val()+']').addClass('clean-gray');
             clickfunc(somespan, $(this).val());
         });
-
 }
 
 function exploreModeClickFunc(somespan, buttonval){
@@ -1860,7 +1851,6 @@ function voltageHelper(name, $selectElem) {
 
 function voltageHelper2(name, $selectElem){
 
-
 }
 
 function applyRangeSelect2(name, $selectElem){
@@ -1924,8 +1914,6 @@ function applyRangeSelect2(name, $selectElem){
     $('#voltmess').text(' ' + selNum + ' options selected in ' + name);
     $('.helperBox').delay(200).slideUp(500);
 }
-
-
 
 function isInRange(userinput, teststring){
     var rangeSplit = teststring.split(/[\~\～]/);
@@ -2143,7 +2131,6 @@ function getAttributeExampleImgs(name,$selectElem) {
 
 }
 
-
 function lazyLoadFix(){
     
     $('.catfilterlink').each(function(){
@@ -2155,7 +2142,6 @@ function lazyLoadFix(){
     $('#mainform').append('<input type=hidden value="off" name="akamai-feo">');
 
 }
-
 
 // adds and populates the quickpick box
 // results sorted most to least
@@ -2569,7 +2555,7 @@ function addStickyFilters(){
 
 //TODO FIX>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 function addApplyFiltersButtonHighlight(){
-_log('addApplyFiltersButtonHighlight() Start',DLOG);
+	_log('addApplyFiltersButtonHighlight() Start',DLOG);
     $('#mainform').on('mouseup','option,input[type=reset],input[value=Reset]', function(e){
         buttonHighlightAction();
     });
@@ -2581,7 +2567,6 @@ _log('addApplyFiltersButtonHighlight() Start',DLOG);
     });
     _log('addApplyFiltersButtonHighlight() End',DLOG);
 }
-
 
 function buttonHighlightAction() {
     if($('#mainform option:selected').length>0){
@@ -2664,7 +2649,6 @@ function addColumnHider(){
 function addDashedColumnsHider(){
     $('#productTable').before('<button id=hid style="height:20px; padding:1px; margin:2px 10px;"class=minimal>Show hidden Columns</button>');
 }
-
 
 function addPartCompare(){
     _log('addPartCompare() Start',DLOG);
@@ -3239,7 +3223,6 @@ function formatOrderingPage(){
     }
 }
 
-
 //general function to create hover content windows
 // windowconfig = {id='priceHover', hoverOver = $(a:contains(".")), height = '100px', width ='100px', interactive = false, my = 'right top', offset ='10 10'}
 function createHoverWindow(wcon){
@@ -3711,9 +3694,6 @@ function addMoreRows(farray){
     }
 }
 
-
-
-
 function addProductDrawer(){//No longer used, but here for reference
     //localStorage.setItem('drawercontent', $(this).html());
             //$(this).remove();
@@ -3837,6 +3817,19 @@ function saveProductDrawer(){//No longer used, but here for reference
     });
 }
 
+function getID(){
+	if (localStorage.getItem('uid') == null){
+		var y = '';
+		var possible = "ABCDEF0123456789";
+		for( var i=0; i < 16; i++ ){
+    		y += possible.charAt(Math.floor(Math.random() * possible.length));
+		}
+		localStorage.setItem('uid', y);
+		return y;
+	}
+	else { return localStorage.getItem('uid'); }
+}
+
 function string2form(form, serializedStr) {// Unused
     var fields = JSON.parse(serializedStr);
     for(var i = 0; i < fields.length; i++) {
@@ -3917,6 +3910,7 @@ function wrapText(container, text) {
         surroundInElement(container, new RegExp(wordsToHighlight[x], "gi"), createSpan);
     }
 }
+
 
 //useful for unbinding functions that are outside of the scope of greasemonkey
 // location.assign("javascript:$(window).unbind('scroll resize');void(0)");
