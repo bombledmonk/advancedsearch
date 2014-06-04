@@ -28,7 +28,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.7.1
+// @version     2.7.3
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -144,6 +144,8 @@
 //2.6.4     Fix for Explore mode and example pictures on some sites
 //2.7       Fixed issues introduced by cart changes, code cleanup
 //2.7.1     Code cleanup, added id
+//2.7.2     quick fix
+//2.7.3     fixed the uniqueness of the checkbox helper
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -155,7 +157,7 @@
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '10/18/13';
+var lastUpdate = '6/4/13';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 var MAX_PAGE_LOAD = 20;
@@ -435,6 +437,7 @@ function addpiwik(){
 	var theuid = getID();
     var webref = document.referrer.toString();//.replace(/\&/g, '_');
     var docloc = document.location.toString().replace(/\&/g, 'xxx');
+    var cvar = '{"1":["version", "'+version+'"]}'
     // var docloc = document.location.toString().replace(/\&/g, '&');
     _log(docloc, DLOG);
     var imgsrc = ('http://he-st.com/p/piwik.php?idsite=1&amp;rec=1'+
@@ -442,7 +445,7 @@ function addpiwik(){
         '&amp;_id='+ encodeURIComponent( theuid) +
         // '&amp;action_name='+ webref +
         '&amp;res='+ window.screen.availHeight + 'x' + window.screen.availWidth +
-        '&amp;_cvar='+ '{1:[\'test1\', \'awesome\']}'
+        '&amp;_cvar='+ encodeURIComponent(cvar)
     );
     $('body').append('<img src="'+imgsrc+'" style="border:0" alt="" />');
 }
@@ -1990,22 +1993,17 @@ function checkboxHelper(name, $selectElem){
         masterarray = masterarray.concat(smalla);
         //_log(masterarray);
     });
+
+    masterarray = $.map(masterarray, function(e){return e.trim()});
+
     masterarray = uniqueArray(masterarray);
-    masterarray.forEach(function(e, i, a){
-    	e = trim(e);
-    });
-    // for(var y=0; y<masterarray.length; y++){
-    //     masterarray[y] = trim(masterarray[y]);
-    // }
+
     masterarray = uniqueArray(masterarray).sort();
 
     $('#helperBoxContent').addClass('columnized5');
     masterarray.forEach(function(e,i,a){
        $('#helperBoxContent').append('<label><input type="checkbox"> '+e+' </input></label><br> ');
     });
-    // for( var x=0; x<masterarray.length; x++){
-    //     $('#helperBoxContent').append('<label><input type="checkbox"> '+masterarray[x]+' </input></label><br> ');
-    // }
 
     $('#helperBoxContent').after('ok');
     $('#helperBoxContent').find('input[type=checkbox]').change(function(){
