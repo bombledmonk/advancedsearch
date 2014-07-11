@@ -3,6 +3,7 @@
 // @namespace   advancedsearch
 // @description an advanced search
 // @include     http://www.digikey.*/product-search*
+// @include     http://digikeytest.digikey.*/product-search*
 // @include     http://www.digikey.*/scripts/dksearch*
 // @include     http://search.digikey.*/*
 // @include     http://www.digikey.*/product-detail/en/*
@@ -28,7 +29,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.7.3
+// @version     2.7.4
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -146,6 +147,7 @@
 //2.7.1     Code cleanup, added id
 //2.7.2     quick fix
 //2.7.3     fixed the uniqueness of the checkbox helper
+//2.7.4     fix for new header on dk website.
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -157,7 +159,7 @@
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '6/4/13';
+var lastUpdate = '7/11/13';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 var MAX_PAGE_LOAD = 20;
@@ -192,7 +194,8 @@ function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
 
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
-    GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>form:first-child {display:none} #content>p {display:none;} ");
+    // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>form:first-child {display:none} #content>p {display:none;} ");
+    // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
     var buttonCSS = GM_getResourceText("buttonCSS");
     GM_addStyle(buttonCSS);
     var advCSS = GM_getResourceText("advCSS");
@@ -295,7 +298,7 @@ function askpermission(){
     }else {}
 }
 
-//TODO FINISH
+//TODO FINISH  UNUSED
 function updateCache(){
     if(Date.now() > parseInt(localStorage.getItem('lastCacheRefresh')) + 604800000){
         cacheflag = true;
@@ -319,7 +322,7 @@ function addCustomHeader(){
         $('#pbfree').prop('checked', pbfreeval);
         $('#rohs').prop('checked', rohsval);
         $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
-        $('#content .dkdirchanger').closest('form').remove();
+        $('.content-keywordSearch-form').closest('form').remove();
 
         $('.matching-records:contains("Results")').delegate(function(){
             $(this).text($(this).text().replace('Results', 'awesome'));
@@ -398,7 +401,7 @@ function addControlWidget() {
         $('#controlDiv').animate({
             'width': '600px',
             'height': '600px',
-            'top': ($(window).scrollTop() + $(window).height() / 2 - 300),
+            'top': 50,
             'left': ($(window).scrollLeft() + $(window).width() / 2 - 300)
         }, 200);
         $("body").append($("<div>").css({
@@ -1328,7 +1331,7 @@ function addReverseFiltering($tableToFilter){
 
     var revFiltConfig = {
         id:'ReverseFilterHover', 
-        title : 'Filter in reverse .',
+        title : 'Find Similar Results',
         message : '', 
         hoverOver : formRowsTD, 
         highlight : false,
