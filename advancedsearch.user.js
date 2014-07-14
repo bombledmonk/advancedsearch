@@ -29,7 +29,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.7.4
+// @version     2.7.5
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -148,6 +148,7 @@
 //2.7.2     quick fix
 //2.7.3     fixed the uniqueness of the checkbox helper
 //2.7.4     fix for new header on dk website.
+//2.7.5     fixed bug in the Search Within feature
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -194,12 +195,13 @@ function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
 
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
-    // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>form:first-child {display:none} #content>p {display:none;} ");
+    GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>form:first-child {display:none} #content>p {display:none;} ");
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
     var buttonCSS = GM_getResourceText("buttonCSS");
     GM_addStyle(buttonCSS);
     var advCSS = GM_getResourceText("advCSS");
     GM_addStyle(advCSS);
+
 
     $('#header').remove();
     $('#footer').remove();
@@ -311,7 +313,7 @@ function updateCache(){
 
 function addCustomHeader(){
         _log('addCustomHeader() Start',DLOG);
-        var keywordval = $('.dkdirchanger').val();
+        var keywordval = $('.psdkdirchanger').val();
         var stockval = $('#stock').prop('checked');
         var pbfreeval = $('#pbfree').prop('checked');
         var rohsval = $('#rohs').prop('checked');
@@ -1226,7 +1228,7 @@ function formatDetailPage(){
             'border-bottom-right-radius': '5px'
         });
 
-        $('.dkdirchanger').parent().hide(); // removes the extra search box on the item detail page
+        $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
         
         addAssProdLinkToFilters();
         addDashNDHover();
