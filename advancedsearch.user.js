@@ -29,7 +29,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.7.5
+// @version     2.8
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -149,6 +149,8 @@
 //2.7.3     fixed the uniqueness of the checkbox helper
 //2.7.4     fix for new header on dk website.
 //2.7.5     fixed bug in the Search Within feature
+//2.8       added a more functional associated parts filtering mechanism, 
+//          added Hide Identical Columns feature, tweaked instant filter with wildcard search
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -160,7 +162,7 @@
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '7/11/13';
+var lastUpdate = '7/25/14';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 var MAX_PAGE_LOAD = 20;
@@ -230,7 +232,10 @@ function tc(thefunc, name){ // tc = try catch
     try{
         thefunc();
     }catch(err){
-        alert('failed on '+ name + '\n' + err.message);
+        alert('failed on '+ name + '\n' + err.message + 
+            '\n\n If you are getting repeated errors try manually updating by clicking on the ++controls++ box in the upper right hand corner and then hit the manual update link.'+
+            '\n\n Alternatively, copy and paste this link into your browser:  https://bit.ly/advsearch-user-js'
+            );
     }
 }
 
@@ -245,12 +250,11 @@ function formatPages() {
     tc(formatOrderingPage,'formatOrderingPage');
     tc(formatFastAddPage,'formatFastAddPage');
     tc(addEvents, 'addEvents');
-    tc(enableDefaultQty, 'enableDefaultQty');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
     tc(addBreadcrumLink, 'addBreadcrumLink');
     tc(addCartHover, 'addCartHover');
     tc(replaceQuestionMark, 'replaceQuestionMark');
-    tc(lazyLoadFix, 'lazyLoadFix');
+    // tc(lazyLoadFix, 'lazyLoadFix');
     
     cleanup();
     _log('formatPages() End',DLOG);
@@ -338,7 +342,7 @@ function addControlWidget() {
     _log('addControlWidget() Start',DLOG);
     $('#content').after('<div id="controlDiv" class="gray-grad">'+
             '<span id="controlSpan" style="cursor:pointer;" > +controls+ v' + version + '</span>' +
-            '<a href="'+downloadLink+'"  style="position:relative; left:10%"> click to update</a> ' +
+            '<a href="'+downloadLink+'"  style="position:relative; left:10%"> click to manually update</a> ' +
             '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
             '<div class="clearfix">'+
                 '<img src="http://goo.gl/53qn5g">'+
@@ -556,7 +560,6 @@ function restoreInputState($singleFormElem){
             $singleFormElem.prop('checked', parseInt($singleFormElem.val()));
     }
 
-
     $singleFormElem.change(function(){
         if($(this).attr('type') == 'checkbox'){
             $(this).val($(this).prop('checked') ? 1 : 0);
@@ -585,6 +588,7 @@ function formatFilterResultsPage(){
         addImageBar();
         // highightSortArrow();
         floatApplyFilters();
+        fixAssociatedPartInFilterForm();
         //TODO fix dependancies of if statements below
         
         picsToAccel(); //add the thumnails to picture accelerator block
@@ -618,8 +622,9 @@ function formatFilterResultsPage(){
             addStickyFilters();
         }
 
-        
         fixImageHover();
+
+        akamaiLazyLoadFixForFilterResults();
 
         $('input[value=Reset]').addClass('minimal').css({'height':'18px', 'padding':'1px', 'margin':'0px'}).click(function(){
             // getRecordsMatching();
@@ -633,7 +638,7 @@ function formatFilterResultsPage(){
         
         // doHighlight($('#productTable').text(), $('input[name=k]:last').text());
         // var hlword = $('input[name=k]:last').val()
-        _log('!!!!!!11 '+ $('#headKeySearch').val().toString(), true);
+        // _log('!!!!!!11 '+ $('#headKeySearch').val().toString(), true);
         // wrapText(document.getElementById('productTable'), $('#headKeySearch').val().toString());
         
         if(localStorage.getItem('queryHighlight') == 1){
@@ -645,6 +650,8 @@ function formatFilterResultsPage(){
         _log('formatFilterResultsPage() End',DLOG);
     }
 }
+
+
 
 function highlightKeywords(){
 }
@@ -689,6 +696,74 @@ function fixImageHover(){
         '.pszoomer'
     );
     _log('fixImageHover() End',DLOG);
+}
+
+function fixAssociatedPartsForIndexResultsPage(){
+    if($('.catfilterlink:first').attr('href').indexOf('part=') != -1){
+        $('.catfilterlink').each(function(){
+            var fullhref = $(this).attr('href');
+            var queryarray = fullhref.split('?')[1].split('&');
+            var baseurl = fullhref.split('?')[0].split('/');
+            var catfamnumber = baseurl.pop();
+            var currentitem = $(this);
+
+            currentitem.wrap('<form action="/scripts/dksearch/dksus.dll" method="post" />');
+            currentitem.after('<input type=hidden value="'+catfamnumber+'" name="cat" >');
+
+            queryarray.forEach(function(attr){
+                if (attr.indexOf('=') != -1){
+                    currentitem.after('<input type=hidden value="'+attr.split('=')[1]+'" name="'+attr.split('=')[0]+'" >');
+                    currentitem.attr('href',"#");
+                    currentitem.click(function(){$(this).closest('form').submit()});
+                }                
+            })
+        });
+
+    }
+}
+
+function getPartsfromQueryString(fullquerystring){
+
+}
+
+function fixAssociatedPartInFilterForm(){
+    var fullquerystring = window.location.search;
+    if(fullquerystring.indexOf('&') != -1){
+        var queryarray = fullquerystring.split('&');
+        var parts = queryarray.filter(function(part){
+             if(part.indexOf('part=') != -1){
+                return true;
+             }else{return false;}
+        });
+        if (parts.length > 0){
+            parts = parts.map(function(part){
+                return part.split('=')[1];
+            }); 
+            parts.forEach(function(part){
+                $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
+                // console.log('the parts are ', part);
+            });
+        }
+
+        
+        // _log('fullquerystring is ' + fullquerystring , true);
+    }
+    else if($('#earlPH').length){
+        var parts = $('#earlPH').val().split('&').filter(function(part){
+             if(part.indexOf('part=') != -1){
+                return true;
+             }else{return false;}
+        });
+        if (parts.length > 0){
+            parts = parts.map(function(part){
+                return part.split('=')[1];
+            }); 
+            parts.forEach(function(part){
+                $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
+                $('#mainform').attr('action', "/scripts/dksearch/dksus.dll");
+            });
+        }
+    }
 }
 
 function floatApplyFilters(){
@@ -914,7 +989,9 @@ function squishedFilters(){
 function enableDefaultQty(){
     if(localStorage.getItem('qtydefault') == 1) {
         if($('a.catfilterlink').length) {
-            setTimeout(function(){addEngQtyTocatfilterlinks();},5);
+            //setTimeout(function(){
+                addQuantityToCatFilterLinks();
+                //},5);
         }
         $('.engquan').removeAttr('disabled');
         $('.colsort').removeAttr('disabled');
@@ -933,18 +1010,17 @@ function formatIndexResultsPage(){
         $('h1:contains(Electronic)').hide();
         //fixAssProdFamilyLinks();
         if(localStorage.getItem('instantfilter') == 1){
-            indexInstantFilter();
+            indexInstantFilter2();
         }
         categoryDivWrap();
-        addIndexColumnizer();
-        addQuickPicButtons();
-        addToTopButton();
+        addIndexColumnizerControls();
+        addQuickPicksDisplayControls();
+        akamaiLazyLoadFixForIndexResults();
+        enableDefaultQty();
+        fixAssociatedPartsForIndexResultsPage();
 
+        addToTopButton();
         $('#content').css('top','70px');
-        // $('body').css({
-        // //   'font-family': '"Trebuchet MS"',
-        //  'font-size' : 'small'
-        // });
 
         _log('formatIndexResultsPage() End',DLOG);
     }
@@ -956,8 +1032,9 @@ function categoryDivWrap(){
     });
 }
 
-function addIndexColumnizer(){
-    _log('addIndexColumnizer() Start',DLOG);
+function addIndexColumnizerControls(){
+    //Adds off, right, top controls to the top index results page
+    _log('addIndexColumnizerControls() Start',DLOG);
     var thehtml = '<span id="columnchooser" style="position:relative; top:70px; margin-left:20px; z-index:6;" >'+
         '<input id="columnchooserstate" type="hidden" value="2" class="saveState">'+
         '<button id=cwfull value=0>Off</button>'+
@@ -1015,11 +1092,12 @@ function addIndexColumnizer(){
         $(this).toggleClass('thoughtbot clean-gray');
     }).css('padding','3px 3px 3px 3px');
 
-    _log('addIndexColumnizer() End',DLOG);
+    _log('addIndexColumnizerControls() End',DLOG);
 }
 
-function addQuickPicButtons(){
-    _log('addQuickPicButtons() Start', DLOG);
+function addQuickPicksDisplayControls(){
+    //Adds the Off, |||, = columns and off, right, top controls to the top of the quick
+    _log('addQuickPicksDisplayControls() Start', DLOG);
     var thehtml = '<span id="qpchooser" style="position:relative; top:70px; margin-left:20px; z-index:6;" >'+
         '<input type=hidden id=qfLocation class="saveState" value="2">' +
         '<button id=qpoff value=0>Off</button>'+
@@ -1072,9 +1150,10 @@ function addQuickPicButtons(){
         $(this).toggleClass('thoughtbot clean-gray');
     }).css('padding','3px 3px 3px 3px');
 
-    _log('addQuickPicButtons() Start', DLOG);
+    _log('addQuickPicksDisplayControls() Start', DLOG);
 }
 
+//TODO Evaluate if needed
 function fixAssProdFamilyLinks(){
     //trying to fix the problem of associated product being in multiple families and the links to those familes not working.... 
     //not working for now
@@ -2134,16 +2213,15 @@ function getAttributeExampleImgs(name,$selectElem) {
 
 }
 
-function lazyLoadFix(){
-    
+function akamaiLazyLoadFixForIndexResults(){
     $('.catfilterlink').each(function(){
             var querycheckedURL = ($(this).attr('href').indexOf('?') != -1) ? ($(this).attr('href') + '&akamai-feo=off&"') : ($(this).attr('href') + '?akamai-feo=off');
             $(this).attr('href', querycheckedURL);
     });
+}
 
-
+function akamaiLazyLoadFixForFilterResults(){
     $('#mainform').append('<input type=hidden value="off" name="akamai-feo">');
-
 }
 
 // adds and populates the quickpick box
@@ -2209,7 +2287,6 @@ function addQuickFilter3(){
     }
     _log('addQuickFilter3() End',DLOG);
 }
-
 
 function createQuickFilterDiv(){
     _log('createQuickFilterDiv() Start',DLOG);
@@ -2480,7 +2557,6 @@ function commonWordExpand(someword) {
     return null;
 }
 
-
 function getQuerystring(key, default_) {
     if(default_ == null) default_ = "";
     key = key.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -2490,8 +2566,8 @@ function getQuerystring(key, default_) {
     else return qs[1];
 }
 
-function addEngQtyTocatfilterlinks() {
-    _log('addEngQtyTocatfilterlinks() Start',DLOG);
+function addQuantityToCatFilterLinks() {
+    _log('addQuantityToCatFilterLinks() Start',DLOG);
     try {
         if($('a.catfilterlink').attr('href').indexOf('?') == -1) {
             _log('catfilter links has no question questionmark '+ ($('a.catfilterlink').attr('href').indexOf('?') == -1));
@@ -2512,15 +2588,47 @@ function addEngQtyTocatfilterlinks() {
             document.location.href = document.location.href.replace(/quantity=\d+/i,'quantity='+$('#qtydefaulttext').val());
         }
     } catch(err) {}
-    _log('addEngQtyTocatfilterlinks() End',DLOG);
+    _log('addQuantityToCatFilterLinks() End',DLOG);
 }
 
-function indexInstantFilter(){
+// function indexInstantFilter(){
+//     if($('a.catfilterlink').size()>0){
+//         $('#headKeySearch').keyup(function(){
+//             var keywords = $(this).val();
+//             // var container;
+//             // var keywordarray = keywords.split(' ');
+//             // _log('keyword array length ' + keywordarray.length);
+
+//             $('.catfilterlink').parent().hide();
+//             $('.catfilterlink').parent().parent().prev('.catfiltertopitem').hide();
+//             $('.catfilterlink:contains("'+keywords+'")').parent().show();
+//             $('.catfilterlink:visible').parent().parent().prev('.catfiltertopitem').show();
+//             if($(this).val() == ''){
+//                 $('.catfilterlink').parent().show();
+//                 $('.catfilterlink').parent().parent().prev('.catfiltertopitem').show();
+//             }
+//         });
+//     }
+// }
+
+function indexInstantFilter2(){
     if($('a.catfilterlink').size()>0){
         $('#headKeySearch').keyup(function(){
+            var keywords = $(this).val().trim();
+            // var container;
+            var keywordarray = keywords.split(' ');
+            var attrfilters = '';
+            keywordarray.forEach(function(word){
+                attrfilters += '[href*='+word+']';
+            });
+            _log('keyword array length ' + attrfilters);
+            // var indexlist = $('#productIndexList').detatch();
+            $('#productIndexList').hide();
             $('.catfilterlink').parent().hide();
             $('.catfilterlink').parent().parent().prev('.catfiltertopitem').hide();
-            $('.catfilterlink:contains("'+$(this).val()+'")').parent().show();
+            // $('.catfilterlink:contains("'+keywords+'")').parent().show();
+            $('.catfilterlink'+attrfilters).parent().show()
+             $('#productIndexList').show();
             $('.catfilterlink:visible').parent().parent().prev('.catfiltertopitem').show();
             if($(this).val() == ''){
                 $('.catfilterlink').parent().show();
@@ -2645,12 +2753,43 @@ function addColumnHider(){
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
             $('#showCols').removeClass('minimal').addClass('thoughtbot');   
         });
-
+    addDashedColumnsHider();
     _log('addColumnHider() End',DLOG);
 }
 
 function addDashedColumnsHider(){
-    $('#productTable').before('<button id=hid style="height:20px; padding:1px; margin:2px 10px;"class=minimal>Show hidden Columns</button>');
+    //dev
+    _log('addDashedColumnsHider() Start',DLOG);    
+    $('#productTable').before('<button id=identCols style="height:20px; padding:1px; margin:2px 5px;"class=minimal>Hide Identical Columns</button>');
+    $('#identCols').click(function(e){
+        e.preventDefault();
+        hideIdenticalColumns();
+    });
+
+    _log('addDashedColumnsHider() End',DLOG);
+
+}
+
+function hideIdenticalColumns(){
+        $('#productTable').find('th').each(function(){
+        var colIndex = $(this).index()+1;
+        var firstText = $('#productTable').find('tbody td:nth-child('+colIndex+')').first();
+        console.log('firstcolumn' + firstText.html());
+        // _log('first text is' + firstText.html());
+        var result = $('#productTable').find('tbody td:nth-child('+colIndex+')').filter( function(index){
+            if($(this).html() != firstText.html()){
+                return false;
+            }else{
+                return true;
+            }});
+        _log( $(this).html() + 'and first result '+ firstText.html() +' :' +
+         result.length + 'tbody tr count: ' + $('#productTable').find('tbody>tr').length);
+        if(result.length == $('#productTable').find('tbody>tr').length){
+            $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
+            $('#showCols').removeClass('minimal').addClass('thoughtbot');   
+        }
+
+    })
 }
 
 function addPartCompare(){
@@ -3440,11 +3579,7 @@ function previewLoader() {
 function _log(somestring, detailed_logging){
     if (detailed_logging == null) detailed_logging=true;
     try{
-//      if($.browser.firefox){
-//          if(detailed_logging == true){unsafeWindow.console.log('[as]['+arguments.callee.caller.name+'] '+somestring);}
-//      }else{
-            if(detailed_logging == true){unsafeWindow.console.log((Date.now()-starttimestamp)+'ms '+(Date.now()-sincelast)+'[as] '+somestring);}
-//      }
+        if(detailed_logging == true){unsafeWindow.console.log((Date.now()-starttimestamp)+'ms '+(Date.now()-sincelast)+'[as] '+somestring);}
         sincelast = Date.now();
     }
     catch(err){}
@@ -3529,6 +3664,7 @@ jQuery.expr.filters.offscreen = function(el) {
 //highlighting function
 (function($) {
     $.fn.highlight = function(str, className) {
+        str = str.replace(/\W/gi, '');
         var regex = new RegExp(str, "gi");
         return this.each(function() {
             $(this).contents().filter(function() {
@@ -3907,6 +4043,7 @@ function createSpan(matchedTextNode) {
 
 // The main function
 function wrapText(container, text) {
+	text = text.replace(/\W/gi,'');
     var wordsToHighlight = text.trim().split(' ');
     _log(wordsToHighlight, DLOG);
     for (var x=0; x < wordsToHighlight.length; x++){
