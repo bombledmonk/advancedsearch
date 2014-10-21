@@ -550,6 +550,11 @@ option:hover{
 	padding: 5px;
 }
 
+.sortme{
+	float: left;
+	cursor: pointer;
+}
+
 
 /*button sizing*/
 

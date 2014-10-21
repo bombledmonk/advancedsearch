@@ -21,6 +21,7 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.spellchecker.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/raphael-min.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/prettyCheckable/prettyCheckable.js
+// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/quantities.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
 // @updateURL   https://goo.gl/vbjoi
@@ -29,7 +30,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.8
+// @version     2.9
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -151,6 +152,7 @@
 //2.7.5     fixed bug in the Search Within feature
 //2.8       added a more functional associated parts filtering mechanism, 
 //          added Hide Identical Columns feature, tweaked instant filter with wildcard search
+//2.9       added Column Math and picture carousel 
 
 //TODO Add cache function to get cart images to avoid making page calls.
 //TODO find associated categories and group, make list
@@ -647,10 +649,165 @@ function formatFilterResultsPage(){
             }
         } 
 
+        addColumnMath();
+
         _log('formatFilterResultsPage() End',DLOG);
     }
 }
 
+function addColumnMath(){
+    //TODO take into account dollars
+    $('#productTable').before('<button id="doMath" style="height:20px; padding:1px; margin:2px 5px;"class=minimal>Do Column Math</button>');
+    addColumnMathDialog();
+    $('#doMath').click(function(e){
+        _log('ready to do math', true);
+        $('#colMathDialog').dialog("open")
+        e.preventDefault();
+        //$('#productTable').on('click.firstEvent', 'th', getFirstColumn);
+    });
+}
+
+function addColumnMathDialog(){
+    $('body').append(
+        '<div id="colMathDialog" title="Column Math">'+
+            '<form><select id="firstColumn"></select><br>'+
+                '<select id="mathOperator">'+
+                    '<option value="div">/</option>'+
+                    '<option value="mul">*</option>'+
+                    '<option value="add">+</option>'+
+                    '<option value="sub">-</option>'+
+                '</select><br>'+
+                '<select id="secondColumn"></select><br><br>'+
+                '<button id="doOperation">Go</button>'+
+            '</form>'+
+        '</div>');
+    // var skip =[]
+    GM_addStyle('.ui-widget-overlay {opacity: .3 !important;}' );
+   $('#doOperation').click(function(e){
+        e.preventDefault();
+        addMathCol();
+        $('#colMathDialog').dialog('close');
+   })
+    $('#colMathDialog').dialog({
+        'autoOpen':false,
+        'open': function(){insertTableSelectValues();},
+        'close': function(){$('#firstColumn').empty(); $('#secondColumn').empty()},
+        'modal': true,
+        'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
+
+
+    });
+}
+function insertTableSelectValues(){
+    $('#productTable>thead>tr:eq(0) th').each(function(ind){
+        if (ind > 5){
+            $('#firstColumn').append('<option value='+ind+'>'+$(this).text()+'</option>');
+            $('#secondColumn').append('<option value='+ind+'>'+$(this).text()+'</option>');
+        }
+    });
+}
+
+function addMathCol(){
+    _log('addMathCol() Start', DLOG);
+    var fcol = $('#firstColumn').val();
+    var scol = $('#secondColumn').val();
+    var ftitle = $('#productTable>thead>tr:eq(0) th').eq(+fcol).text();
+    var stitle = $('#productTable>thead>tr:eq(0) th').eq(+scol).text();
+    var funit = getNormalization(fcol);
+    var sunit = getNormalization(scol);
+    var operator = $('#mathOperator').val();
+    // console.log('operator', operator);
+    $('#productTable>thead>tr:eq(0)').find('th').eq(scol).after('<th>'+ftitle + operator + stitle +'</th>');
+    $('#productTable>thead>tr:eq(1)').find('td').eq(scol).after('<td><div class="sortme">asc</div><div class="sortme">desc</div></td>');
+    $('.sortme').click(sortStuff);
+    // _log('fcol'+ fcol + ' scol ' + scol);
+    $('#productTable>tbody>tr').each(function(){
+        try{                
+            var firstnum = Qty.parse($(this).find('td').eq(fcol).text().split('@')[0]);
+            var secondnum = Qty.parse($(this).find('td').eq(scol).text().split('@')[0]);
+            var finalnum = null;
+            
+            if(firstnum !== null && secondnum !== null){
+                firstnum = Qty(firstnum.format(funit));
+                secondnum = Qty(secondnum.format(sunit));
+                finalnum = firstnum.div(secondnum);
+                switch(operator){
+                    case 'div':
+                    try{finalnum = firstnum.div(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
+                    case 'mul':
+                    try{finalnum = firstnum.mul(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
+                    case 'add':
+                    try{finalnum = firstnum.add(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
+                    case 'sub':
+                    try{finalnum = firstnum.sub(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
+                }
+                finalnum = finalnum.toPrec(.001);
+                $(this).find('td').eq(scol).after('<td class="mathcol">'+finalnum +'</td>');
+            }
+            else{
+                finalnum = 'NaN';
+                $(this).find('td').eq(scol).after('<td class="mathcol">'+'NaN'+'</td>');
+            }
+            $(this).find('td').eq(+scol+1).data('qtyval',finalnum); 
+        } catch(err){console.log(err);}
+    });
+    _log('addMathCol() End', DLOG);
+}
+
+function getNormalization(colnum){
+    //goes through each row of the #productTable and finds the most common label for each column
+    var unitarray = [];
+    $('#productTable>tbody>tr').each(function(){
+        try{
+            unitarray.push(Qty.parse($(this).find('td').eq(colnum).text().split('@')[0]).units());
+        }
+        catch(err){}
+    });
+   // console.log( unitarray);
+   // console.log(mode(unitarray));
+    return mode(unitarray);
+}
+
+function mode(array){
+    //stack overflow
+    if(array.length == 0)
+        return null;
+    var modeMap = {};
+    var maxEl = array[0], maxCount = 1;
+    for(var i = 0; i < array.length; i++)
+    {
+        var el = array[i];
+        if(modeMap[el] == null)
+            modeMap[el] = 1;
+        else
+            modeMap[el]++;  
+        if(modeMap[el] > maxCount)
+        {
+            maxEl = el;
+            maxCount = modeMap[el];
+        }
+    }
+    return maxEl;
+}
+
+function sortStuff(){
+    // TODO impliment a sort compatible with quantities.js
+    var ind = $(this).parent().index();
+    var direction = $(this).text();
+    var rows = $('#productTable>tbody>tr').sort(function(a,b){
+        var aval = $(a).find('td').eq(+ind).data('qtyval');
+        var bval = $(b).find('td').eq(+ind).data('qtyval');
+        if(aval == 'NaN' || bval == 'NaN') {
+            return (aval=='NaN') ? 1 : 0;   
+        }
+        else{
+            if(direction == "asc"){
+                return aval.compareTo(bval);
+            }else{ return (-1 * aval.compareTo(bval))}
+        }
+    });    
+    $('#productTable>tbody').append(rows);
+}
 
 
 function highlightKeywords(){
@@ -1317,7 +1474,7 @@ function formatDetailPage(){
         addPriceBreakHelper();
 
         addDataSheetLoader();
-
+        makeImageHolder();
 
         $('td:contains("obsolete")').css('background-color','#FF8080'); // changes the color of the obsolete callout
 
@@ -3575,6 +3732,35 @@ function previewLoader() {
     }
 }
 
+//TODO finish implimenting... insert into detail page code
+function makeImageHolder(){
+    _log('makeImageHolder() Start',DLOG);
+
+    $('.image-disclaimer').after('<div id="imageTray"></div>')
+    var images = getImageLinks();
+    images.forEach(function(image){
+        $('#imageTray').append('<img class="trayThumbnail" height=64px style="border:1px solid gray; margin:1px;" src="'+image+'">');
+    });
+    $('.trayThumbnail').mouseenter(function(){
+        console.log('hovering', $(this).attr('src'))
+        $('.image-table img:first').attr('src', $(this).attr('src'));
+        $('.image-table a:first').attr('href', $(this).attr('src'));
+    });
+    $('.image-disclaimer').hide();
+    _log('makeImageHolder() End',DLOG);
+}
+
+function getImageLinks(){
+    _log('getImageLinks() Start',DLOG);
+    var imageURLs = [];
+    var images = $('.attributes-table-main a[href$=jpg]').each(function(){
+        imageURLs.push($(this).attr('href'));
+    });
+    return imageURLs;
+    _log('getImageLinks() End',DLOG);
+}
+
+
 /*Loging function*/
 function _log(somestring, detailed_logging){
     if (detailed_logging == null) detailed_logging=true;
@@ -3998,6 +4184,25 @@ function processURL() {/* TODO UNUSED - functionality to parse the search string
     }
 }
 
+// function sortingExample(){ //unused keep for example
+//     var ind = $(this).index();
+//     var rows = $('#productTable>tbody>tr').sort(function(a,b){
+//         var atext = $(a).find('td').eq(ind).text();
+//         var btext = $(b).find('td').eq(ind).text();
+//         var anum = parseFloat(atext);
+//         var bnum = parseFloat(btext)
+//         //console.log(anum , bnum);
+//         if(isNaN(anum-bnum)) {
+//             return (isNaN(anum)) ? 1 : 0;   
+//         }
+//         else{
+//             return parseFloat(atext) - parseFloat(btext);
+//         }
+        
+//     });
+    
+//     $('#productTable>tbody').append(rows);
+// }
 
 //Functions off of a stack exchange post
 // Reusable generic function
