@@ -553,8 +553,12 @@ option:hover{
 .sortme{
 	float: left;
 	cursor: pointer;
+	padding-left: 10px;
 }
-
+.mathHighlight {
+	position:relative;
+	z-index: 1002;
+}
 
 /*button sizing*/
 

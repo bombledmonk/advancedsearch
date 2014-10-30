@@ -11,8 +11,9 @@
 // @include     http*digikey.*/classic/Ordering/AddPart*
 // @include     http*digikey.*/classic/Ordering/FastAdd*
 // @exclude     http://www.digikey.com
-// @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js
+// @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js
 // @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js
+// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/Highcharts-4.0.4/js/highcharts.js
 // @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.localScroll.js
 // @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.scrollTo.js
 // @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.hoverIntent.js
@@ -30,7 +31,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9
+// @version     2.9.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -153,18 +154,21 @@
 //2.8       added a more functional associated parts filtering mechanism, 
 //          added Hide Identical Columns feature, tweaked instant filter with wildcard search
 //2.9       added Column Math and picture carousel 
+//2.9.1     added graphing/charting, fixed picture carousel, refining value parser
 
-//TODO Add cache function to get cart images to avoid making page calls.
-//TODO find associated categories and group, make list
 //TODO Toggle Hide filter block
 //TODO Hide individual Filters
 //TODO split family names on "\s-\s" and stick into subcats
 //TODO fix associated products hover 'add to cart' button
-//TODO Add button to hide columns with all dashes
+//TODO Add graphs to the show pricing curve
+//TODO Add productIndex sidebar slide-in
+//TODO Make graphs into filter inputs.
+//TODO refactor assprod carousel for associated products
+
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '7/25/14';
+var lastUpdate = '10/29/14';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 var MAX_PAGE_LOAD = 20;
@@ -388,6 +392,8 @@ function addControlWidget() {
         _log(Object.keys(localStorage));
     });
     
+
+    //TODO convert to JQuery UI
     $('#controlDiv').css({
         'position': 'fixed',
         'right': '10px',
@@ -650,121 +656,197 @@ function formatFilterResultsPage(){
         } 
 
         addColumnMath();
+        addGraphInterface();
 
         _log('formatFilterResultsPage() End',DLOG);
     }
 }
 
 function addColumnMath(){
-    //TODO take into account dollars
     $('#productTable').before('<button id="doMath" style="height:20px; padding:1px; margin:2px 5px;"class=minimal>Do Column Math</button>');
     addColumnMathDialog();
     $('#doMath').click(function(e){
         _log('ready to do math', true);
         $('#colMathDialog').dialog("open")
         e.preventDefault();
-        //$('#productTable').on('click.firstEvent', 'th', getFirstColumn);
     });
 }
 
 function addColumnMathDialog(){
+    //TODO add units of precision in form
+    //TODO add normalization checkbox
     $('body').append(
         '<div id="colMathDialog" title="Column Math">'+
-            '<form><select id="firstColumn"></select><br>'+
+            '<form><select id="firstMathColumn"></select><br>'+
                 '<select id="mathOperator">'+
                     '<option value="div">/</option>'+
                     '<option value="mul">*</option>'+
                     '<option value="add">+</option>'+
                     '<option value="sub">-</option>'+
                 '</select><br>'+
-                '<select id="secondColumn"></select><br><br>'+
+                '<select id="secondMathColumn"></select><br><br>'+
                 '<button id="doOperation">Go</button>'+
             '</form>'+
         '</div>');
-    // var skip =[]
     GM_addStyle('.ui-widget-overlay {opacity: .3 !important;}' );
-   $('#doOperation').click(function(e){
+    $('#doOperation').click(function(e){
         e.preventDefault();
         addMathCol();
         $('#colMathDialog').dialog('close');
-   })
+    });
     $('#colMathDialog').dialog({
         'autoOpen':false,
-        'open': function(){insertTableSelectValues();},
-        'close': function(){$('#firstColumn').empty(); $('#secondColumn').empty()},
+        'open': openMathDialog,
+        'close': closeMathDialog,
         'modal': true,
         'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
-
-
     });
 }
-function insertTableSelectValues(){
+
+function openMathDialog(){
+    insertTableSelectValues('#firstMathColumn', '#secondMathColumn');
+    $('#firstMathColumn, #secondMathColumn').on('mouseenter.math', 'option', function(){
+        var colval = +$(this).val()+1;
+        $('table tr td:nth-child('+colval+'), table tr th:nth-child('+colval+')').addClass('mathHighlight');
+    });
+    $('#firstMathColumn, #secondMathColumn').on('mouseleave.math', 'option', function(){
+        var colval = +$(this).val()+1;
+        $('table tr td:nth-child('+colval+'),table tr th:nth-child('+colval+')').removeClass('mathHighlight');
+    });
+}
+
+function closeMathDialog(){
+    $('#firstMathColumn').empty();
+    $('#secondMathColumn').empty();
+}
+
+function insertTableSelectValues(firstSelector, secondSelector){
+    var skipClasses = ['.rd-compare-parts','.rd-datasheet','.image', '.mfg-partnumber', '.description','.series', '.packaging' ];
     $('#productTable>thead>tr:eq(0) th').each(function(ind){
-        if (ind > 5){
-            $('#firstColumn').append('<option value='+ind+'>'+$(this).text()+'</option>');
-            $('#secondColumn').append('<option value='+ind+'>'+$(this).text()+'</option>');
+
+        if (!$(this).is(skipClasses.join(','))){
+            $(firstSelector).append('<option value='+ind+'>'+$(this).text()+'</option>');
+            $(secondSelector).append('<option value='+ind+'>'+$(this).text()+'</option>');
+        }
+        if($(this).hasClass('unitprice')){ 
+            $(firstSelector).find('option[value='+ind+']').prop('selected',true); // set default option to price
         }
     });
+
 }
 
 function addMathCol(){
     _log('addMathCol() Start', DLOG);
-    var fcol = $('#firstColumn').val();
-    var scol = $('#secondColumn').val();
+    var fcol = $('#firstMathColumn').val();
+    var scol = $('#secondMathColumn').val();
     var ftitle = $('#productTable>thead>tr:eq(0) th').eq(+fcol).text();
     var stitle = $('#productTable>thead>tr:eq(0) th').eq(+scol).text();
     var funit = getNormalization(fcol);
     var sunit = getNormalization(scol);
     var operator = $('#mathOperator').val();
     // console.log('operator', operator);
+    console.log('fcol', fcol, ' scol ', scol);
+    console.log('funit', funit, ' sunit ', sunit);
     $('#productTable>thead>tr:eq(0)').find('th').eq(scol).after('<th>'+ftitle + operator + stitle +'</th>');
     $('#productTable>thead>tr:eq(1)').find('td').eq(scol).after('<td><div class="sortme">asc</div><div class="sortme">desc</div></td>');
     $('.sortme').click(sortStuff);
     // _log('fcol'+ fcol + ' scol ' + scol);
-    $('#productTable>tbody>tr').each(function(){
+    $('#productTable>tbody>tr').each(function(ind){
         try{                
-            var firstnum = Qty.parse($(this).find('td').eq(fcol).text().split('@')[0]);
-            var secondnum = Qty.parse($(this).find('td').eq(scol).text().split('@')[0]);
-            var finalnum = null;
+            // var firstnum = Qty.parse($(this).find('td').eq(fcol).text().split('@')[0]);
+            // var secondnum = Qty.parse($(this).find('td').eq(scol).text().split('@')[0]);
+            var firstNum = parseCell($(this).find('td').eq(fcol));
+            var secondNum = parseCell($(this).find('td').eq(scol));
+            var finalNum = null;
+                //console.log('firstnum', firstNum, 'secondNum', secondNum, ' sntext ', $(this).find('td').eq(scol).text());
             
-            if(firstnum !== null && secondnum !== null){
-                firstnum = Qty(firstnum.format(funit));
-                secondnum = Qty(secondnum.format(sunit));
-                finalnum = firstnum.div(secondnum);
-                switch(operator){
-                    case 'div':
-                    try{finalnum = firstnum.div(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
-                    case 'mul':
-                    try{finalnum = firstnum.mul(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
-                    case 'add':
-                    try{finalnum = firstnum.add(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
-                    case 'sub':
-                    try{finalnum = firstnum.sub(secondnum);}catch(err){console.log(err, "not compatible with ", operator)} break;
-                }
-                finalnum = finalnum.toPrec(.001);
-                $(this).find('td').eq(scol).after('<td class="mathcol">'+finalnum +'</td>');
+            if(firstNum !== null && secondNum !== null){
+                firstNum = toUnit(firstNum, funit);
+                secondNum = toUnit(secondNum, sunit);
+                try{
+                    if (operator == 'div'){
+                        finalNum = firstNum.div(secondNum);
+                    }
+                    if(operator == 'mul'){
+                        finalNum = firstNum.mul(secondNum);
+                    }
+                    if(operator == 'add'){
+                        finalNum = firstNum.add(secondNum);
+                    }
+                    if(operator == 'sub'){
+                        finalNum = firstNum.sub(secondNum);
+                    }
+                        finalNum = finalNum.toPrec(.000001);
+                }catch(err){
+                    console.log(err, "not compatible with ", operator);
+                    finalNum = 'NaN';
+                } 
+                $(this).find('td').eq(scol).after('<td class="mathcol">'+finalNum +'</td>');
             }
             else{
-                finalnum = 'NaN';
+                console.log(firstNum, secondNum, ' changing finalNum to NaN')
+                finalNum = 'NaN';
                 $(this).find('td').eq(scol).after('<td class="mathcol">'+'NaN'+'</td>');
             }
-            $(this).find('td').eq(+scol+1).data('qtyval',finalnum); 
-        } catch(err){console.log(err);}
+            $(this).find('td').eq(+scol+1).data('qtyval',finalNum); 
+        } catch(err){console.log('row', ind ,err);}
     });
     _log('addMathCol() End', DLOG);
 }
 
-function getNormalization(colnum){
-    //goes through each row of the #productTable and finds the most common label for each column
-    var unitarray = [];
-    $('#productTable>tbody>tr').each(function(){
-        try{
-            unitarray.push(Qty.parse($(this).find('td').eq(colnum).text().split('@')[0]).units());
+function parseCell($td){
+    // this looks for special cases that the Qty.parse function does not handle well and
+    // gives the values some context if needed
+    var tdtext = '';
+    if($td.hasClass('CLS 1')){
+        //console.log('type = resistance');
+        tdtext = $td.text() + 'Ohm'
+    }else if ($td.hasClass('unitprice') || $td.hasClass('priceme')){
+        //console.log('type = price')
+        tdtext = $td.text().split('@')[0] + ' USD';
+    }else if ($td.hasClass('CLS 2')){
+        tdtext = $td.text().split(',')[0];
+        if(($td.text().split(',').length > 2)){
+            console.log('there may be more values in this cell than were handled');
         }
-        catch(err){}
+    }else if ($td.text().indexOf('(') !== -1){
+        tdtext = $td.text().split('(')[0];
+        console.log('type with multiple units in ()');
+    }else if ($td.hasClass('qtyAvailable')){
+        // this will have problems with European notation '5,4' vs '5.4'
+        tdtext = $td.text().split('-')[0].replace(/,/g, '');
+    }
+    else{
+        tdtext = $td.text();
+    }
+    try{
+        //console.log(tdtext);
+        var num = Qty.parse(tdtext);
+        if(num == null){ 
+            console.log("can't parse ", tdtext);
+            return num;
+        }else{ return num;}
+    }catch(err){
+        console.log('parseCell Error', $td.text() , err);
+    }
+}
+
+function getNormalization(colNum){
+    //goes through each row of the #productTable and finds the most common label for given column
+    var unitarray = [];
+    var indexrow;
+    $('#productTable>tbody>tr').each(function(ind){
+        try{
+            indexrow = ind;
+            //unitarray.push(Qty.parse($(this).find('td').eq(colNum).text().split('@')[0]).units());
+            unitarray.push(parseCell($(this).find('td').eq(colNum)).units());
+        }
+        catch(err){ 
+            //console.log('normalization error on row ', indexrow , err);
+        }
     });
    // console.log( unitarray);
-   // console.log(mode(unitarray));
+   console.log('mode of unitarray ',mode(unitarray));
     return mode(unitarray);
 }
 
@@ -791,7 +873,6 @@ function mode(array){
 }
 
 function sortStuff(){
-    // TODO impliment a sort compatible with quantities.js
     var ind = $(this).parent().index();
     var direction = $(this).text();
     var rows = $('#productTable>tbody>tr').sort(function(a,b){
@@ -809,8 +890,165 @@ function sortStuff(){
     $('#productTable>tbody').append(rows);
 }
 
-
 function highlightKeywords(){
+}
+
+function addGraphInterface(){
+    $('body').append('<div id=graphDialog></div>')
+    $('#graphDialog').dialog({
+        'autoOpen':false,
+        'open': openGraphDialog,
+        'close': closeGraphDialog,
+        'modal': true,
+        'height': 500,
+        'width': 900,
+        'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
+    });
+
+    
+    $('#productTable').before('<button id="buildChart" style="height:20px; padding:1px; margin:2px 5px;"class=minimal>Build Chart</button>');
+    
+    $('#graphDialog').append(
+        '<form><select id="yGraphColumn"></select>'+
+            '<span> vs. </span>'+
+            '<select id="xGraphColumn"></select>'+
+            '<button id="drawGraphButton">Go</button>'+
+        '</form>'
+    );
+    $('#drawGraphButton').on('click', function(e){
+        e.preventDefault();
+        console.log('graphcol1', $('#xGraphColumn').val(), 'graphcol2', $('#yGraphColumn').val());
+        drawChart($('#xGraphColumn').val(), $('#yGraphColumn').val());
+
+        //$('#graphDialog').dialog('close');
+    });
+    $('#buildChart').on('click', function(e){ 
+        $('#graphDialog').dialog('open'); 
+        e.preventDefault();
+    });
+}
+    
+function openGraphDialog(){
+    $('#graphDialog').append('<div id=graphContainer style="width:800px;"></div>');
+    insertTableSelectValues('#xGraphColumn', '#yGraphColumn');
+    $('#xGraphColumn, #yGraphColumn').on('mouseenter.graph', 'option', function(){
+        var colval = +$(this).val()+1;
+        $('table tr td:nth-child('+colval+'), table tr th:nth-child('+colval+')').addClass('mathHighlight');
+    });
+    $('#xGraphColumn, #yGraphColumn').on('mouseleave.graph', 'option', function(){
+        var colval = +$(this).val()+1;
+        $('table tr td:nth-child('+colval+'),table tr th:nth-child('+colval+')').removeClass('mathHighlight');
+    });
+
+}
+function closeGraphDialog(){
+    $('#xGraphColumn').empty();
+    $('#yGraphColumn').empty();
+    $('#graphContainer').remove();
+}
+
+function getChartSeriesData(xcol, ycol, xunit, yunit){
+    // TODO verify numerical inputs
+    // TODO give option for non-numerical
+
+    var pt = $('#productTable');
+    var data = [];
+
+    pt.find('tbody>tr').each(function(){
+        data.push(getDataPoint(xcol,ycol, xunit, yunit, $(this)))
+    });
+    console.log(data);
+    return data;
+}
+
+
+function getDataPoint(xcol, ycol, xunit, yunit, $row){
+    var x = parseCell($row.find('td').eq(xcol));
+    var y = parseCell($row.find('td').eq(ycol));
+    return {
+        'name':$row.find('.mfg-partnumber a:first').text(),
+        'dkname': $row.find('meta[itemprop=productID]').attr('content').replace('sku:',''),
+        'x': toUnit(x, xunit).scalar,
+        'y': toUnit(y, yunit).scalar
+    }
+}
+
+function toUnit(q, unit){
+    try{
+        //console.log('q is', q, 'unit is ', unit);
+        //console.log(Qty(q.format(unit).toString()));
+        if (q != null){
+            return Qty(q.format(unit).toString());
+        }else{ return "NaN"}
+    }catch(err){
+        console.log('error converting ', err); return 'error Parsing';
+    }
+}
+
+function drawChart(xcol, ycol){
+
+    var xname = $('#productTable').find('thead>tr:first th').eq(xcol).text();
+    var yname = $('#productTable').find('thead>tr:first th').eq(ycol).text();
+    var xunit = getNormalization(xcol);
+    var yunit = getNormalization(ycol);
+
+    $('#graphContainer').highcharts({
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: (yname + ' vs. ' + xname)
+        },
+        subtitle: {
+            text: 'awesomeness'
+        },
+        yAxis: {
+            title: {
+                enabled: true,
+                text: (yname +' '+getNormalization(ycol))
+            },
+            type: 'logarithmic',
+            minorTickInterval: 10,
+        },
+        xAxis: {
+            title: {
+                text: (xname +' '+getNormalization(xcol))
+            },
+                        type: 'logarithmic',
+            minorTickInterval: 1,
+        },
+
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<b>{point.point.name}</b><br />',
+                    pointFormat: '<br>{point.x}'+xunit+', {point.y}'+yunit
+                }
+            }
+        },
+        series: [{
+            name: $('#famBreadCrumb').text(),
+            color: 'rgba(223, 83, 83, .5)',
+            data: getChartSeriesData( xcol, ycol, xunit, yunit),
+            },]
+    });
 }
 
 function formatQtyBox(){
@@ -875,12 +1113,7 @@ function fixAssociatedPartsForIndexResultsPage(){
                 }                
             })
         });
-
     }
-}
-
-function getPartsfromQueryString(fullquerystring){
-
 }
 
 function fixAssociatedPartInFilterForm(){
@@ -898,11 +1131,8 @@ function fixAssociatedPartInFilterForm(){
             }); 
             parts.forEach(function(part){
                 $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
-                // console.log('the parts are ', part);
             });
         }
-
-        
         // _log('fullquerystring is ' + fullquerystring , true);
     }
     else if($('#earlPH').length){
@@ -964,8 +1194,7 @@ function addtrueFilterReset(){
                     $('#tempdiv').delay(3000).empty();
                     _log('addtrueFilterReset() tagstored',1);
             }
-        },200);
-        
+        },200); 
     }
     _log('addtrueFilterReset() End',DLOG);
 }
@@ -1098,7 +1327,6 @@ function wrapFilterTable(){
         $('select[name="'+$(this).attr('name')+'"]').find('option').each(function(){
             $(this).prop('selected',$(this).prop('defaultSelected'));
         });
-        // getRecordsMatching();
         addApplyFiltersButtonHighlight();
     });
     
@@ -1666,18 +1894,18 @@ function getFamilyLink(){
 }
 
 function addStickyHeader () {
-        location.assign("javascript:$(window).unbind('scroll resize');void(0)");
-        $('div.stickyHeader').remove();
-        CreateFloatingHeader();
-        $(window).scroll(function () { UpdateFloatingHeader(); });
-        $(window).resize(function () { UpdateFloatingHeader(); });
-   //      $('#productTable thead>tr:first th').attr('border', 0).css({
+    location.assign("javascript:$(window).unbind('scroll resize');void(0)");
+    $('div.stickyHeader').remove();
+    CreateFloatingHeader();
+    $(window).scroll(function () { UpdateFloatingHeader(); });
+    $(window).resize(function () { UpdateFloatingHeader(); });
+    //      $('#productTable thead>tr:first th').attr('border', 0).css({
             // 'border-top-left-radius': '5px',
             // "border-spacing":0
-   //      });
-        $("#productTable thead").css('background-color', 'white');
-        $('#productTable thead>tr:eq(1)').css('background-color','#e8e8e8');
-        $('.stickyThead>tr:eq(1)').css('background-color','#e8e8e8');
+    //      });
+    $("#productTable thead").css('background-color', 'white');
+    $('#productTable thead>tr:eq(1)').css('background-color','#e8e8e8');
+    $('.stickyThead>tr:eq(1)').css('background-color','#e8e8e8');
 }
 
 function CreateFloatingHeader() {
@@ -2367,7 +2595,6 @@ function getAttributeExampleImgs(name,$selectElem) {
         }
         
     });
-
 }
 
 function akamaiLazyLoadFixForIndexResults(){
@@ -2748,42 +2975,21 @@ function addQuantityToCatFilterLinks() {
     _log('addQuantityToCatFilterLinks() End',DLOG);
 }
 
-// function indexInstantFilter(){
-//     if($('a.catfilterlink').size()>0){
-//         $('#headKeySearch').keyup(function(){
-//             var keywords = $(this).val();
-//             // var container;
-//             // var keywordarray = keywords.split(' ');
-//             // _log('keyword array length ' + keywordarray.length);
 
-//             $('.catfilterlink').parent().hide();
-//             $('.catfilterlink').parent().parent().prev('.catfiltertopitem').hide();
-//             $('.catfilterlink:contains("'+keywords+'")').parent().show();
-//             $('.catfilterlink:visible').parent().parent().prev('.catfiltertopitem').show();
-//             if($(this).val() == ''){
-//                 $('.catfilterlink').parent().show();
-//                 $('.catfilterlink').parent().parent().prev('.catfiltertopitem').show();
-//             }
-//         });
-//     }
-// }
 
 function indexInstantFilter2(){
     if($('a.catfilterlink').size()>0){
         $('#headKeySearch').keyup(function(){
             var keywords = $(this).val().trim();
-            // var container;
             var keywordarray = keywords.split(' ');
             var attrfilters = '';
             keywordarray.forEach(function(word){
                 attrfilters += '[href*='+word+']';
             });
             _log('keyword array length ' + attrfilters);
-            // var indexlist = $('#productIndexList').detatch();
             $('#productIndexList').hide();
             $('.catfilterlink').parent().hide();
             $('.catfilterlink').parent().parent().prev('.catfiltertopitem').hide();
-            // $('.catfilterlink:contains("'+keywords+'")').parent().show();
             $('.catfilterlink'+attrfilters).parent().show()
              $('#productIndexList').show();
             $('.catfilterlink:visible').parent().parent().prev('.catfiltertopitem').show();
@@ -2931,7 +3137,7 @@ function hideIdenticalColumns(){
         $('#productTable').find('th').each(function(){
         var colIndex = $(this).index()+1;
         var firstText = $('#productTable').find('tbody td:nth-child('+colIndex+')').first();
-        console.log('firstcolumn' + firstText.html());
+        console.log('firstMathcolumn' + firstText.html());
         // _log('first text is' + firstText.html());
         var result = $('#productTable').find('tbody td:nth-child('+colIndex+')').filter( function(index){
             if($(this).html() != firstText.html()){
@@ -3443,7 +3649,6 @@ function filterTableForCar($carContent, $targetDiv){
         'height':'148px',
     });
     $('#productTable').remove();
-
 }
 
 //*************************** TODO fix collision events 
@@ -3732,7 +3937,6 @@ function previewLoader() {
     }
 }
 
-//TODO finish implimenting... insert into detail page code
 function makeImageHolder(){
     _log('makeImageHolder() Start',DLOG);
 
@@ -3753,11 +3957,11 @@ function makeImageHolder(){
 function getImageLinks(){
     _log('getImageLinks() Start',DLOG);
     var imageURLs = [];
-    var images = $('.attributes-table-main a[href$=jpg]').each(function(){
+    var images = $('.attributes-table-main').find('a[href$=jpg], a[href$=JPG]').each(function(){
         imageURLs.push($(this).attr('href'));
     });
-    return imageURLs;
     _log('getImageLinks() End',DLOG);
+    return imageURLs;
 }
 
 
@@ -4143,6 +4347,7 @@ function saveProductDrawer(){//No longer used, but here for reference
 }
 
 function getID(){
+    // console.log('getid ', localStorage.getItem('uid').length, 'uid ', localStorage.getItem('uid'));
 	if (localStorage.getItem('uid') == null){
 		var y = '';
 		var possible = "ABCDEF0123456789";
