@@ -183,6 +183,9 @@ input[type="text"]:focus{
 .beablock {
 	border-radius: 5px;
 	border: 1px solid #ccc;
+	background: -moz-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
+	background: -webkit-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
+	background: linear-gradient(to bottom, #E8E8E8 0%, #F8F8F8 100%);
 }
 
 
@@ -401,6 +404,142 @@ input[type="text"]:focus{
 	border-color: red;
 	box-shadow: 0 0 10px 5px #888;
 }
+
+
+/*detail page*/
+.product-details-discount-pricing {
+	width: 100%;
+}
+.product-details-discount-pricing th{
+	font-size: 8px;
+}
+p.alert{
+	width:500px;
+}
+
+/*new carousel*/
+.col-Image, 
+.col-ManufacturerPartNumber,
+.col-Manufacturer,
+.col-Description,
+.col-Packaging,
+.col-UnitPrice,
+.col-QuantityAvailable,
+.col-MinQuantity {
+
+}
+
+.col-Image{
+	height: 48px; 
+	width: 48px;
+	font-size: 8px;
+	display: block;
+	overflow: hidden;
+}
+
+.asd-container{
+	max-width: 1000px;
+}
+
+.divTitle{
+	font-weight: bold;
+}
+
+.panel{
+	/*width: 780px;*/
+	max-width: 780px;
+	border: 1px solid #ddd;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	margin-bottom: 20px;
+}
+.panel table {
+	width: 100%;
+}
+
+.panel-heading {
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 10px 15px;
+}
+
+.panel-default > .panel-heading {
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    color: #333;
+}
+.panel-default > .panel-heading {
+    background-image: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%);
+    background-repeat: repeat-x;
+}
+.tstripe tr.even, .tstripe tr.alt, .tstripe tr:nth-of-type(2n) {
+    background: none repeat scroll 0 0 #f1f1f1;
+}
+
+/*from jqpagination.css*/
+.pagination {
+	display: inline-block;
+	border: 1px solid #CDCDCD;
+	border-radius: 3px; 
+	margin: 0 3px;
+}
+.pagination a {
+	display: block;
+	float: left;
+	width: 20px;
+	height: 20px;
+	outline: none;
+	border-right: 1px solid #CDCDCD;
+	border-left: 1px solid #CDCDCD;
+	color: #555555;
+	vertical-align: middle;
+	text-align: center;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 16px;
+	font-family: Times, 'Times New Roman', Georgia, Palatino;
+	/* ATTN: need a better font stack */
+	background-color: #f3f3f3;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f3f3f3), color-stop(100%, lightgrey));
+	background-image: -webkit-linear-gradient(#f3f3f3, lightgrey);
+	background-image: linear-gradient(#f3f3f3, lightgrey); 
+}
+.pagination a:hover, .pagination a:focus, .pagination a:active {
+	background-color: #cecece;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #e4e4e4), color-stop(100%, #cecece));
+	background-image: -webkit-linear-gradient(#e4e4e4, #cecece);
+	background-image: linear-gradient(#e4e4e4, #cecece); 
+}
+.pagination a.disabled, .pagination a.disabled:hover, .pagination a.disabled:focus, .pagination a.disabled:active {
+	background-color: #f3f3f3;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f3f3f3), color-stop(100%, lightgrey));
+	background-image: -webkit-linear-gradient(#f3f3f3, lightgrey);
+	background-image: linear-gradient(#f3f3f3, lightgrey);
+	color: #A8A8A8;
+	cursor: default; 
+}
+.pagination a:first-child {
+	border: none;
+	border-radius: 2px 0 0 2px; 
+}
+.pagination a:last-child {
+	border: none;
+	border-radius: 0 2px 2px 0; 
+}
+.pagination input {
+	float: left;
+	margin: 0;
+	padding: 0;
+	width: 120px;
+	height: 20px;
+	outline: none;
+	border: none;
+	vertical-align: middle;
+	text-align: center; 
+}
+	
+/*end new carousel*/
+
 
 .carouselClass{
 	height: 150px;

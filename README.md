@@ -1,6 +1,6 @@
 The advancedsearch userscript is intended to enhance user experience while browsing www.digikey.com  and associated international websites.
 
-The official project page is located here: http://eewiki.net/display/Motley/advancedsearch+Greasemonkey+Userscript+for+Digikey.com 
+The official project page with installation instructions is located here: http://eewiki.net/display/Motley/advancedsearch+Greasemonkey+Userscript+for+Digikey.com 
 
 Highlights include:
 

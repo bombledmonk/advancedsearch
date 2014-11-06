@@ -7,6 +7,7 @@
 // @include     http://www.digikey.*/scripts/dksearch*
 // @include     http://search.digikey.*/*
 // @include     http://www.digikey.*/product-detail/en/*
+// @include     http://www.digikey.*/product-detail/*/*
 // @include     http://ordering.digikey.*/Ordering/AddPart.aspx*
 // @include     http*digikey.*/classic/Ordering/AddPart*
 // @include     http*digikey.*/classic/Ordering/FastAdd*
@@ -23,6 +24,7 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/raphael-min.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/prettyCheckable/prettyCheckable.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/quantities.js
+// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
 // @updateURL   https://goo.gl/vbjoi
@@ -31,7 +33,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.1
+// @version     2.9.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -155,6 +157,7 @@
 //          added Hide Identical Columns feature, tweaked instant filter with wildcard search
 //2.9       added Column Math and picture carousel 
 //2.9.1     added graphing/charting, fixed picture carousel, refining value parser
+//2.9.2     refactored associated product, fixed header link bugs, removed beablock blue, various other bug fixes
 
 //TODO Toggle Hide filter block
 //TODO Hide individual Filters
@@ -163,7 +166,9 @@
 //TODO Add graphs to the show pricing curve
 //TODO Add productIndex sidebar slide-in
 //TODO Make graphs into filter inputs.
-//TODO refactor assprod carousel for associated products
+//TODO move alternate packaging
+//TODO redesign header
+//TODO hide associated product rows
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -176,6 +181,7 @@ var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
 var sitemaplink = $('#header').find('a:contains("Site Map"):first').attr('href');
 var mydklink = getMyDigiKeyLink();
+var indexlink = getIndexLink();
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var cacheflag = false;
@@ -192,10 +198,10 @@ var customform = '<div id="cHeader" style="display:block;"><a href="http://digik
     '<input align=right type="submit" value="New Search" id="searchbutton">'+
     '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
     '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form><span id="resnum"></span>'+
-    '<span id=quicklinks><a href="http://www.digikey.'+theTLD+'/product-search/en">Product Index</a> | '+
+    '<span id=quicklinks><a href="'+indexlink+'">Product Index</a> | '+
     '<a href="'+mydklink+'">My Digi-Key</a> | '+
     '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><img src="https://dl.dropboxusercontent.com/u/26263360/img/carticon.png"> Cart<span id=cartquant></span> <img src="http://he-st.com/img/downarrowred.png"></img></a> | '+
-    '<a href="'+sitemaplink+'">Site Map</a></span>'+
+    // '<a href="'+sitemaplink+'">Site Map</a></span>'+
 '</div>';
 
 //loads before document status is ready
@@ -203,7 +209,7 @@ function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
 
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
-    GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>form:first-child {display:none} #content>p {display:none;} ");
+    GM_addStyle("#header {display: none;} #content hr {display:none;} #footer{position:relative; top:45px;} #content>form:first-child {display:none} #content>p {display:none;} ");
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
     var buttonCSS = GM_getResourceText("buttonCSS");
     GM_addStyle(buttonCSS);
@@ -212,10 +218,10 @@ function preloadFormat(){
 
 
     $('#header').remove();
-    $('#footer').remove();
+    // $('#footer').remove();
 
     //TODO remove once website 
-    $('.catfilteritem').find('li>a').addClass('catfilterlink');
+    // $('.catfilteritem').find('li>a').addClass('catfilterlink');
     // $(document).tooltip();
 
 
@@ -269,11 +275,17 @@ function formatPages() {
 function getMyDigiKeyLink(){
     var retval ='';
     tc(function(){
-        if ($('.top-header .myMenu:first').html()){
-            retval = $('.top-header .myMenu:first').html().split("','")[0].split("open('")[1];
+        if ($('.header-dropdown-content').length){
+            retval =$('#header-login').find('.header-dropdown-content a:first').attr('href');
         }
     }, 'getMyDigiKeyLink');
+    if (retval == undefined){ retval = 'https://www.digikey.com/classic/RegisteredUser/Login.aspx'}
     return retval;
+}
+
+function getIndexLink(){
+    var ret = $('#header-middle').find('.header-resource').attr('href'); 
+    return (ret == undefined)? 'http://www.digikey.com/product-search/en' : ret;
 }
 
 function replaceQuestionMark(){
@@ -320,6 +332,8 @@ function updateCache(){
         cacheflag = false;
     }
 }
+
+
 
 function addCustomHeader(){
         _log('addCustomHeader() Start',DLOG);
@@ -1652,6 +1666,8 @@ function formatDetailPage(){
         };
         var priceTable = $('#reportpartnumber').parent().parent().parent();
         var discPriceTable = priceTable.parent().find('table:contains("Discount Pricing")');
+        var digireelTable = $('.product-details-reel-pricing');
+        $('.request-quote-description').hide();
         // var dataTable = $('table:contains("Category")');
         var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
         
@@ -1662,8 +1678,10 @@ function formatDetailPage(){
         });
         
         priceTable.css(tablegeneralcss);
-        discPriceTable.css(tablegeneralcss);
         priceTable.find('td,th').css(trtdcss);
+        digireelTable.css(tablegeneralcss);
+        digireelTable.find('td,th').css(trtdcss);
+        discPriceTable.css(tablegeneralcss);
         discPriceTable.find('td,th').css(trtdcss);
         dataTable.css(tablegeneralcss);
         dataTable.find('td,th').css(trtdcss);
@@ -1693,8 +1711,18 @@ function formatDetailPage(){
         });
 
         $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
-        
-        addAssProdLinkToFilters();
+
+        $('.update-quantity').insertAfter('.product-details');
+        // $('.product-details-discount-pricing').css({'display':'inline'});
+        // $('.update-quantity').css({'display':'inline'});
+        $('.catalog-pricing').append($('.product-details-discount-pricing'));
+        $('.product-details-discount-pricing br').hide();
+        $('.update-quantity br').hide();
+        $('.product-details-discount-pricing tr:last').css({'background':'#eeeeee'});
+
+
+        //addAssProdLinkToFilters();
+        ap.addAssociatedProductViewer();
         addDashNDHover();
         addReverseFiltering(dataTable);
         addToTopButton();
@@ -1782,7 +1810,8 @@ function addReverseFiltering($tableToFilter){
     _log('addReverseFiltering() Start',DLOG);
     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
     _log('reversefiltering category '+$tableToFilter.find('th:contains("Category")').parent().index());
-    var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Dynamic Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("OtherNames")').eq(0);
+    //TODO make this into object
+    var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("OtherNames")').eq(0);
     var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());
     //formRows.wrapAll('<form id="reverseForm" />');
     formRowsTD.each(function(ind){
@@ -3424,6 +3453,213 @@ function loadBreadcrumbHover($hoveredObj){
     }
 }
 
+//--------------------------------------------------
+
+
+var detailPageInfo = (function(){
+    return{  
+        getImage : function($pageobject){return $pageobject.find('img[itemprop=image],img[src*=nophoto]').css({'width': '48px', 'height': '48px'});},
+        getMPN : function($pageobject){return $pageobject.find('h1[itemprop=model]').text();},
+        getManufacturer : function($pageobject){return $pageobject.find('h2[itemprop=manufacturer]').text();}, //could also do contents()
+        getDescription : function($pageobject){return $pageobject.find('td[itemprop=description]').text();},
+        getPackaging : function($pageobject){return $pageobject.find('.attributes-table-main a[href*="Standard%20Packaging%20Help"]').last().closest('tr').find('td').text();},
+        getUnitPrice : function($pageobject){return $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(1)').contents();},
+        getQuantityAvailable : function($pageobject){return $pageobject.find('#quantityavailable').html().split('<br>')[0];},
+        getMinQuantity : function($pageobject){return $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(0)').text();}
+    };
+})();
+
+var ap = (function(){
+    var columnList = [
+        {'name':'Image', 'f': detailPageInfo.getImage,},
+        {'name':'Manufacturer Part Number', 'f':detailPageInfo.getMPN},
+        {'name':'Manufacturer', 'f':detailPageInfo.getManufacturer},
+        {'name':'Description', 'f':detailPageInfo.getDescription},
+        {'name':'Packaging', 'f':detailPageInfo.getPackaging},
+        {'name':'Unit Price', 'f':detailPageInfo.getUnitPrice},
+        {'name':'Quantity Available', 'f':detailPageInfo.getQuantityAvailable},
+        {'name':'Min Quantity', 'f':detailPageInfo.getMinQuantity}
+    ];
+    var cLen = columnList.length;
+    var perPage = 5;
+
+    var buildProductViewerBox = function(item){
+
+        var firstRowHTML = '';
+        for (var z=0; z<columnList.length; z++){
+            firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
+        }
+        var allRows = ''
+        for(var z=0; z<item.list.length; z++){
+            allRows = allRows + buildRowHTML(item.list[z]);
+        }
+        var itemSel = selectorEscape(item.title)
+        
+        $('.attributes-optional-table').append(
+            '<div id="asd-id-'+itemSel+'" class="asd-container panel panel-default">'+
+                '<div class="asd-title panel-heading">'+item.title+' ('+ item.list.length +')</div>'+
+                '<div class="asd-content panel-body">'+
+                '<table id="table-'+itemSel+'" class="asd-table tstripe"> '+
+                    '<thead><tr>'+firstRowHTML+'</tr></thead>'+
+                    '<tbody>'+allRows+'</tbody>'+
+                '</table>'+
+                '</div>'+
+            '</div>'
+        );
+        
+        $('#asd-id-'+itemSel).data('itemlist', item.list);
+        
+        $('#table-'+itemSel).find('tbody tr').each(function(ind){
+            $(this).data('linkobj',item.list[ind]);
+            $(this).data('boxSel', $('#asd-id-'+itemSel));
+        });
+        
+        $('#table-'+ itemSel).find('tbody>tr').slice(perPage).hide();
+
+        if (item.list.length > perPage){
+            addPageination(itemSel, item.list.length);
+        }
+
+        addFilterAllForm($('#asd-id-'+itemSel));
+
+        var listlength = (item.list.length >= perPage) ? perPage :item.list.length;
+        for(var z=0; z<listlength; z++){
+            getDetailPage(item.list[z], $('#asd-id-'+itemSel));
+        }
+
+    },
+
+    addPageination = function (itemSel, listLen) {
+        $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
+                '<a href="#" class="first" data-action="first">&laquo;</a>'+
+                '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
+                '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
+                '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
+                '<a href="#" class="last" data-action="last">&raquo;</a>'+
+            '</div>');
+
+            $('.page-'+itemSel).jqPagination({
+                paged: function(page) {
+                    var $rows = $('#table-'+itemSel+' tbody > tr')
+                    $rows.hide()// do something with the page variable
+                    var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
+                    $showing.not('.filled').each(function(){
+                        getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
+                    })
+                }
+            });
+    }
+
+    buildRowHTML = function(pnlinkobj){
+        var row = "";
+        for (var i = 0; i < columnList.length; i++) {
+            row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
+        };
+        row = '<tr class="'+selectorEscape(pnlinkobj.pn)+'">' + row + '</tr>'
+        return row;
+    },
+
+    getDetailPage =    function (pnlinkobj, $boxSel){
+        var jqxhr = $.get(pnlinkobj.href)
+                .done(function(data){
+                    var $d = $(data);
+                    fillRow($d, pnlinkobj, $boxSel)
+                })
+                .fail(function(){console.log(pnlinkobj, ' failed');})
+                .always(function(){});
+    },
+    fillRow = function ($DetailPageContent, pnlinkobj, $boxSel){
+        var rowSel = selectorEscape(pnlinkobj.pn);
+        var row = $('.'+rowSel);
+
+        for (var x=0; x<cLen; x++){
+            row.find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f($DetailPageContent));
+            if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+pnlinkobj.href+'" />') ; }
+        }
+        row.addClass('filled');
+        console.log('addrowdone');
+    },
+
+    getAssociationListFromElem = function (parentElem){
+        var pnlinkarray = []
+        parentElem.find('.more-expander-item').each(function(){
+            pnlinkarray.push({
+                'href': $(this).find('a:first').attr('href'),
+                'pn': $(this).find('a:first').text()
+            });
+        });
+        //console.log(pnlinkarray);
+        return pnlinkarray;
+    },
+
+    addFilterAllForm = function($boxSel){
+        //TODO add a form to "see all" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        var pnlist = '';
+        var itemlist = $boxSel.data('itemlist');
+        itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
+        console.log(pnlist);
+        var formHTML = '<div style="float:right;"><div style="clear:both; margin:0px 15px 1px 0px;"><form  action="/scripts/DkSearch/dksus.dll" method=get>'+
+        '<input type=submit value="View All '+itemlist.length+'">'+ '<label><input type=checkbox>In Stock<label>'+
+            pnlist+
+        '</form></div></div><div style="clear:both;"></div>';
+        $boxSel.find('.asd-content').append(formHTML);
+    },
+
+    addAssociatedImageHover = function(){
+        _log('associatedImageHover() Start',DLOG);
+
+       $('body').append('<img border="0/" src="" style="display: none; box-shadow: 0 0 10px 5px #888" class="pszoomie2 psshadow" id="pszoomie2">');
+
+        $('.asd-container').hoverIntent({
+            over: function () {
+                $('#pszoomie2').attr('src','');
+                $('#pszoomie2')
+                .attr('src', $(this).attr('src'))
+                .show('fade', 200)
+                .position({
+                    my : 'right middle',
+                    at : 'left middle',
+                    of: $(this), 
+                    offset : '-10 0',
+                    collision : 'fit fit'
+                });
+            },
+            out: function () {
+                $('.pszoomie2').fadeOut(100);
+            },
+            'selector': '.col-Image img'
+        }
+        );
+        _log('associatedImageHover() End',DLOG);
+    },
+
+    addAssociatedProductViewer = function (){
+        var boxDataArray = [];
+        $('.expander-div-10').each(function(){
+            boxDataArray.push({
+                'title': $(this).closest('tr').find('th').text(), 
+                'list':getAssociationListFromElem($(this))
+            });
+            $(this).closest('tr').hide()
+        });
+
+        $('.expander-div-5').each(function(){
+            boxDataArray.push({
+                'title': $(this).parent().find('.beablocktitle').text().split('\n')[0], 
+                'list':getAssociationListFromElem($(this))
+            });
+        });
+        $('.attributes-optional-table .rd-extra-option').hide();
+        for (var i=0; i<boxDataArray.length; i++){
+            buildProductViewerBox(boxDataArray[i]);
+        }
+        addAssociatedImageHover();
+    };
+
+    return {'addAssociatedProductViewer': addAssociatedProductViewer};
+})();
+
+//---------------------------------------------
 function addAssProdLinkToFilters(){
     // put all part numbers in to link to make filterable
     _log('addAssProdLinkToFilters() Start',DLOG);
@@ -4389,6 +4625,12 @@ function processURL() {/* TODO UNUSED - functionality to parse the search string
     }
 }
 
+function selectorEscape(str) {
+    //escapes special characters so a string can safely be used for class names and in selectors.
+    if (str){return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'');}
+    return str;
+}
+
 // function sortingExample(){ //unused keep for example
 //     var ind = $(this).index();
 //     var rows = $('#productTable>tbody>tr').sort(function(a,b){
@@ -4464,3 +4706,6 @@ function wrapText(container, text) {
 
 //useful for unbinding functions that are outside of the scope of greasemonkey
 // location.assign("javascript:$(window).unbind('scroll resize');void(0)");
+
+
+//note this.href is better than $(this).attr('href');
