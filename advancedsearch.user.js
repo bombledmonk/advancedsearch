@@ -33,7 +33,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.2
+// @version     2.9.3
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -158,17 +158,19 @@
 //2.9       added Column Math and picture carousel 
 //2.9.1     added graphing/charting, fixed picture carousel, refining value parser
 //2.9.2     refactored associated product, fixed header link bugs, removed beablock blue, various other bug fixes
+//2.9.3     hid customers who evaluated box
 
+//TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//TODO hide associated product rows
+//TODO Make graphs into filter inputs. look in drawChart function
+//TODO Add graphs to the show pricing curve
+//TODO redesign header
+//TODO Add productIndex sidebar slide-in
+//TODO split family names on "\s-\s" and stick into subcats
 //TODO Toggle Hide filter block
 //TODO Hide individual Filters
-//TODO split family names on "\s-\s" and stick into subcats
 //TODO fix associated products hover 'add to cart' button
-//TODO Add graphs to the show pricing curve
-//TODO Add productIndex sidebar slide-in
-//TODO Make graphs into filter inputs.
-//TODO move alternate packaging
-//TODO redesign header
-//TODO hide associated product rows
+//TODO add feature to research on "no results found" when in stock checkboxes are checked.
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -216,14 +218,8 @@ function preloadFormat(){
     var advCSS = GM_getResourceText("advCSS");
     GM_addStyle(advCSS);
 
-
     $('#header').remove();
     // $('#footer').remove();
-
-    //TODO remove once website 
-    // $('.catfilteritem').find('li>a').addClass('catfilterlink');
-    // $(document).tooltip();
-
 
     _log('preloadFormat() End',DLOG);
 }
@@ -611,7 +607,7 @@ function formatFilterResultsPage(){
         // highightSortArrow();
         floatApplyFilters();
         fixAssociatedPartInFilterForm();
-        //TODO fix dependancies of if statements below
+        //TODO fix dependencies of if statements below
         
         picsToAccel(); //add the thumnails to picture accelerator block
         if(localStorage.getItem('combinePN') == 1) {
@@ -769,8 +765,8 @@ function addMathCol(){
         try{                
             // var firstnum = Qty.parse($(this).find('td').eq(fcol).text().split('@')[0]);
             // var secondnum = Qty.parse($(this).find('td').eq(scol).text().split('@')[0]);
-            var firstNum = parseCell($(this).find('td').eq(fcol));
-            var secondNum = parseCell($(this).find('td').eq(scol));
+            var firstNum = parseElemForQty($(this).find('td').eq(fcol));
+            var secondNum = parseElemForQty($(this).find('td').eq(scol));
             var finalNum = null;
                 //console.log('firstnum', firstNum, 'secondNum', secondNum, ' sntext ', $(this).find('td').eq(scol).text());
             
@@ -808,42 +804,58 @@ function addMathCol(){
     _log('addMathCol() End', DLOG);
 }
 
-function parseCell($td){
-    // this looks for special cases that the Qty.parse function does not handle well and
-    // gives the values some context if needed
-    var tdtext = '';
-    if($td.hasClass('CLS 1')){
+
+function preProcessForQty($elem){
+    var parsableText = '';
+    var etext = $elem.text()
+    if($elem.hasClass('CLS 1')){
         //console.log('type = resistance');
-        tdtext = $td.text() + 'Ohm'
-    }else if ($td.hasClass('unitprice') || $td.hasClass('priceme')){
+        parsableText = etext + 'Ohm'
+    }else if ($elem.hasClass('unitprice') || $elem.hasClass('priceme')){
         //console.log('type = price')
-        tdtext = $td.text().split('@')[0] + ' USD';
-    }else if ($td.hasClass('CLS 2')){
-        tdtext = $td.text().split(',')[0];
-        if(($td.text().split(',').length > 2)){
+        parsableText = etext.split('@')[0] + ' USD';
+    }else if ($elem.hasClass('CLS 2')){
+        parsableText = etext.split(',')[0];
+        if((etext.split(',').length > 2)){
             console.log('there may be more values in this cell than were handled');
         }
-    }else if ($td.text().indexOf('(') !== -1){
-        tdtext = $td.text().split('(')[0];
+    }else if ($elem.hasClass('CLS 33')){
+        // console.log('type = Capacity cls 33');
+        if(etext.indexOf('Ah') != -1){
+            parsableText = etext.replace('Ah', 'A h');
+            // console.log('change to A h', parsableText);
+        }else{ 
+            parsableText = etext;
+        }
+    }else if (etext.indexOf('(') !== -1){
+        parsableText = etext.split('(')[0];
         console.log('type with multiple units in ()');
-    }else if ($td.hasClass('qtyAvailable')){
+    }else if ($elem.hasClass('qtyAvailable')){
         // this will have problems with European notation '5,4' vs '5.4'
-        tdtext = $td.text().split('-')[0].replace(/,/g, '');
+        parsableText = etext.split('-')[0].replace(/,/g, '');
     }
     else{
-        tdtext = $td.text();
+        parsableText = etext;
+        // console.log('general case', parsableText);
     }
+    return parsableText;
+}
+
+function parseElemForQty($elem){
+    var elemText = preProcessForQty($elem);
     try{
-        //console.log(tdtext);
-        var num = Qty.parse(tdtext);
+        //console.log(elemText);
+        var num = Qty.parse(elemText);
         if(num == null){ 
-            console.log("can't parse ", tdtext);
+            console.log("can't parse ", elemText, elemText.length);
             return num;
         }else{ return num;}
     }catch(err){
-        console.log('parseCell Error', $td.text() , err);
+        console.log('parseElemForQty Error', $elem.text() , err);
     }
 }
+
+
 
 function getNormalization(colNum){
     //goes through each row of the #productTable and finds the most common label for given column
@@ -853,7 +865,7 @@ function getNormalization(colNum){
         try{
             indexrow = ind;
             //unitarray.push(Qty.parse($(this).find('td').eq(colNum).text().split('@')[0]).units());
-            unitarray.push(parseCell($(this).find('td').eq(colNum)).units());
+            unitarray.push(parseElemForQty($(this).find('td').eq(colNum)).units());
         }
         catch(err){ 
             //console.log('normalization error on row ', indexrow , err);
@@ -914,7 +926,7 @@ function addGraphInterface(){
         'open': openGraphDialog,
         'close': closeGraphDialog,
         'modal': true,
-        'height': 500,
+        'height': 550,
         'width': 900,
         'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
     });
@@ -929,6 +941,8 @@ function addGraphInterface(){
             '<button id="drawGraphButton">Go</button>'+
         '</form>'
     );
+
+    $('#graphDialog').append('<div class="featureNotice">This is a test feature.  All data shown in chart is only from table below on the current page. To view maximum number of points change the number of Results per Page to 500 </div>')
     $('#drawGraphButton').on('click', function(e){
         e.preventDefault();
         console.log('graphcol1', $('#xGraphColumn').val(), 'graphcol2', $('#yGraphColumn').val());
@@ -940,10 +954,12 @@ function addGraphInterface(){
         $('#graphDialog').dialog('open'); 
         e.preventDefault();
     });
+
+    $('#graphDialog').append('<div class="graphErrorNotice"></div>')
 }
     
 function openGraphDialog(){
-    $('#graphDialog').append('<div id=graphContainer style="width:800px;"></div>');
+    $('.featureNotice').after('<div id=graphContainer style="width:800px;"></div>');
     insertTableSelectValues('#xGraphColumn', '#yGraphColumn');
     $('#xGraphColumn, #yGraphColumn').on('mouseenter.graph', 'option', function(){
         var colval = +$(this).val()+1;
@@ -963,27 +979,48 @@ function closeGraphDialog(){
 
 function getChartSeriesData(xcol, ycol, xunit, yunit){
     // TODO verify numerical inputs
-    // TODO give option for non-numerical
+    // TODO give option for non-numerical.... create dictionary, enumerate, then plot across each unique item
 
     var pt = $('#productTable');
     var data = [];
+    var failedData = [];
 
-    pt.find('tbody>tr').each(function(){
-        data.push(getDataPoint(xcol,ycol, xunit, yunit, $(this)))
+    pt.find('tbody>tr').each(function(ind){
+        var dp = getDataPoint(xcol,ycol, xunit, yunit, $(this));
+        if (dp.usablePoint !== false){
+            data.push(dp);
+        }else{
+            console.log('incomplete data for row', ind);
+            failedData.push(dp);
+        }
     });
-    console.log(data);
-    return data;
+    console.log(failedData);
+    return {'validPoints':data, 'failedPoints': failedData};
 }
 
 
 function getDataPoint(xcol, ycol, xunit, yunit, $row){
-    var x = parseCell($row.find('td').eq(xcol));
-    var y = parseCell($row.find('td').eq(ycol));
-    return {
-        'name':$row.find('.mfg-partnumber a:first').text(),
-        'dkname': $row.find('meta[itemprop=productID]').attr('content').replace('sku:',''),
-        'x': toUnit(x, xunit).scalar,
-        'y': toUnit(y, yunit).scalar
+    var xcell = $row.find('td').eq(xcol)
+    var ycell = $row.find('td').eq(ycol)
+    var x = parseElemForQty(xcell);
+    var y = parseElemForQty(ycell);
+
+    var retData;
+    // if( x== undefined || y == undefined){console.log('x', x, 'y', y);}
+    if (x !== null && y !== null){
+        return {
+            'name':$row.find('.mfg-partnumber a:first').text(),
+            'dkname': $row.find('meta[itemprop=productID]').attr('content').replace('sku:',''),
+            'x': toUnit(x, xunit).scalar,
+            'y': toUnit(y, yunit).scalar,
+            'usablePoint': true
+        }
+
+    }else{ 
+        return {
+            'name':$row.find('.mfg-partnumber a:first').text(),
+            'usablePoint': false
+        };
     }
 }
 
@@ -1000,11 +1037,14 @@ function toUnit(q, unit){
 }
 
 function drawChart(xcol, ycol){
-
+    //TODO, give option to draw not log, vs log graphs
+    //TODO always-on hover tooltip
+    //TODO make each point clickable to new tab?
     var xname = $('#productTable').find('thead>tr:first th').eq(xcol).text();
     var yname = $('#productTable').find('thead>tr:first th').eq(ycol).text();
     var xunit = getNormalization(xcol);
     var yunit = getNormalization(ycol);
+    var pointData = getChartSeriesData( xcol, ycol, xunit, yunit);
 
     $('#graphContainer').highcharts({
         chart: {
@@ -1058,11 +1098,17 @@ function drawChart(xcol, ycol){
             }
         },
         series: [{
-            name: $('#famBreadCrumb').text(),
+            name: $('#famBreadCrumb').text(), //dependency identified
             color: 'rgba(223, 83, 83, .5)',
-            data: getChartSeriesData( xcol, ycol, xunit, yunit),
+            data: pointData.validPoints,
             },]
     });
+    
+
+    $('.graphErrorNotice').text('There were '+ pointData.failedPoints.length +
+        ' rows that were not included in this chart due to parsing errors.');
+    console.log(pointData.failedPoints);
+
 }
 
 function formatQtyBox(){
@@ -2019,6 +2065,7 @@ function UpdateFloatingHeader() {
 }
 
 //adds floating table header in the productTable search results
+//TODO see if needed.... might be unused
 function addPersistHeader() {
     _log('addPersistHeader() Start',DLOG);
     GM_addStyle(".floatingHeader {position: fixed; top: 0;visibility: hidden; display:inline-block;}");
@@ -3126,7 +3173,6 @@ function addEvents(){
 }
 
 function addColumnHider(){
-    // TODO store across visits.
     _log('addColumnHider() Start',DLOG);
     $('#productTable').before('<button id=showCols style="height:20px; padding:1px; margin:2px 10px;"class=minimal>Show hidden Columns</button>');
     $('#showCols').click(function(e){
@@ -3593,7 +3639,6 @@ var ap = (function(){
     },
 
     addFilterAllForm = function($boxSel){
-        //TODO add a form to "see all" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         var pnlist = '';
         var itemlist = $boxSel.data('itemlist');
         itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
@@ -3644,10 +3689,12 @@ var ap = (function(){
         });
 
         $('.expander-div-5').each(function(){
-            boxDataArray.push({
-                'title': $(this).parent().find('.beablocktitle').text().split('\n')[0], 
-                'list':getAssociationListFromElem($(this))
-            });
+            if($(this).find('.product-details-also-evaluated').length < 1){
+                boxDataArray.push({
+                    'title': $(this).parent().find('.beablocktitle').text().split('\n')[0], 
+                    'list':getAssociationListFromElem($(this))
+                });
+            }
         });
         $('.attributes-optional-table .rd-extra-option').hide();
         for (var i=0; i<boxDataArray.length; i++){
@@ -3660,232 +3707,233 @@ var ap = (function(){
 })();
 
 //---------------------------------------------
-function addAssProdLinkToFilters(){
-    // put all part numbers in to link to make filterable
-    _log('addAssProdLinkToFilters() Start',DLOG);
-    _log('more count ' + $('td>a:contains("More")').parent().length);
-    var asstypes = [
-        "Associated Product",
-        "For Use With",
-        "Mating Products"
-    ];
+//obsolete scheduled for deletion
+// function addAssProdLinkToFilters(){
+//     // put all part numbers in to link to make filterable
+//     _log('addAssProdLinkToFilters() Start',DLOG);
+//     _log('more count ' + $('td>a:contains("More")').parent().length);
+//     var asstypes = [
+//         "Associated Product",
+//         "For Use With",
+//         "Mating Products"
+//     ];
 
-    //TODO might need to create keepout array for headers like For Use With/Related Product
-    for(var x=0; x<asstypes.length ; x++){
-        if($('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').find('a').length){
-            _log('asstypes being added '+ asstypes[x]);
-            $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').attr('title',asstypes[x]).attr('id',asstypes[x].replace(/\s/g,'')); // assign an ID to the Table cell
-            $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td>a:contains("More")').parent().addClass('hasMore');  // assign a class to table cells with a "More" link
-            $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').not('.hasMore').addClass('noMore'); // assign a class to table cells without a "More" Link
-        }
-    }
+//     //TODO might need to create keepout array for headers like For Use With/Related Product
+//     for(var x=0; x<asstypes.length ; x++){
+//         if($('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').find('a').length){
+//             _log('asstypes being added '+ asstypes[x]);
+//             $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').attr('title',asstypes[x]).attr('id',asstypes[x].replace(/\s/g,'')); // assign an ID to the Table cell
+//             $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td>a:contains("More")').parent().addClass('hasMore');  // assign a class to table cells with a "More" link
+//             $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').not('.hasMore').addClass('noMore'); // assign a class to table cells without a "More" Link
+//         }
+//     }
     
-    $('.hasMore').each(function(){
-        var nameAdd = $(this).attr('id')+'car';
-        var $thiscell = $(this);                // find 'more' link's parent cell
-        var $firstparttext = $(this).find('a:first').text(); // find text
-        var $morelink = $(this).find('a:contains("More")');
+//     $('.hasMore').each(function(){
+//         var nameAdd = $(this).attr('id')+'car';
+//         var $thiscell = $(this);                // find 'more' link's parent cell
+//         var $firstparttext = $(this).find('a:first').text(); // find text
+//         var $morelink = $(this).find('a:contains("More")');
         
-        $('#content').after('<div id="scratch'+$(this).attr('id')+'"></div>');
-        $('#scratch'+$(this).attr('id')).hide();
-        $('#scratch'+$(this).attr('id')).load($morelink.attr('href')+ ' tr>td:contains("'+ $firstparttext +'"):last', function(){
-            $thiscell.data('ndlinks', $(this).find('a:contains("-ND")'));
-            _log($thiscell.data('ndlinks').length);
-            _log('calculated '+$(this).find('a:contains("-ND")').length);
-            creatAssProdForm($thiscell);
-            addAssProdCarousel($thiscell);
-        });
-    });
+//         $('#content').after('<div id="scratch'+$(this).attr('id')+'"></div>');
+//         $('#scratch'+$(this).attr('id')).hide();
+//         $('#scratch'+$(this).attr('id')).load($morelink.attr('href')+ ' tr>td:contains("'+ $firstparttext +'"):last', function(){
+//             $thiscell.data('ndlinks', $(this).find('a:contains("-ND")'));
+//             _log($thiscell.data('ndlinks').length);
+//             _log('calculated '+$(this).find('a:contains("-ND")').length);
+//             creatAssProdForm($thiscell);
+//             addAssProdCarousel($thiscell);
+//         });
+//     });
     
-    $('.noMore').each(function(){
-        $(this).data('ndlinks', $(this).find('a:contains("-ND")'));
-        creatAssProdForm($(this));
-        addAssProdCarousel($(this));
-    });
-    _log('addAssProdLinkToFilters() End',DLOG);
-}
+//     $('.noMore').each(function(){
+//         $(this).data('ndlinks', $(this).find('a:contains("-ND")'));
+//         creatAssProdForm($(this));
+//         addAssProdCarousel($(this));
+//     });
+//     _log('addAssProdLinkToFilters() End',DLOG);
+// }
 
-function creatAssProdForm($productCell){
-    _log('creatAssProdForm() Start',DLOG);
-    var $partNumberLinks = $productCell.data('ndlinks');
-    var formInputs = '';
-    $partNumberLinks.each(function(){
-        formInputs += '<input type="hidden" value="'+ $(this).text()+'" name="part">';
-    });
-    $productCell.append('<div class=beablock style=" border: 1px solid gray;">Filter on All '+$productCell.prev().text()+
-        '<br><form method="post" action="/scripts/dksearch/dksus.dll" target="_blank">'+formInputs+
-        '<input type="submit" value="Filter"><label><input type=checkbox value=1 name=stock>In Stock Only<label></form></div>');
-    if($partNumberLinks.length < 100){
-        $('form[action="/scripts/dksearch/dksus.dll"]').attr('method','get'); // allow get strings whenever possible
-    }
-    $productCell.find('a:contains(More)').prepend($partNumberLinks.length+' ');
-    _log('creatAssProdForm() End',DLOG);
-}
+// function creatAssProdForm($productCell){
+//     _log('creatAssProdForm() Start',DLOG);
+//     var $partNumberLinks = $productCell.data('ndlinks');
+//     var formInputs = '';
+//     $partNumberLinks.each(function(){
+//         formInputs += '<input type="hidden" value="'+ $(this).text()+'" name="part">';
+//     });
+//     $productCell.append('<div class=beablock style=" border: 1px solid gray;">Filter on All '+$productCell.prev().text()+
+//         '<br><form method="post" action="/scripts/dksearch/dksus.dll" target="_blank">'+formInputs+
+//         '<input type="submit" value="Filter"><label><input type=checkbox value=1 name=stock>In Stock Only<label></form></div>');
+//     if($partNumberLinks.length < 100){
+//         $('form[action="/scripts/dksearch/dksus.dll"]').attr('method','get'); // allow get strings whenever possible
+//     }
+//     $productCell.find('a:contains(More)').prepend($partNumberLinks.length+' ');
+//     _log('creatAssProdForm() End',DLOG);
+// }
 
-function addAssProdCarousel($productCell){
-    _log('addAssProdCarousel() Start',DLOG);
-    var carid = $productCell.attr('id')+'car';
-    var carouselwidth = 600;
-    var arrowwidth = 25;
+// function addAssProdCarousel($productCell){
+//     _log('addAssProdCarousel() Start',DLOG);
+//     var carid = $productCell.attr('id')+'car';
+//     var carouselwidth = 600;
+//     var arrowwidth = 25;
 
-    //_log('wtf mate'+carid + ' part carid links '+ $partcaridLinks.length);
-    $('table[border=0]:contains("Family")>tbody>tr>td:eq(1)').append(
-        '<br><div class="carTitle">'+$productCell.attr('title')+'</div>'+
-        '<div id="'+carid+'" class="carouselClass">'+
-        '<div class="leftarrow arrow">\<</div>'+
-        '<div id="carCont'+carid+'" class="carouselContClass">Loading...</div>'+
-        '<div class="rightarrow arrow">\></div>'+
-        '</div>'
-    );
+//     //_log('wtf mate'+carid + ' part carid links '+ $partcaridLinks.length);
+//     $('table[border=0]:contains("Family")>tbody>tr>td:eq(1)').append(
+//         '<br><div class="carTitle">'+$productCell.attr('title')+'</div>'+
+//         '<div id="'+carid+'" class="carouselClass">'+
+//         '<div class="leftarrow arrow">\<</div>'+
+//         '<div id="carCont'+carid+'" class="carouselContClass">Loading...</div>'+
+//         '<div class="rightarrow arrow">\></div>'+
+//         '</div>'
+//     );
 
-    //initial fill of the carousel
-    _log('fillcar '+carid, 1);
-    $('#'+carid).data('myslice', {starting:0, ending:5});
-    var defaultslice = $('#'+carid).data('myslice');
-    _log('fillcar '+carid+ ' myslice '+ $('#'+carid).data('myslice').starting, DLOG);
+//     //initial fill of the carousel
+//     _log('fillcar '+carid, 1);
+//     $('#'+carid).data('myslice', {starting:0, ending:5});
+//     var defaultslice = $('#'+carid).data('myslice');
+//     _log('fillcar '+carid+ ' myslice '+ $('#'+carid).data('myslice').starting, DLOG);
 
-    //adds title to carousel
-    $('#'+carid).prev('.carTitle').text( $productCell.attr('title')+ ' from '+ (defaultslice.starting+1) + 
-        ' to ' + (defaultslice.ending) +' out of ' + $productCell.data('ndlinks').length);
-    //fills carousell initially
-    fillCarousel($productCell);
+//     //adds title to carousel
+//     $('#'+carid).prev('.carTitle').text( $productCell.attr('title')+ ' from '+ (defaultslice.starting+1) + 
+//         ' to ' + (defaultslice.ending) +' out of ' + $productCell.data('ndlinks').length);
+//     //fills carousell initially
+//     fillCarousel($productCell);
     
-    $('#'+carid+'>.rightarrow').click(function(){
-        var $sourceCell = $('#'+$(this).parent().attr('id').replace('car',''));
-        var myslice = $(this).parent().data('myslice');
-        var mod = ($sourceCell.data('ndlinks').length)%5;
-        _log('rightarrow clicked on ' + $sourceCell.attr('id')+' myslice is '+ myslice.starting + ' ' + myslice.ending + ' mod is ' +mod + ' sourceCell length '+ $sourceCell.length+ ' this length ' +$(this).length);
-        if(myslice.ending+5 <= $sourceCell.data('ndlinks').length){
-            _log('rightarrow if');
-            $(this).parent().data('myslice', {starting: myslice.starting+5, ending: myslice.ending+5});
-            $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting+5+1) + 
-                ' to ' + (myslice.ending+5) +' out of ' + $sourceCell.data('ndlinks').length);
-            fillCarousel($sourceCell);
-        }
-        else if(myslice.ending+mod <= $sourceCell.data('ndlinks').length){
-            _log('rightarrow else');
-            $(this).parent().data('myslice', {starting: myslice.starting+5, ending: myslice.ending+mod});
-            $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting+5+1) + 
-                ' to ' + (myslice.ending+mod) +' out of ' + $sourceCell.data('ndlinks').length);
-            fillCarousel($sourceCell);
-        }
-    });
+//     $('#'+carid+'>.rightarrow').click(function(){
+//         var $sourceCell = $('#'+$(this).parent().attr('id').replace('car',''));
+//         var myslice = $(this).parent().data('myslice');
+//         var mod = ($sourceCell.data('ndlinks').length)%5;
+//         _log('rightarrow clicked on ' + $sourceCell.attr('id')+' myslice is '+ myslice.starting + ' ' + myslice.ending + ' mod is ' +mod + ' sourceCell length '+ $sourceCell.length+ ' this length ' +$(this).length);
+//         if(myslice.ending+5 <= $sourceCell.data('ndlinks').length){
+//             _log('rightarrow if');
+//             $(this).parent().data('myslice', {starting: myslice.starting+5, ending: myslice.ending+5});
+//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting+5+1) + 
+//                 ' to ' + (myslice.ending+5) +' out of ' + $sourceCell.data('ndlinks').length);
+//             fillCarousel($sourceCell);
+//         }
+//         else if(myslice.ending+mod <= $sourceCell.data('ndlinks').length){
+//             _log('rightarrow else');
+//             $(this).parent().data('myslice', {starting: myslice.starting+5, ending: myslice.ending+mod});
+//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting+5+1) + 
+//                 ' to ' + (myslice.ending+mod) +' out of ' + $sourceCell.data('ndlinks').length);
+//             fillCarousel($sourceCell);
+//         }
+//     });
 
-    $('#'+carid+'>.leftarrow').click(function(){
-        var $sourceCell = $('#'+$(this).parent().attr('id').replace('car',''));
-        var myslice = $(this).parent().data('myslice');
-        var mod = ($sourceCell.data('ndlinks').length)%5;
-        _log('leftarrow clicked on ' + $sourceCell.attr('id')+' myslice is '+ myslice.starting + ' ' + myslice.ending + ' mod is ' +mod);
-        if (myslice.ending == $sourceCell.data('ndlinks').length){
-            $(this).parent().data('myslice', {starting: myslice.starting-5, ending: myslice.ending-mod});
-            $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting-5+1) + 
-                ' to ' + (myslice.ending-mod) +' out of ' + $sourceCell.data('ndlinks').length);
-            fillCarousel($sourceCell);
-        }
-        else if(myslice.ending-5 > 0){
-            _log('leftarrow else if');
-            $(this).parent().data('myslice', {starting: myslice.starting-5, ending: myslice.ending-5});
-            $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting-5+1) + 
-                ' to ' + (myslice.ending-5) +' out of ' + $sourceCell.data('ndlinks').length);
-            fillCarousel($sourceCell);
-        }
-    });
-    _log('addAssProdCarousel() End',DLOG);
-}
+//     $('#'+carid+'>.leftarrow').click(function(){
+//         var $sourceCell = $('#'+$(this).parent().attr('id').replace('car',''));
+//         var myslice = $(this).parent().data('myslice');
+//         var mod = ($sourceCell.data('ndlinks').length)%5;
+//         _log('leftarrow clicked on ' + $sourceCell.attr('id')+' myslice is '+ myslice.starting + ' ' + myslice.ending + ' mod is ' +mod);
+//         if (myslice.ending == $sourceCell.data('ndlinks').length){
+//             $(this).parent().data('myslice', {starting: myslice.starting-5, ending: myslice.ending-mod});
+//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting-5+1) + 
+//                 ' to ' + (myslice.ending-mod) +' out of ' + $sourceCell.data('ndlinks').length);
+//             fillCarousel($sourceCell);
+//         }
+//         else if(myslice.ending-5 > 0){
+//             _log('leftarrow else if');
+//             $(this).parent().data('myslice', {starting: myslice.starting-5, ending: myslice.ending-5});
+//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting-5+1) + 
+//                 ' to ' + (myslice.ending-5) +' out of ' + $sourceCell.data('ndlinks').length);
+//             fillCarousel($sourceCell);
+//         }
+//     });
+//     _log('addAssProdCarousel() End',DLOG);
+// }
 
-function fillCarousel($productCell){
-    _log('fillCarousel() Start',DLOG);
-    var link = '/scripts/dksearch/dksus.dll?';
-    //var carid = $productCell.attr('id')+'car';
-    //var $car = $('#'+carid);
-    var $carContent = $('#carCont'+$productCell.attr('id')+'car');
-    var start = $('#'+$productCell.attr('id')+'car').data('myslice').starting;
-    var end = $('#'+$productCell.attr('id')+'car').data('myslice').ending;
-    var slicedLinks = $productCell.data('ndlinks').slice(start,end);
-    //var slicedLinks = $('#scratch'+$productCell.attr('id')).find('a:contains("-ND")').slice(start, end);
-    //_log('slicedLinks = '+ slicedLinks.length);
-    slicedLinks.each(function(){
-        link = link + '&part=' + $(this).text();
-    });
-    //_log('loadmylink '+ link);
-    $carContent.html('Loading...');
-    $carContent.load(link + ' #productTable,.catfilterlink,table[itemtype="http://schema.org/Product"]', function(){
-        //alert('hi');
-        if($('#productTable').length){
-            filterTableForCar($carContent);
-        }
-        else if ($(this).find('#reportpartnumber').length){
-            filterDetailPageForCar($carContent);
+// function fillCarousel($productCell){
+//     _log('fillCarousel() Start',DLOG);
+//     var link = '/scripts/dksearch/dksus.dll?';
+//     //var carid = $productCell.attr('id')+'car';
+//     //var $car = $('#'+carid);
+//     var $carContent = $('#carCont'+$productCell.attr('id')+'car');
+//     var start = $('#'+$productCell.attr('id')+'car').data('myslice').starting;
+//     var end = $('#'+$productCell.attr('id')+'car').data('myslice').ending;
+//     var slicedLinks = $productCell.data('ndlinks').slice(start,end);
+//     //var slicedLinks = $('#scratch'+$productCell.attr('id')).find('a:contains("-ND")').slice(start, end);
+//     //_log('slicedLinks = '+ slicedLinks.length);
+//     slicedLinks.each(function(){
+//         link = link + '&part=' + $(this).text();
+//     });
+//     //_log('loadmylink '+ link);
+//     $carContent.html('Loading...');
+//     $carContent.load(link + ' #productTable,.catfilterlink,table[itemtype="http://schema.org/Product"]', function(){
+//         //alert('hi');
+//         if($('#productTable').length){
+//             filterTableForCar($carContent);
+//         }
+//         else if ($(this).find('#reportpartnumber').length){
+//             filterDetailPageForCar($carContent);
             
-        }
-        else if($('.catfilterlink').length){
-            //alert('hi');
-            $('.catfilterlink:lt(5)').each(function(){
-                _log('catfilterlinks exist in associated '+ $(this).attr('href'));
-                    $('<div>').load($(this).attr('href')+ ' #productTable,.catfilterlink,table[itemtype="http://schema.org/Product"]', function(){
-                    if($(this).find('#productTable').length){
+//         }
+//         else if($('.catfilterlink').length){
+//             //alert('hi');
+//             $('.catfilterlink:lt(5)').each(function(){
+//                 _log('catfilterlinks exist in associated '+ $(this).attr('href'));
+//                     $('<div>').load($(this).attr('href')+ ' #productTable,.catfilterlink,table[itemtype="http://schema.org/Product"]', function(){
+//                     if($(this).find('#productTable').length){
 
-                        filterTableForCar($(this), $carContent);
-                    }else if($(this).find('#reportpartnumber').length){
-                        filterDetailPageForCar($(this), $carContent); 
-                    }
-                });
-                $(this).remove();
-            });
-        }
-    });
-    _log('fillCarousel() Start',DLOG);
-}
+//                         filterTableForCar($(this), $carContent);
+//                     }else if($(this).find('#reportpartnumber').length){
+//                         filterDetailPageForCar($(this), $carContent); 
+//                     }
+//                 });
+//                 $(this).remove();
+//             });
+//         }
+//     });
+//     _log('fillCarousel() Start',DLOG);
+// }
 
-function filterDetailPageForCar($carContent, $targetDiv){
-    if($targetDiv == undefined){
-        $targetDiv = $carContent;
-    }
-    //$targetDiv = $targetDiv.length ? $targetDiv : $carContent;
-    var tmbsrc= $carContent.find('img[src*="http://media.digikey.com/"]').attr('src').replace('sml','tmb');
-    var pnText= $carContent.find('#reportpartnumber').text();
-    $targetDiv.append(
-        '<div class="carItems">' + 
-            '<a href=/scripts/dksearch/dksus.dll?k="'+pnText+'"><img src="'+ tmbsrc + '"></a>' +'<br>'+ 
-            $carContent.find('td[itemprop=description]').text()+ '<br>'+ 
-            '<a href=/scripts/dksearch/dksus.dll?k="'+pnText+'">'+pnText+'</a>'+                
-        '</div>'
-    );
-    $('.carItems').css({
-        'float':'left',
-        'width':'110px',
-        'height':'148px',
-    });
-    $carContent.find('table').remove();
-}
+// function filterDetailPageForCar($carContent, $targetDiv){
+//     if($targetDiv == undefined){
+//         $targetDiv = $carContent;
+//     }
+//     //$targetDiv = $targetDiv.length ? $targetDiv : $carContent;
+//     var tmbsrc= $carContent.find('img[src*="http://media.digikey.com/"]').attr('src').replace('sml','tmb');
+//     var pnText= $carContent.find('#reportpartnumber').text();
+//     $targetDiv.append(
+//         '<div class="carItems">' + 
+//             '<a href=/scripts/dksearch/dksus.dll?k="'+pnText+'"><img src="'+ tmbsrc + '"></a>' +'<br>'+ 
+//             $carContent.find('td[itemprop=description]').text()+ '<br>'+ 
+//             '<a href=/scripts/dksearch/dksus.dll?k="'+pnText+'">'+pnText+'</a>'+                
+//         '</div>'
+//     );
+//     $('.carItems').css({
+//         'float':'left',
+//         'width':'110px',
+//         'height':'148px',
+//     });
+//     $carContent.find('table').remove();
+// }
 
-function filterTableForCar($carContent, $targetDiv){
-    //$targetDiv = $targetDiv.length ? $targetDiv : $carContent;
-    if($targetDiv == undefined){
-        $targetDiv = $carContent;
-    }
-    var imgIndex = $carContent.find('#productTable th:contains("Image")').index() + 1;
-    _log('imgIndex' + imgIndex);
-    var imgLinkSet = $carContent.find('#productTable tr td:nth-child('+imgIndex+')').find('a');
-    var descSet =    $carContent.find('#productTable tr td:nth-child('+(imgIndex + 3)+')');
-    var pnSet =      $carContent.find('#productTable tr td:nth-child('+(imgIndex + 1)+')').find('a');
-    imgLinkSet.each(function(ind){
-            $targetDiv.append(
-                '<div class="carItems">' + 
-                    $(this).parent().html() +'<br>'+ 
-                    descSet.eq(ind+1).text() + '<br>'+ 
-                    pnSet.eq(ind+2).parent().html() +
-                '</div>'
-            );
-    });
+// function filterTableForCar($carContent, $targetDiv){
+//     //$targetDiv = $targetDiv.length ? $targetDiv : $carContent;
+//     if($targetDiv == undefined){
+//         $targetDiv = $carContent;
+//     }
+//     var imgIndex = $carContent.find('#productTable th:contains("Image")').index() + 1;
+//     _log('imgIndex' + imgIndex);
+//     var imgLinkSet = $carContent.find('#productTable tr td:nth-child('+imgIndex+')').find('a');
+//     var descSet =    $carContent.find('#productTable tr td:nth-child('+(imgIndex + 3)+')');
+//     var pnSet =      $carContent.find('#productTable tr td:nth-child('+(imgIndex + 1)+')').find('a');
+//     imgLinkSet.each(function(ind){
+//             $targetDiv.append(
+//                 '<div class="carItems">' + 
+//                     $(this).parent().html() +'<br>'+ 
+//                     descSet.eq(ind+1).text() + '<br>'+ 
+//                     pnSet.eq(ind+2).parent().html() +
+//                 '</div>'
+//             );
+//     });
 
-    $('.carItems').css({
-        'float':'left',
-        'width':'110px',
-        'height':'148px',
-    });
-    $('#productTable').remove();
-}
+//     $('.carItems').css({
+//         'float':'left',
+//         'width':'110px',
+//         'height':'148px',
+//     });
+//     $('#productTable').remove();
+// }
 
 //*************************** TODO fix collision events 
 function addDashNDHover(){
