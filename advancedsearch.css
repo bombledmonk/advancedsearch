@@ -250,7 +250,7 @@ input[type="text"]:focus{
 #resnum>p {
 	position: fixed;
 	left: 99px;
-	top: 15px;
+	top: 18px;
 	color: red;
 	font-size: 14px;
 	background: white;
@@ -259,7 +259,7 @@ input[type="text"]:focus{
 .seohtagbold {
 		position: fixed;
 		left: 430px;
-		top: 28px;
+		top: 35px;
 		z-index: 7;
 		background: white;
 		padding-right: 100px;
@@ -698,6 +698,39 @@ option:hover{
 	position:relative;
 	z-index: 1002;
 }
+
+/*checkbox start*/
+input[type=checkbox].css-checkbox {
+              position:absolute; z-index:-1000; left:-1000px; overflow: hidden; clip: rect(0 0 0 0); height:1px; width:1px; margin:-1px; padding:0; border:0;
+            }
+
+            input[type=checkbox].css-checkbox + label.css-label {
+              padding-left:21px;
+              height:16px; 
+              display:inline-block;
+              line-height:16px;
+              background-repeat:no-repeat;
+              background-position: 0 0;
+              font-size:12px;
+              vertical-align:middle;
+              cursor:pointer;
+
+            }
+
+            input[type=checkbox].css-checkbox:checked + label.css-label {
+              background-position: 0 -16px;
+            }
+            label.css-label {
+        background-image:url(https://dl.dropboxusercontent.com/u/26263360/img/csscheckbox_red.png);
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+/*checkbox end*/
+
 
 /*button sizing*/
 

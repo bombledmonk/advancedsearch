@@ -27,13 +27,16 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
+// @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base-min.css
+// @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure-min.css
+// @resource    fontAwesomeCSS https://dl.dropboxusercontent.com/u/26263360/script/css/font-awesome.css
 // @updateURL   https://goo.gl/vbjoi
 // @downloadURL https://bit.ly/advsearch-user-js
 // @run-at      document-end
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.3
+// @version     2.9.4
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -159,7 +162,10 @@
 //2.9.1     added graphing/charting, fixed picture carousel, refining value parser
 //2.9.2     refactored associated product, fixed header link bugs, removed beablock blue, various other bug fixes
 //2.9.3     hid customers who evaluated box
+//2.9.4     added fonts, restyled checkboxes, filter page bug fixes
 
+//TODO only add "clear" buttons if options are selected
+//TODO style checkboxes csscheckbox.com
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //TODO hide associated product rows
 //TODO Make graphs into filter inputs. look in drawChart function
@@ -171,15 +177,17 @@
 //TODO Hide individual Filters
 //TODO fix associated products hover 'add to cart' button
 //TODO add feature to research on "no results found" when in stock checkboxes are checked.
+//TODO check out IndexedDB for caching
+//TODO explore adding upper and lower limit filters to sequential filters.
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '10/29/14';
+var lastUpdate = '11/26/14';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
-var MAX_PAGE_LOAD = 20;
-var selectReset = null;
+// var MAX_PAGE_LOAD = 20;
+// var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
 var sitemaplink = $('#header').find('a:contains("Site Map"):first').attr('href');
 var mydklink = getMyDigiKeyLink();
@@ -189,23 +197,6 @@ var sincelast = Date.now();
 var cacheflag = false;
 
 
-var customform = '<div id="cHeader" style="display:block;"><a href="http://digikey.'+theTLD+'">'+
-    '<img align=left top="50px" height=50 src="http://dkc1.digikey.com/us/en/mkt/DKinfo/DKCorp_oval.gif"></a>'+
-    '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">'+
-    '<a href="http://dkc1.digikey.com/us/en/help/help10.html">'+
-    '<b>Keywords:</b></a> <input type="text" value="" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
-    '<label class="css-label"><input type="checkbox" value="1" name="stock" id="stock" class="saveState css-checkbox"><b>In stock</b></label>'+
-    // '<label class="css-label"><input type="checkbox" value="1" name="pbfree" id="pbfree" class="css-checkbox"><b>Lead free</b></label>'+
-    '<label class="css-label"><input type="checkbox" value="1" name="rohs" id="rohs" class="css-checkbox"><b>RoHS Compliant </b></label> '+
-    '<input align=right type="submit" value="New Search" id="searchbutton">'+
-    '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
-    '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form><span id="resnum"></span>'+
-    '<span id=quicklinks><a href="'+indexlink+'">Product Index</a> | '+
-    '<a href="'+mydklink+'">My Digi-Key</a> | '+
-    '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><img src="https://dl.dropboxusercontent.com/u/26263360/img/carticon.png"> Cart<span id=cartquant></span> <img src="http://he-st.com/img/downarrowred.png"></img></a> | '+
-    // '<a href="'+sitemaplink+'">Site Map</a></span>'+
-'</div>';
-
 //loads before document status is ready
 function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
@@ -213,10 +204,8 @@ function preloadFormat(){
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
     GM_addStyle("#header {display: none;} #content hr {display:none;} #footer{position:relative; top:45px;} #content>form:first-child {display:none} #content>p {display:none;} ");
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
-    var buttonCSS = GM_getResourceText("buttonCSS");
-    GM_addStyle(buttonCSS);
-    var advCSS = GM_getResourceText("advCSS");
-    GM_addStyle(advCSS);
+
+    addResourceCSS();
 
     $('#header').remove();
     // $('#footer').remove();
@@ -236,12 +225,26 @@ $(document).ready(function() {
     _log('[ready] end of document ready function');
 });
 
+function addResourceCSS(){
+    var cssNames = [
+        "buttonCSS",
+        "advCSS",
+        "normalizeCSS",
+        "pureCSS",
+        "fontAwesomeCSS"
+    ];
+    for ( var x in cssNames){
+        GM_addStyle(GM_getResourceText(cssNames[x]));
+    }
+
+}
+
 function tc(thefunc, name){ // tc = try catch
     try{
         thefunc();
     }catch(err){
         alert('failed on '+ name + '\n' + err.message + 
-            '\n\n If you are getting repeated errors try manually updating by clicking on the ++controls++ box in the upper right hand corner and then hit the manual update link.'+
+            '\n\n If you are getting repeated errors try manually updating by clicking on the ++settings++ box in the upper right hand corner and then hit the manual update link.'+
             '\n\n Alternatively, copy and paste this link into your browser:  https://bit.ly/advsearch-user-js'
             );
     }
@@ -291,9 +294,7 @@ function replaceQuestionMark(){
 function cleanup () {   
     askpermission();
 
-    $('input[type=submit],input[type=reset]').addClass('minimal').css({
-        'height:': '16px',
-        'padding':'1px',
+    $('input[type=submit],input[type=reset]').addClass('button-small pure-button').css({
         'margin': '2px',
     });
     $('p:contains("No records match your")').show();
@@ -332,29 +333,48 @@ function updateCache(){
 
 
 function addCustomHeader(){
-        _log('addCustomHeader() Start',DLOG);
-        var keywordval = $('.psdkdirchanger').val();
-        var stockval = $('#stock').prop('checked');
-        var pbfreeval = $('#pbfree').prop('checked');
-        var rohsval = $('#rohs').prop('checked');
-        _log('stockval is'+ stockval+ ' checked status is '+ $('#stock').prop('checked'),DLOG);
-        $('#content').after(customform);
-        $('.dkdirchanger2').val(keywordval);
-        $('#stock').prop('checked', stockval);
-        $('#pbfree').prop('checked', pbfreeval);
-        $('#rohs').prop('checked', rohsval);
-        $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
-        $('.content-keywordSearch-form').closest('form').remove();
+    _log('addCustomHeader() Start',DLOG);
+    //TODO style the form with purecss
+    var customform = '<div id="cHeader" style="display:block;"><a href="http://digikey.'+theTLD+'">'+
+        '<img align=left top="50px" height=50 src="http://dkc1.digikey.com/us/en/mkt/DKinfo/DKCorp_oval.gif"></a>'+
+        '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">'+
+        '<a href="http://dkc1.digikey.com/us/en/help/help10.html">'+
+        '<b>Keywords:</b></a> <input type="search" value="" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
+        // '<label class="css-label"><input type="checkbox" value="1" name="pbfree" id="pbfree" class="css-checkbox"><b>Lead free</b></label>'+
+        // '<label class="css-label"><input type="checkbox" value="1" name="rohs" id="hrohs" class="css-checkbox"><b>RoHS Compliant </b></label> '+
+        '<input align=right type="submit" value="New Search" id="searchbutton">'+
+        ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
+        '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
+        '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form><span id="resnum"></span>'+
+        '<span id=quicklinks><a href="'+indexlink+'">Product Index</a> | '+
+        '<a href="'+mydklink+'">My Digi-Key</a> | '+
+        '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><img src="https://dl.dropboxusercontent.com/u/26263360/img/carticon.png"> Cart<span id=cartquant></span> <img src="http://he-st.com/img/downarrowred.png"></img></a> | '+
+        // '<a href="'+sitemaplink+'">Site Map</a></span>'+
+    '</div>';
 
-        $('.matching-records:contains("Results")').delegate(function(){
-            $(this).text($(this).text().replace('Results', 'awesome'));
-        });
+    var keywordval = $('.psdkdirchanger').val();
+    var stockval = $('#stock').prop('checked');
+    var pbfreeval = $('#pbfree').prop('checked');
+    var rohsval = $('#rohs').prop('checked');
+    _log('stockval is'+ stockval+ ' checked status is '+ $('#stock').prop('checked'),DLOG);
+    $('#content').after(customform);
+    $('.dkdirchanger2').val(keywordval);
+    $('#stock').prop('checked', stockval);
+    $('#pbfree').prop('checked', pbfreeval);
+    $('#rohs').prop('checked', rohsval);
+    $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
+    $('.content-keywordSearch-form').closest('form').remove();
 
-        tc(searchButtonHighlight, 'searchButtonHighlight');
-        _log('addCustomHeader() End',DLOG);
+    //TODO flag for removal?
+    $('.matching-records:contains("Results")').delegate(function(){
+        $(this).text($(this).text().replace('Results', 'awesome'));
+    });
+
+    tc(searchButtonHighlight, 'searchButtonHighlight');
+    _log('addCustomHeader() End',DLOG);
 }
 
-function addControlWidget() {
+function addControlWidgetold() {
     _log('addControlWidget() Start',DLOG);
     $('#content').after('<div id="controlDiv" class="gray-grad">'+
             '<span id="controlSpan" style="cursor:pointer;" > +controls+ v' + version + '</span>' +
@@ -363,10 +383,10 @@ function addControlWidget() {
             '<div class="clearfix">'+
                 '<img src="http://goo.gl/53qn5g">'+
                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
-                '<label><input type=checkbox id=qtydefault class="saveState" value="1">Always initially sort by price @ Qty</input></label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
-                '<label><input type=checkbox id=combinePN class="saveState" value="1"> Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
-                '<label><input type=checkbox id=pricehoverControl class="saveState" value="1">Turn on price break popup on hovering over prices </input></label><br>' + 
-                '<label><input type=checkbox id=queryHighlight class="saveState" value="1">Turn on query term highlighting in on filter pages </input></label><br>' +   
+                '<input type=checkbox id=qtydefault class="saveState css-checkbox" value="1">Always initially sort by price @ Qty<label class="css-label" for="qtydefault"></label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
+                '<input type=checkbox id=combinePN class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
+                '<input type=checkbox id=pricehoverControl class="saveState css-checkbox" value="1">Turn on price break popup on hovering over prices </label><br>' + 
+                '<input type=checkbox id=queryHighlight class="saveState css-checkbox" value="1">Turn on query term highlighting in on filter pages </label><br>' +   
                 '<label>Explore Mode Popup Delay time<input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
                 // '<label><input type=checkbox id=wrapFilters class="saveState" value="0">Turn on screen wrapping for multiselect filters (in progress)</input></label><br>' + 
                 //'<label><input type=checkbox id=pagesControl >Default number of extra pages to load on filter (drill down) pages</input></label> <input type=text id="pageloadnumberbox" value="4" size="4" ><br>' +
@@ -459,7 +479,97 @@ function addControlWidget() {
     addControlWidgetActions2();
     _log('addControlWidget() End',DLOG);
 }
+function addControlWidget() {
+    _log('addControlWidget() Start',DLOG);
+    $('#content').after('<div id="controlDiv" class="gray-grad" title="settings for advancedsearch v'+version+'">'+
+            '<a href="'+downloadLink+'"  style="float:right;"> click to manually update</a> ' +
+            // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
+            '<div class="clearfix">'+
+                '<img src="http://goo.gl/53qn5g">'+
+                '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
+                '<input type=checkbox id=qtydefault class="saveState css-checkbox" value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
+                '<input type=checkbox id=combinePN class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
+                '<input type=checkbox id=pricehoverControl class="saveState css-checkbox" value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
+                '<input type=checkbox id=queryHighlight class="saveState css-checkbox" value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
+                '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
+                // '<label><input type=checkbox id=wrapFilters class="saveState" value="0">Turn on screen wrapping for multiselect filters (in progress)</input></label><br>' + 
+                //'<label><input type=checkbox id=pagesControl >Default number of extra pages to load on filter (drill down) pages</input></label> <input type=text id="pageloadnumberbox" value="4" size="4" ><br>' +
+                //'<label><input type=checkbox id=keepstock> Keep In stock,Lead free, and RoHS checkboxes between visits (not working yet)</label><br>'+
+                //'<label><input type=checkbox id=dragTables> Turn on Draggable Tables</label><br>' +
+                '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
+                '<label><input type=checkbox id=picPrevControl class="saveState css-checkbox" value="1"> <label class="css-label" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
+                '<label><input type=checkbox id=qfControl class="saveState css-checkbox" value="1"> <label class="css-label" for="qfControl">Turn on Quick Pick Box</label><br>' +
+                '<label><input type=checkbox id=familyHighlight class="saveState css-checkbox" value="1"> <label class="css-label" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
+                '<label><input type=checkbox id=instantfilter class="saveState css-checkbox" value="1"><label class="css-label" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
+                //'<label><input type=checkbox id=altColorTableRows> Turn off alternating shading of table rows</label><br>' +
+                '<br><span style="font-weight:bold">Experimental</span><br>'+
+                '<input type=checkbox id=analytics class="saveState css-checkbox" value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
+                '<input type=checkbox id=spellcheck class="saveState css-checkbox" value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
+                '<input type=checkbox id=stickyfilters class="saveState css-checkbox" value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
+                '<input type=checkbox id=squishedFilters class="saveState css-checkbox" value="0"><label class="css-label" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
+            '</div><br><br>'+
+            // '<button id=applyControls class="clean-gray" style="float:right; margin-right:40px;"> Apply & Refresh</button>'+
+            '<button id=restoredefaults class="clean-gray" style="margin-left:20px"> restore defaults </button>'+
+            '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
+        '</div>'
+    );
 
+    $('#content').after('<div id="controlSpan" class="pure-button"><i class="fa fa-cog"></i> settings v' + version + '</div>');
+    
+    $('#controlDiv').dialog({
+        autoOpen: false,
+        resizable: false,
+        height:600,
+        width:800,
+        modal: true,
+        buttons: {
+            "Apply & Refesh Page": function() {
+                $(this).css('color', 'lightgrey');
+                $( this ).dialog( "close" );
+                document.location.reload();
+            },
+            Cancel: function() {
+                $( this ).dialog( "close" );
+            }
+        }
+    });
+
+    $('#controlSpan').click(function(){
+        $('#controlDiv').dialog('open');
+    });
+
+    _log(encodeURIComponent(window.location), true);
+
+    $('#applyControls').click(function(){
+        $(this).css('color', 'lightgrey');
+        document.location.reload();
+    });
+
+    $('#restoredefaults').click(function(){
+        $(this).css('color', 'lightgrey');
+        _log(Object.keys(localStorage));
+        localStorage.clear();
+        _log(Object.keys(localStorage));
+    });
+    
+    $('#controlSpan').css({
+        'position': 'fixed',
+        'right': '10px',
+        'top': '22px',
+        'z-index': '19',
+        // 'border': '1px solid grey',
+        // 'width-max': '105px',
+        // 'height': '15px',
+        // "borderRadius": "5px",
+        // 'overflow': 'hidden',
+        // 'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)',
+        'cursor':'pointer',
+        // 'padding':'1px 3px'
+    });
+
+    addControlWidgetActions2();
+    _log('addControlWidget() End',DLOG);
+}
 function addpiwik(){
 	var theuid = getID();
     var webref = document.referrer.toString();//.replace(/\&/g, '_');
@@ -588,6 +698,25 @@ function restoreInputState($singleFormElem){
     //_log('restoreInputState($singleFormElem) Start',DLOG);
 }
 
+function styleCheckboxes(){
+
+    $('.filters-group input[type=checkbox]').not('.css-checkbox').each(function(){
+        $(this).parent().wrap('<div style="display:inline-block; margin-right:10px;" />');
+        $(this).parent().attr('for',$(this).attr('id'));
+        $(this).insertBefore($(this).parent());
+    });
+    $('.filters-group input[type=checkbox]').not('.css-checkbox').addClass('css-checkbox');
+    
+
+    $('.filters-group label[for]').not('.css-label').each(function(){
+        $(this).html($(this).text());
+    })
+    $('.filters-group label[for]').not('.css-label').addClass('css-label');
+
+    $('.filters-group').css({'padding-top':'3px'});
+
+}
+
 function formatFilterResultsPage(){
     if ( $('#productTable').length){
         _log('formatFilterResultsPage() Start',DLOG);
@@ -600,7 +729,7 @@ function formatFilterResultsPage(){
         $('a.altpkglink').hide();
         $('input[type=reset]').attr('value', 'Clear All').css('margin-left','10px');
         //$('img[src="http://dkc3.digikey.com/us/images/datasheet.gif"]').attr('src','http://goo.gl/8S0j5');// adds transparent background to gif anonymous stats for this image are located here http://goo.gl/#analytics/goo.gl/8S0j5/all_time
-
+        addMatchingRecordsToApply()
         addExploreMode();
         addToTopButton();
         addImageBar();
@@ -644,14 +773,15 @@ function formatFilterResultsPage(){
 
         akamaiLazyLoadFixForFilterResults();
 
-        $('input[value=Reset]').addClass('minimal').css({'height':'18px', 'padding':'1px', 'margin':'0px'}).click(function(){
+        $('input[value=Reset]').addClass('button-small pure-button').click(function(){
+        // $('input[value=Reset]').addClass('minimal').css({'height':'18px', 'padding':'1px', 'margin':'0px'}).click(function(){
             // getRecordsMatching();
             addApplyFiltersButtonHighlight();
         });
         //setTimeout(function(){addDocRetrieve()}, 2500);
         $('#productTable').addClass('gray');
 
-        $('input[value*="Download Table"]').addClass('minimal').css({'margin':'1px', 'padding':'2px'});
+        $('input[value*="Download Table"]').addClass('button-small pure-button');//.css({'margin':'1px', 'padding':'2px'});
         $('input[name*="quantity"]').attr('size','9').attr('placeholder','set qty');
         
         // doHighlight($('#productTable').text(), $('input[name=k]:last').text());
@@ -667,13 +797,20 @@ function formatFilterResultsPage(){
 
         addColumnMath();
         addGraphInterface();
+        styleCheckboxes();
+        
 
         _log('formatFilterResultsPage() End',DLOG);
     }
 }
 
+function addMatchingRecordsToApply(){
+    $('.filters-buttons').append('<div class="matching-records" style="display:inline; margin-left:30px; position:relative;">'+$('.matching-records').text()+'</div>');
+    //$(".matching-records:last").css({display:'inline', 'margin-left': '30px', postion:'relative'});
+}
+
 function addColumnMath(){
-    $('#productTable').before('<button id="doMath" style="height:20px; padding:1px; margin:2px 5px;"class=minimal>Do Column Math</button>');
+    $('#productTable').before('<button id="doMath" style="margin:2px 5px;"class="button-small pure-button">Do Column Math</button>');
     addColumnMathDialog();
     $('#doMath').click(function(e){
         _log('ready to do math', true);
@@ -932,7 +1069,7 @@ function addGraphInterface(){
     });
 
     
-    $('#productTable').before('<button id="buildChart" style="height:20px; padding:1px; margin:2px 5px;"class=minimal>Build Chart</button>');
+    $('#productTable').before('<button id="buildChart" style="margin:2px 5px;"class="button-small pure-button">Build Chart</button>');
     
     $('#graphDialog').append(
         '<form><select id="yGraphColumn"></select>'+
@@ -1115,6 +1252,9 @@ function formatQtyBox(){
     _log('formatQtyBox() Start',DLOG);
     $('form[name=srform]').find('label,input').appendTo($('form[name=srform]'));
     $('form[name=srform]').wrap('<div id=srformdiv style="display:inline-block"/>');
+    // $('form[name=srform]').wrap('<div id=srformdiv style="display:inline-block"/>');
+    $('.quantity-form').addClass('pure-form');
+
     //$('form[name=srform]').children().addBack().css({'display':'inline'});
     $('form[name=srform]').attr('title', $('form[name=srform]>p').text());
     $('#productTable').before($('#srformdiv'));
@@ -1214,17 +1354,19 @@ function fixAssociatedPartInFilterForm(){
 }
 
 function floatApplyFilters(){
-    $('#mainform label, #mainform input[type="reset"], #mainform input[type="submit"]').wrapAll('<div id=floatApply>');
+    $('.filters-buttons').wrapAll('<div id=floatApply>');
+    
     $(window).scroll(function(){
-        $('#floatApply').children().css('left', $(window).scrollLeft() );
+        $('.filters-buttons').children().css('left', $(window).scrollLeft() );
     });
     addSearchWithin();
-    $('#floatApply').children().css('position', 'relative');
+    $('.filters-buttons').children().css('position', 'relative');
 }
 
 function addSearchWithin(){
     // dependancy on floatApplyFilters #floatApply div
-    $('#floatApply').prepend('<label>Keyword Filters: <input type="text" name="k" style="margin-right:20px; padding-left:5px;" class="searchWithin" title="Provides a way to change your Keyword search while applying"></label>');
+    $('.filters-group').prepend('<label>Keyword Filters: <input type="text" name="k" style="margin-right:20px; padding-left:5px;" class="searchWithin" title="Provides a way to change your Keyword search while applying"></label>');
+    $('.filters-group').css({padding:'0 0 3px 4px'});
     $('.searchWithin').val($('.dkdirchanger2').val());
 }
 
@@ -1390,26 +1532,34 @@ function wrapFilterTable(){
         addApplyFiltersButtonHighlight();
     });
     
-    $('#mainformdiv table').hide();
+    $('#mainformdiv table').remove();
 
-    $('#floatApply').append(
-        '<div style="float:right;"><b>Always<br>Expand</b></div><div style="float:right;"><input style="float:right" type="checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand"></div>'+
-        '<div id=morefiltersbutton class="cupid-green" style="float:right; width:200px; cursor:pointer;">'+
+    $('.filters-group').append(
+        '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">'+
         
-        '<span> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none"> - see less filters - </span>'+
+        '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none"> - see less filters - </span>'+
+        '</div>'+
+        '<div style="float:right;">'+
+            '<input style="float:right" type="checkbox" class="css-checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand">'+
+            '<label class="css-label" for="filterAlwaysExpand">Always Expand</label>'+
         '</div>'
     );
+
+    //test area
+
+    // end test area
+
     restoreInputState($('#filterAlwaysExpand'));
     if($('#filterAlwaysExpand').val() == 1){
-        _log('filteralwaysexpand' + $('#filterAlwaysExpand').val(), true);
+        _log('filterAlwaysExpand ' + $('#filterAlwaysExpand').val(), true);
         $('#selectboxdiv').toggleClass('morefilters lessfilters');
-        $('#morefiltersbutton>span').toggle();
+        $('#morefiltersbutton span').toggle();
     }
-
     $('#morefiltersbutton').click(function(){
         //$('#mainformdiv').animate({'height': '100%'},200);
         $('#selectboxdiv').toggleClass('morefilters lessfilters');
         $('#morefiltersbutton>span').toggle();
+        _log('finished morefiltersbutton click func', true);
     });
 
     if($('#wrapFilters').val() == 0){
@@ -1421,6 +1571,7 @@ function wrapFilterTable(){
     }
 
     location.assign("javascript:setupAttForm();void(0)");
+
     _log('wrapFilterTable() End',DLOG);
 }
 
@@ -1777,6 +1928,7 @@ function formatDetailPage(){
 
         addDataSheetLoader();
         makeImageHolder();
+        
 
         $('td:contains("obsolete")').css('background-color','#FF8080'); // changes the color of the obsolete callout
 
@@ -1862,11 +2014,11 @@ function addReverseFiltering($tableToFilter){
     //formRows.wrapAll('<form id="reverseForm" />');
     formRowsTD.each(function(ind){
         if (ind==0){
-            $(this).append('<span style="float:right"><input id="catfilter" type=checkbox checked=true></span>');
+            $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
         }else if (ind==1){
-            $(this).append('<span style="float:right"><input id="familyfilter" type=checkbox checked=true></span>');
+            $(this).append('<span style="float:right"><input id="familyfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="familyfilter"></label></span>');
         }else{
-            $(this).append('<span style="float:right"><input type=checkbox></span>');
+            $(this).append('<span style="float:right"><input type=checkbox class="css-checkbox" id="revcheck'+ind+'"><label class="css-label" for="revcheck'+ind+'"></label></span>');
         }
     });
 
@@ -3121,17 +3273,17 @@ function addApplyFiltersButtonHighlight(){
 function buttonHighlightAction() {
     if($('#mainform option:selected').length>0){
         $('input[value="Apply Filters"]').toggleClass('thoughtbot',true);
-        $('input[value="Apply Filters"]').toggleClass('minimal',false);
+        $('input[value="Apply Filters"]').toggleClass('button-small pure-button',false);
         //_log('options selected length '+$('option:selected').length);
     }else{
-        $('input[value="Apply Filters"]').toggleClass('minimal',true);
+        $('input[value="Apply Filters"]').toggleClass('button-small pure-button',true);
         $('input[value="Apply Filters"]').toggleClass('thoughtbot',false);
     }       
 }
 
 function searchButtonHighlight(){
     $('.dkdirchanger2').on('keyup', function(){
-        $('#searchbutton').removeClass('minimal').addClass('thoughtbot');
+        $('#searchbutton').removeClass('button-small pure-button').addClass('thoughtbot');
     });
 }
 
@@ -3174,11 +3326,11 @@ function addEvents(){
 
 function addColumnHider(){
     _log('addColumnHider() Start',DLOG);
-    $('#productTable').before('<button id=showCols style="height:20px; padding:1px; margin:2px 10px;"class=minimal>Show hidden Columns</button>');
+    $('#productTable').before('<button id=showCols style="margin:2px 5px;"class="button-small pure-button">Show hidden Columns</button>');
     $('#showCols').click(function(e){
         e.preventDefault();
         $('.hiddenCol').fadeIn(800);
-        $('#showCols').removeClass('thoughtbot').addClass('minimal');
+        $('#showCols').removeClass('thoughtbot').addClass('button-small pure-button');
         _log('showing hidden columns');
     });
     $('#productTable').find('th').each(function(i,e){
@@ -3189,7 +3341,7 @@ function addColumnHider(){
             _log($(this).text()+' acc expand click is sibling number ' + $(this).index() );
             _log('trying to hide col ' + colIndex);
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-            $('#showCols').removeClass('minimal').addClass('thoughtbot');   
+            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot');   
         });
     addDashedColumnsHider();
     _log('addColumnHider() End',DLOG);
@@ -3198,7 +3350,7 @@ function addColumnHider(){
 function addDashedColumnsHider(){
     //dev
     _log('addDashedColumnsHider() Start',DLOG);    
-    $('#productTable').before('<button id=identCols style="height:20px; padding:1px; margin:2px 5px;"class=minimal>Hide Identical Columns</button>');
+    $('#productTable').before('<button id=identCols style="margin:2px 5px;"class="button-small pure-button">Hide Identical Columns</button>');
     $('#identCols').click(function(e){
         e.preventDefault();
         hideIdenticalColumns();
@@ -3224,7 +3376,7 @@ function hideIdenticalColumns(){
          result.length + 'tbody tr count: ' + $('#productTable').find('tbody>tr').length);
         if(result.length == $('#productTable').find('tbody>tr').length){
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-            $('#showCols').removeClass('minimal').addClass('thoughtbot');   
+            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot');   
         }
 
     })
@@ -3644,7 +3796,7 @@ var ap = (function(){
         itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
         console.log(pnlist);
         var formHTML = '<div style="float:right;"><div style="clear:both; margin:0px 15px 1px 0px;"><form  action="/scripts/DkSearch/dksus.dll" method=get>'+
-        '<input type=submit value="View All '+itemlist.length+'">'+ '<label><input type=checkbox>In Stock<label>'+
+        '<input type=submit value="View All '+itemlist.length+'">'+ '<input id="associatedInStock" type="checkbox" class="css-checkbox"><label class="css-label" for="associatedInStock">In Stock</label>'+
             pnlist+
         '</form></div></div><div style="clear:both;"></div>';
         $boxSel.find('.asd-content').append(formHTML);
@@ -3706,234 +3858,6 @@ var ap = (function(){
     return {'addAssociatedProductViewer': addAssociatedProductViewer};
 })();
 
-//---------------------------------------------
-//obsolete scheduled for deletion
-// function addAssProdLinkToFilters(){
-//     // put all part numbers in to link to make filterable
-//     _log('addAssProdLinkToFilters() Start',DLOG);
-//     _log('more count ' + $('td>a:contains("More")').parent().length);
-//     var asstypes = [
-//         "Associated Product",
-//         "For Use With",
-//         "Mating Products"
-//     ];
-
-//     //TODO might need to create keepout array for headers like For Use With/Related Product
-//     for(var x=0; x<asstypes.length ; x++){
-//         if($('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').find('a').length){
-//             _log('asstypes being added '+ asstypes[x]);
-//             $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').attr('title',asstypes[x]).attr('id',asstypes[x].replace(/\s/g,'')); // assign an ID to the Table cell
-//             $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td>a:contains("More")').parent().addClass('hasMore');  // assign a class to table cells with a "More" link
-//             $('th:contains("'+asstypes[x]+'")').not('th:contains("Related")').parent().find('td').not('.hasMore').addClass('noMore'); // assign a class to table cells without a "More" Link
-//         }
-//     }
-    
-//     $('.hasMore').each(function(){
-//         var nameAdd = $(this).attr('id')+'car';
-//         var $thiscell = $(this);                // find 'more' link's parent cell
-//         var $firstparttext = $(this).find('a:first').text(); // find text
-//         var $morelink = $(this).find('a:contains("More")');
-        
-//         $('#content').after('<div id="scratch'+$(this).attr('id')+'"></div>');
-//         $('#scratch'+$(this).attr('id')).hide();
-//         $('#scratch'+$(this).attr('id')).load($morelink.attr('href')+ ' tr>td:contains("'+ $firstparttext +'"):last', function(){
-//             $thiscell.data('ndlinks', $(this).find('a:contains("-ND")'));
-//             _log($thiscell.data('ndlinks').length);
-//             _log('calculated '+$(this).find('a:contains("-ND")').length);
-//             creatAssProdForm($thiscell);
-//             addAssProdCarousel($thiscell);
-//         });
-//     });
-    
-//     $('.noMore').each(function(){
-//         $(this).data('ndlinks', $(this).find('a:contains("-ND")'));
-//         creatAssProdForm($(this));
-//         addAssProdCarousel($(this));
-//     });
-//     _log('addAssProdLinkToFilters() End',DLOG);
-// }
-
-// function creatAssProdForm($productCell){
-//     _log('creatAssProdForm() Start',DLOG);
-//     var $partNumberLinks = $productCell.data('ndlinks');
-//     var formInputs = '';
-//     $partNumberLinks.each(function(){
-//         formInputs += '<input type="hidden" value="'+ $(this).text()+'" name="part">';
-//     });
-//     $productCell.append('<div class=beablock style=" border: 1px solid gray;">Filter on All '+$productCell.prev().text()+
-//         '<br><form method="post" action="/scripts/dksearch/dksus.dll" target="_blank">'+formInputs+
-//         '<input type="submit" value="Filter"><label><input type=checkbox value=1 name=stock>In Stock Only<label></form></div>');
-//     if($partNumberLinks.length < 100){
-//         $('form[action="/scripts/dksearch/dksus.dll"]').attr('method','get'); // allow get strings whenever possible
-//     }
-//     $productCell.find('a:contains(More)').prepend($partNumberLinks.length+' ');
-//     _log('creatAssProdForm() End',DLOG);
-// }
-
-// function addAssProdCarousel($productCell){
-//     _log('addAssProdCarousel() Start',DLOG);
-//     var carid = $productCell.attr('id')+'car';
-//     var carouselwidth = 600;
-//     var arrowwidth = 25;
-
-//     //_log('wtf mate'+carid + ' part carid links '+ $partcaridLinks.length);
-//     $('table[border=0]:contains("Family")>tbody>tr>td:eq(1)').append(
-//         '<br><div class="carTitle">'+$productCell.attr('title')+'</div>'+
-//         '<div id="'+carid+'" class="carouselClass">'+
-//         '<div class="leftarrow arrow">\<</div>'+
-//         '<div id="carCont'+carid+'" class="carouselContClass">Loading...</div>'+
-//         '<div class="rightarrow arrow">\></div>'+
-//         '</div>'
-//     );
-
-//     //initial fill of the carousel
-//     _log('fillcar '+carid, 1);
-//     $('#'+carid).data('myslice', {starting:0, ending:5});
-//     var defaultslice = $('#'+carid).data('myslice');
-//     _log('fillcar '+carid+ ' myslice '+ $('#'+carid).data('myslice').starting, DLOG);
-
-//     //adds title to carousel
-//     $('#'+carid).prev('.carTitle').text( $productCell.attr('title')+ ' from '+ (defaultslice.starting+1) + 
-//         ' to ' + (defaultslice.ending) +' out of ' + $productCell.data('ndlinks').length);
-//     //fills carousell initially
-//     fillCarousel($productCell);
-    
-//     $('#'+carid+'>.rightarrow').click(function(){
-//         var $sourceCell = $('#'+$(this).parent().attr('id').replace('car',''));
-//         var myslice = $(this).parent().data('myslice');
-//         var mod = ($sourceCell.data('ndlinks').length)%5;
-//         _log('rightarrow clicked on ' + $sourceCell.attr('id')+' myslice is '+ myslice.starting + ' ' + myslice.ending + ' mod is ' +mod + ' sourceCell length '+ $sourceCell.length+ ' this length ' +$(this).length);
-//         if(myslice.ending+5 <= $sourceCell.data('ndlinks').length){
-//             _log('rightarrow if');
-//             $(this).parent().data('myslice', {starting: myslice.starting+5, ending: myslice.ending+5});
-//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting+5+1) + 
-//                 ' to ' + (myslice.ending+5) +' out of ' + $sourceCell.data('ndlinks').length);
-//             fillCarousel($sourceCell);
-//         }
-//         else if(myslice.ending+mod <= $sourceCell.data('ndlinks').length){
-//             _log('rightarrow else');
-//             $(this).parent().data('myslice', {starting: myslice.starting+5, ending: myslice.ending+mod});
-//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting+5+1) + 
-//                 ' to ' + (myslice.ending+mod) +' out of ' + $sourceCell.data('ndlinks').length);
-//             fillCarousel($sourceCell);
-//         }
-//     });
-
-//     $('#'+carid+'>.leftarrow').click(function(){
-//         var $sourceCell = $('#'+$(this).parent().attr('id').replace('car',''));
-//         var myslice = $(this).parent().data('myslice');
-//         var mod = ($sourceCell.data('ndlinks').length)%5;
-//         _log('leftarrow clicked on ' + $sourceCell.attr('id')+' myslice is '+ myslice.starting + ' ' + myslice.ending + ' mod is ' +mod);
-//         if (myslice.ending == $sourceCell.data('ndlinks').length){
-//             $(this).parent().data('myslice', {starting: myslice.starting-5, ending: myslice.ending-mod});
-//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting-5+1) + 
-//                 ' to ' + (myslice.ending-mod) +' out of ' + $sourceCell.data('ndlinks').length);
-//             fillCarousel($sourceCell);
-//         }
-//         else if(myslice.ending-5 > 0){
-//             _log('leftarrow else if');
-//             $(this).parent().data('myslice', {starting: myslice.starting-5, ending: myslice.ending-5});
-//             $(this).parent().prev('.carTitle').text( $sourceCell.attr('title')+ ' from '+ (myslice.starting-5+1) + 
-//                 ' to ' + (myslice.ending-5) +' out of ' + $sourceCell.data('ndlinks').length);
-//             fillCarousel($sourceCell);
-//         }
-//     });
-//     _log('addAssProdCarousel() End',DLOG);
-// }
-
-// function fillCarousel($productCell){
-//     _log('fillCarousel() Start',DLOG);
-//     var link = '/scripts/dksearch/dksus.dll?';
-//     //var carid = $productCell.attr('id')+'car';
-//     //var $car = $('#'+carid);
-//     var $carContent = $('#carCont'+$productCell.attr('id')+'car');
-//     var start = $('#'+$productCell.attr('id')+'car').data('myslice').starting;
-//     var end = $('#'+$productCell.attr('id')+'car').data('myslice').ending;
-//     var slicedLinks = $productCell.data('ndlinks').slice(start,end);
-//     //var slicedLinks = $('#scratch'+$productCell.attr('id')).find('a:contains("-ND")').slice(start, end);
-//     //_log('slicedLinks = '+ slicedLinks.length);
-//     slicedLinks.each(function(){
-//         link = link + '&part=' + $(this).text();
-//     });
-//     //_log('loadmylink '+ link);
-//     $carContent.html('Loading...');
-//     $carContent.load(link + ' #productTable,.catfilterlink,table[itemtype="http://schema.org/Product"]', function(){
-//         //alert('hi');
-//         if($('#productTable').length){
-//             filterTableForCar($carContent);
-//         }
-//         else if ($(this).find('#reportpartnumber').length){
-//             filterDetailPageForCar($carContent);
-            
-//         }
-//         else if($('.catfilterlink').length){
-//             //alert('hi');
-//             $('.catfilterlink:lt(5)').each(function(){
-//                 _log('catfilterlinks exist in associated '+ $(this).attr('href'));
-//                     $('<div>').load($(this).attr('href')+ ' #productTable,.catfilterlink,table[itemtype="http://schema.org/Product"]', function(){
-//                     if($(this).find('#productTable').length){
-
-//                         filterTableForCar($(this), $carContent);
-//                     }else if($(this).find('#reportpartnumber').length){
-//                         filterDetailPageForCar($(this), $carContent); 
-//                     }
-//                 });
-//                 $(this).remove();
-//             });
-//         }
-//     });
-//     _log('fillCarousel() Start',DLOG);
-// }
-
-// function filterDetailPageForCar($carContent, $targetDiv){
-//     if($targetDiv == undefined){
-//         $targetDiv = $carContent;
-//     }
-//     //$targetDiv = $targetDiv.length ? $targetDiv : $carContent;
-//     var tmbsrc= $carContent.find('img[src*="http://media.digikey.com/"]').attr('src').replace('sml','tmb');
-//     var pnText= $carContent.find('#reportpartnumber').text();
-//     $targetDiv.append(
-//         '<div class="carItems">' + 
-//             '<a href=/scripts/dksearch/dksus.dll?k="'+pnText+'"><img src="'+ tmbsrc + '"></a>' +'<br>'+ 
-//             $carContent.find('td[itemprop=description]').text()+ '<br>'+ 
-//             '<a href=/scripts/dksearch/dksus.dll?k="'+pnText+'">'+pnText+'</a>'+                
-//         '</div>'
-//     );
-//     $('.carItems').css({
-//         'float':'left',
-//         'width':'110px',
-//         'height':'148px',
-//     });
-//     $carContent.find('table').remove();
-// }
-
-// function filterTableForCar($carContent, $targetDiv){
-//     //$targetDiv = $targetDiv.length ? $targetDiv : $carContent;
-//     if($targetDiv == undefined){
-//         $targetDiv = $carContent;
-//     }
-//     var imgIndex = $carContent.find('#productTable th:contains("Image")').index() + 1;
-//     _log('imgIndex' + imgIndex);
-//     var imgLinkSet = $carContent.find('#productTable tr td:nth-child('+imgIndex+')').find('a');
-//     var descSet =    $carContent.find('#productTable tr td:nth-child('+(imgIndex + 3)+')');
-//     var pnSet =      $carContent.find('#productTable tr td:nth-child('+(imgIndex + 1)+')').find('a');
-//     imgLinkSet.each(function(ind){
-//             $targetDiv.append(
-//                 '<div class="carItems">' + 
-//                     $(this).parent().html() +'<br>'+ 
-//                     descSet.eq(ind+1).text() + '<br>'+ 
-//                     pnSet.eq(ind+2).parent().html() +
-//                 '</div>'
-//             );
-//     });
-
-//     $('.carItems').css({
-//         'float':'left',
-//         'width':'110px',
-//         'height':'148px',
-//     });
-//     $('#productTable').remove();
-// }
 
 //*************************** TODO fix collision events 
 function addDashNDHover(){
@@ -4406,40 +4330,40 @@ jQuery.expr[':'].contains = function(a, i, m) {
 // return $(this).height();
 // }).get());
 
-function addDocRetrieve(){//No longer used, but here for reference
-    $('#productTable tr a').find('img[src*="8S0j5"],img[src*="datasheet.gif"]').parent().parent()
-    .append('<br><div class="documentation pointer" style="margin-top:3px; line-height:10px">more v</div>');
-    $('.documentation').each(function(){
-        var mylink = $(this).closest('tr').find('a[href*=-ND]:first').attr('href');
-    });
-    var docConfig = {
-        id:'docHover', 
-        title : 'More Related Documents',
-        message : 'Loading....', 
-        hoverOver : $('.documentation'), 
-        //height : '220px', 
-        width :'400px', 
-        interactive : true, 
-        my : 'left top',
-        at : 'right top', 
-        offset :'5 -35', 
-        someFunc : loadDocs
-    };
-    createHoverWindow(docConfig);
-}
-function loadDocs($hoveredObj){//No longer used, but here for reference
-    $('#docHoverContent').text('Loading....');
-    var mylink = $hoveredObj.closest('tr').find('a[href*=-ND]:first').attr('href');
-    $('#docHoverContent').load(mylink+ ' table:contains("Datasheets"):first', function(){
-        $(this).find('tr')
-            .not(':contains(Datasheets)')
-            .not(':contains("Product Training")')
-            .not(':contains("Reference Design Library")')
-            .not(':contains("Reference Design Library")')
-            .hide();
-        $(this).find('td .beablock').hide();
-    });
-}
+// function addDocRetrieve(){//No longer used, but here for reference
+//     $('#productTable tr a').find('img[src*="8S0j5"],img[src*="datasheet.gif"]').parent().parent()
+//     .append('<br><div class="documentation pointer" style="margin-top:3px; line-height:10px">more v</div>');
+//     $('.documentation').each(function(){
+//         var mylink = $(this).closest('tr').find('a[href*=-ND]:first').attr('href');
+//     });
+//     var docConfig = {
+//         id:'docHover', 
+//         title : 'More Related Documents',
+//         message : 'Loading....', 
+//         hoverOver : $('.documentation'), 
+//         //height : '220px', 
+//         width :'400px', 
+//         interactive : true, 
+//         my : 'left top',
+//         at : 'right top', 
+//         offset :'5 -35', 
+//         someFunc : loadDocs
+//     };
+//     createHoverWindow(docConfig);
+// }
+// function loadDocs($hoveredObj){//No longer used, but here for reference
+//     $('#docHoverContent').text('Loading....');
+//     var mylink = $hoveredObj.closest('tr').find('a[href*=-ND]:first').attr('href');
+//     $('#docHoverContent').load(mylink+ ' table:contains("Datasheets"):first', function(){
+//         $(this).find('tr')
+//             .not(':contains(Datasheets)')
+//             .not(':contains("Product Training")')
+//             .not(':contains("Reference Design Library")')
+//             .not(':contains("Reference Design Library")')
+//             .hide();
+//         $(this).find('td .beablock').hide();
+//     });
+// }
 
 function formatFastAddPage(){
     if($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtQty1').length){
