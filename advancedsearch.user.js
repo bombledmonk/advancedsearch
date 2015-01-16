@@ -36,7 +36,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.4
+// @version     2.9.5
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -163,9 +163,10 @@
 //2.9.2     refactored associated product, fixed header link bugs, removed beablock blue, various other bug fixes
 //2.9.3     hid customers who evaluated box
 //2.9.4     added fonts, restyled checkboxes, filter page bug fixes
+//2.9.5     fixed bugs in similar to feature, fixed button highlighting problems, style changes
 
+//TODO fix apply filters red style where black text shows up
 //TODO only add "clear" buttons if options are selected
-//TODO style checkboxes csscheckbox.com
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //TODO hide associated product rows
 //TODO Make graphs into filter inputs. look in drawChart function
@@ -183,7 +184,7 @@
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '11/26/14';
+var lastUpdate = '1/14/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -798,11 +799,11 @@ function formatFilterResultsPage(){
         addColumnMath();
         addGraphInterface();
         styleCheckboxes();
-        
 
         _log('formatFilterResultsPage() End',DLOG);
     }
 }
+
 
 function addMatchingRecordsToApply(){
     $('.filters-buttons').append('<div class="matching-records" style="display:inline; margin-left:30px; position:relative;">'+$('.matching-records').text()+'</div>');
@@ -1253,7 +1254,8 @@ function formatQtyBox(){
     $('form[name=srform]').find('label,input').appendTo($('form[name=srform]'));
     $('form[name=srform]').wrap('<div id=srformdiv style="display:inline-block"/>');
     // $('form[name=srform]').wrap('<div id=srformdiv style="display:inline-block"/>');
-    $('.quantity-form').addClass('pure-form');
+    // $('.quantity-form').addClass('pure-form');
+    
 
     //$('form[name=srform]').children().addBack().css({'display':'inline'});
     $('form[name=srform]').attr('title', $('form[name=srform]>p').text());
@@ -1648,7 +1650,7 @@ function addIndexColumnizerControls(){
             //$(this).next('ul').addBack().wrapAll('<div  class="blockdivoff" />');
             $(this).parent().addClass('blockdivoff');
             $('#content').addClass('cwfull');
-            $('#cwfull').addClass('thoughtbot');
+            $('#cwfull').addClass('thoughtbot2');
             $('#cw300').addClass('clean-gray');
             $('#cw301').addClass('clean-gray');
         }); 
@@ -1659,7 +1661,7 @@ function addIndexColumnizerControls(){
             //$(this).next('ul').addBack().wrapAll('<div  class="blockdivon" />');
             $('#content').addClass('cw300');
             $('#cwfull').addClass('clean-gray');
-            $('#cw300').addClass('thoughtbot');
+            $('#cw300').addClass('thoughtbot2');
             $('#cw301').addClass('clean-gray');
         }); 
     }else if($('#columnchooserstate').val() == 2){
@@ -1669,7 +1671,7 @@ function addIndexColumnizerControls(){
             $('#content').addClass('cw301');
             $('#cwfull').addClass('clean-gray');
             $('#cw300').addClass('clean-gray');
-            $('#cw301').addClass('thoughtbot');
+            $('#cw301').addClass('thoughtbot2');
         }); 
     }
 
@@ -1685,7 +1687,7 @@ function addIndexColumnizerControls(){
         }
 
         $('#columnchooser button').removeClass().addClass('clean-gray');
-        $(this).toggleClass('thoughtbot clean-gray');
+        $(this).toggleClass('thoughtbot2 clean-gray');
     }).css('padding','3px 3px 3px 3px');
 
     _log('addIndexColumnizerControls() End',DLOG);
@@ -1699,7 +1701,7 @@ function addQuickPicksDisplayControls(){
         '<button id=qpoff value=0>Off</button>'+
         '<button id=qpside value=1>Right</button>'+
         '<button id=qptop value=2>Top</button>'+
-        ' Jump To / Quick Pick box'+
+        ' Jump To / Top Results Box'+
     '</span>';
     $('#content').before(thehtml);
     restoreInputState($('#qfLocation'));
@@ -1708,21 +1710,21 @@ function addQuickPicksDisplayControls(){
     if($('#qfLocation').val() == 0){
         _log('qpchooser off', DLOG);
         $('#qpDiv').hide();
-        $('#qpoff').addClass('thoughtbot');
+        $('#qpoff').addClass('thoughtbot2');
         $('#qpside').addClass('clean-gray');
         $('#qptop').addClass('clean-gray');
     }else if($('#qfLocation').val() == 1){
         _log('qpchooser columns', DLOG);    
     
         $('#qpoff').addClass('clean-gray');
-        $('#qpside').addClass('thoughtbot');
+        $('#qpside').addClass('thoughtbot2');
         $('#qptop').addClass('clean-gray');
     }else if($('#qfLocation').val() == 2){
         _log('qpchooser lines', DLOG);
 
         $('#qpoff').addClass('clean-gray');
         $('#qpside').addClass('clean-gray');
-        $('#qptop').addClass('thoughtbot');
+        $('#qptop').addClass('thoughtbot2');
     }
 
     $('#qpchooser button').on('click', function(){
@@ -1743,7 +1745,7 @@ function addQuickPicksDisplayControls(){
         }
 
         $('#qpchooser button').removeClass().addClass('clean-gray');
-        $(this).toggleClass('thoughtbot clean-gray');
+        $(this).toggleClass('thoughtbot2 clean-gray');
     }).css('padding','3px 3px 3px 3px');
 
     _log('addQuickPicksDisplayControls() Start', DLOG);
@@ -1985,7 +1987,7 @@ function addDataSheetLoader(){
         
         if($('tr:contains("Datasheet") td>a:first').length > 0 && $('#datasheetchooserinput').val() == 1){
             setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
-            $('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="thoughtbot" style="width:40px; font-size:11px; padding:2px; margin:0px" >&darr;&darr;&darr;&darr;</button></a>').parent().localScroll();
+            $('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="thoughtbot2" style="width:40px; font-size:11px; padding:2px; margin:0px" >&darr;&darr;&darr;&darr;</button></a>').parent().localScroll();
             // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
         }
         _log('addDataSheetLoader() End',DLOG);
@@ -2004,14 +2006,74 @@ function dataSheetButtonAction(){
 }
 
 //also referred to as "similar to"
+// function addReverseFilteringOLD($tableToFilter){
+//     _log('addReverseFiltering() Start',DLOG);
+//     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
+//     _log('reversefiltering category '+$tableToFilter.find('th:contains("Category")').parent().index());
+//     //TODO make this into object
+//     var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("OtherNames")').eq(0);
+//     var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());
+//     //formRows.wrapAll('<form id="reverseForm" />');
+//     formRowsTD.each(function(ind){
+//         if (ind==0){
+//             $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
+//         }else if (ind==1){
+//             $(this).append('<span style="float:right"><input id="familyfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="familyfilter"></label></span>');
+//         }else{
+//             $(this).append('<span style="float:right"><input type=checkbox class="css-checkbox" id="revcheck'+ind+'"><label class="css-label" for="revcheck'+ind+'"></label></span>');
+//         }
+//     });
+
+//     var revFiltConfig = {
+//         id:'ReverseFilterHover', 
+//         title : 'Find Similar Results',
+//         message : '', 
+//         hoverOver : formRowsTD, 
+//         highlight : false,
+//         //height : '420px', 
+//         //width :'815pxx', 
+//         interactive : true, 
+//         my : 'left top',
+//         at : 'right top', 
+//         offset : '0 0', 
+//         collision : 'fit flipfit',
+//         someFunc : function(){}
+//     };
+//     createHoverWindow(revFiltConfig);
+
+//     $('#ReverseFilterHoverContent').empty().append('<span id="revres"> <p>click <br>checkboxes</p></span><a id="reverseFilterLink" href="'+getReverseFilterLink(formRowsTD)+
+//         '"><div id="applyRevFilter">See Results</div></a>');
+//     $('#applyRevFilter').css({
+//         'background':'lightgrey',
+//         'border': '1px solid #ccc',
+//         'border-radius':'5px',
+//         'text-align': 'center',
+//         'box-shadow': 'inset -3px -3px 3px #888',
+//         'width': '95%',
+//         'height': '20px',
+//         'text-decoration': 'none'
+//     });
+
+//     formRowsTD.find('input').change(function(){
+//         var i = getReverseFilterLink(formRowsTD);
+//         $('#reverseFilterLink').attr('href', i);
+//         $('#revres').html('<p>loading..<br>.</p>');
+//         $('#revres').load(i + ' #content>p:first', function() {
+//             $(this).html($(this).html().replace('ing cr', 'ing<br>cr'));
+            
+//         });
+//     });
+
+//     $('.attributes-table-main form:first').css({float:'left'}).find('input').addClass('pure-button');
+//     _log('addReverseFiltering() End',DLOG);
+// }
+
 function addReverseFiltering($tableToFilter){
     _log('addReverseFiltering() Start',DLOG);
     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
-    _log('reversefiltering category '+$tableToFilter.find('th:contains("Category")').parent().index());
-    //TODO make this into object
     var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("OtherNames")').eq(0);
-    var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());
-    //formRows.wrapAll('<form id="reverseForm" />');
+    var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());  //get the valid rows on which to add check boxes
+    
     formRowsTD.each(function(ind){
         if (ind==0){
             $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
@@ -2022,45 +2084,23 @@ function addReverseFiltering($tableToFilter){
         }
     });
 
-    var revFiltConfig = {
-        id:'ReverseFilterHover', 
-        title : 'Find Similar Results',
-        message : '', 
-        hoverOver : formRowsTD, 
-        highlight : false,
-        //height : '420px', 
-        //width :'815pxx', 
-        interactive : true, 
-        my : 'left top',
-        at : 'right top', 
-        offset : '0 0', 
-        collision : 'fit flipfit',
-        someFunc : function(){}
-    };
-    createHoverWindow(revFiltConfig);
-
-    $('#ReverseFilterHoverContent').empty().append('<span id="revres"> <p>click <br>checkboxes</p></span><a id="reverseFilterLink" href="'+getReverseFilterLink(formRowsTD)+
-        '"><div id="applyRevFilter">See Results</div></a>');
-    $('#applyRevFilter').css({
-        'background':'lightgrey',
-        'border': '1px solid #ccc',
-        'border-radius':'5px',
-        'text-align': 'center',
-        'box-shadow': 'inset -3px -3px 3px #888',
-        'width': '95%',
-        'height': '20px',
-        'text-decoration': 'none'
-    });
+    $('.attributes-table-main form:first').after(
+        '<a class="similarPartLink" target="_blank">'+
+        '<div style="float:right; cursor:pointer;" class="pure-button similarPartsButton">See <span></span> Similar Parts</div>'+
+        '</a>'
+    );
 
     formRowsTD.find('input').change(function(){
         var i = getReverseFilterLink(formRowsTD);
-        $('#reverseFilterLink').attr('href', i);
-        $('#revres').html('<p>loading..<br>.</p>');
-        $('#revres').load(i + ' #content>p:first', function() {
-            $(this).html($(this).html().replace('ing cr', 'ing<br>cr'));
-            
+        _log('url is '+i);
+        $('.similarPartLink').attr('href', i);
+        $('.similarPartsButton span').html('<img src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
+        $('.similarPartsButton span').load(i + ' .matching-records', function() {
+            $(this).text($(this).text().split(':')[1]);
         });
     });
+
+    $('.attributes-table-main form:first').css({float:'left'}).find('input').addClass('pure-button'); // move the Report an Error button to the left
     _log('addReverseFiltering() End',DLOG);
 }
 
@@ -2068,18 +2108,19 @@ function getReverseFilterLink(formRowsTD){
     _log('getReverseFilterLink() Start',DLOG);
     var reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
     if($('#familyfilter:checked').length){
-        //_log('familfilter '+ $('#familyfilter:checked').attr('checked'));
-        reverseFilterLink = $('#familyfilter:checked').parent().prev().attr('href')+'?k=';
+        // _log('familfilter '+ $('#familyfilter:checked').attr('checked') + $('#familyfilter').closest('td').find('a').attr('href'));
+        reverseFilterLink = $('#familyfilter').closest('td').find('a').attr('href')+'?k=';
     }else if ($('#catfilter:checked').length){
-        _log('catfilter '+ $('#catfilter:checked').parent().prev().html());
-        reverseFilterLink = $('#catfilter:checked').parent().prev().attr('href')+'?k=';
+        // _log('catfilter '+ $('#catfilter:checked').closest('td').find('a').html());
+        reverseFilterLink = $('#catfilter:checked').closest('td').find('a').attr('href')+'?k=';
     }else{
         reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
     }
     formRowsTD.find('input:checked').not('#catfilter,#familyfilter').each(function(){
         reverseFilterLink = reverseFilterLink +$(this).parent().parent().text().replace(/\s/g,'+')+ '+';
     });
-    _log('new reversefilterlink ' + reverseFilterLink);
+    // _log('new reversefilterlink ' + reverseFilterLink);
+    reverseFilterLink = reverseFilterLink.replace('%','%25');
     _log('getReverseFilterLink() End',DLOG);
     return reverseFilterLink;
 }
@@ -2284,7 +2325,7 @@ function addImageBar() {
             'border': '1px solid lightgrey',
             'box-shadow': '1px 1px 3px #888',
             'margin-bottom': '8px',
-            'border-radius': '5px',
+            'border-radius': '2px',
         });
         $('#accContent').css({
             'overflow': 'hidden',
@@ -2298,7 +2339,7 @@ function addImageBar() {
             'background': 'linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%)',
             'width': 80,
             'border': '1px solid gray',
-            'border-radius': '0px 0px 5px 5px',
+            'border-radius': '0px 0px 2px 2px',
             'box-shadow': '1px 1px 3px #888'
         });
         $('#expand2').css({
@@ -2329,13 +2370,13 @@ function addChooserButtonAction(somespan, clickfunc){
     somespan.find('button').css({'padding':'3px 5px 4px 5px'});
     //$('#qpchooser').val($('#qfLocation').val());
         somespan.find('button').removeClass();
-        somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot');
+        somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot2');
         somespan.find('button').not('[value='+somespan.find('input').val()+']').addClass('clean-gray');
         somespan.on('click', 'button' , function(){
             somespan.find('input:first').val($(this).val());
             localStorage.setItem(somespan.find('input:first').attr('id'), $(this).val());           
             somespan.find('button').removeClass();
-            somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot');
+            somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot2');
             somespan.find('button').not('[value='+somespan.find('input').val()+']').addClass('clean-gray');
             clickfunc(somespan, $(this).val());
         });
@@ -2345,7 +2386,7 @@ function exploreModeClickFunc(somespan, buttonval){
     // somespan.find('input:first').val(buttonval);
     // localStorage.setItem(somespan.find('input:first').attr('id'), buttonval);            
     // somespan.find('button').removeClass();
-    // somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot');
+    // somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot2');
     // somespan.find('button').not('[value='+somespan.find('input').val()+']').addClass('clean-gray');
 }
 
@@ -2473,7 +2514,7 @@ function displayAdv(){
     ];
 
     for (var x=0; x<filterfunctions.length; x++){
-        $('select[name="'+filterfunctions[x][0]+'"]').parent().append('<span class="adv thoughtbot" order="'+x+'" > '+filterfunctions[x][3]+'</span>');
+        $('select[name="'+filterfunctions[x][0]+'"]').parent().append('<span class="adv thoughtbot2" order="'+x+'" > '+filterfunctions[x][3]+'</span>');
     }
     $('.adv').click(function(){
         var i= $(this).attr('order');
@@ -3255,35 +3296,47 @@ function addStickyFilters(){
         });
 }
 
-//TODO FIX>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 function addApplyFiltersButtonHighlight(){
 	_log('addApplyFiltersButtonHighlight() Start',DLOG);
     $('#mainform').on('mouseup','option,input[type=reset],input[value=Reset]', function(e){
         buttonHighlightAction();
     });
     $('#mainform').on('change', 'input[type=checkbox], input[type=text]', function(e){
-        $('input[value="Apply Filters"]').toggleClass('thoughtbot',true);
+        $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
     });
     $('#mainform').on('keyup', 'input[type=checkbox], input[type=text]', function(e){
-        $('input[value="Apply Filters"]').toggleClass('thoughtbot',true);
+        $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
+    });
+    $('#mainform').on('click','.clearselect', function(e){
+        //dependancy on clearselect link being added/existing
+        buttonHighlightAction();
     });
     _log('addApplyFiltersButtonHighlight() End',DLOG);
 }
 
 function buttonHighlightAction() {
-    if($('#mainform option:selected').length>0){
-        $('input[value="Apply Filters"]').toggleClass('thoughtbot',true);
-        $('input[value="Apply Filters"]').toggleClass('button-small pure-button',false);
-        //_log('options selected length '+$('option:selected').length);
-    }else{
-        $('input[value="Apply Filters"]').toggleClass('button-small pure-button',true);
-        $('input[value="Apply Filters"]').toggleClass('thoughtbot',false);
-    }       
+    setTimeout(function(){
+        if($('#mainform option:selected').length>0){
+            $('input[value="Apply Filters"]').toggleClass('thoughtbot2',true);
+            $('input[value="Apply Filters"]').toggleClass('button-small pure-button',false);
+            //_log('options selected length '+$('option:selected').length);
+        }else{
+            $('input[value="Apply Filters"]').toggleClass('button-small pure-button',true);
+            $('input[value="Apply Filters"]').toggleClass('thoughtbot2',false);
+        }       
+        
+    },10);
 }
+
+
 
 function searchButtonHighlight(){
     $('.dkdirchanger2').on('keyup', function(){
-        $('#searchbutton').removeClass('button-small pure-button').addClass('thoughtbot');
+        if($(this).val().length !== 0){
+            $('#searchbutton').removeClass('button-small pure-button').addClass('thoughtbot2');
+        }else{
+            $('#searchbutton').removeClass('thoughtbot2').addClass('button-small pure-button');
+        }
     });
 }
 
@@ -3330,7 +3383,7 @@ function addColumnHider(){
     $('#showCols').click(function(e){
         e.preventDefault();
         $('.hiddenCol').fadeIn(800);
-        $('#showCols').removeClass('thoughtbot').addClass('button-small pure-button');
+        $('#showCols').removeClass('thoughtbot2').addClass('button-small pure-button');
         _log('showing hidden columns');
     });
     $('#productTable').find('th').each(function(i,e){
@@ -3341,7 +3394,7 @@ function addColumnHider(){
             _log($(this).text()+' acc expand click is sibling number ' + $(this).index() );
             _log('trying to hide col ' + colIndex);
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot');   
+            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot2');   
         });
     addDashedColumnsHider();
     _log('addColumnHider() End',DLOG);
@@ -3376,7 +3429,7 @@ function hideIdenticalColumns(){
          result.length + 'tbody tr count: ' + $('#productTable').find('tbody>tr').length);
         if(result.length == $('#productTable').find('tbody>tr').length){
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot');   
+            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot2');   
         }
 
     })
@@ -4168,6 +4221,7 @@ function getImageLinks(){
     var images = $('.attributes-table-main').find('a[href$=jpg], a[href$=JPG]').each(function(){
         imageURLs.push($(this).attr('href'));
     });
+    images.parent().parent().hide();
     _log('getImageLinks() End',DLOG);
     return imageURLs;
 }
@@ -4370,7 +4424,7 @@ function formatFastAddPage(){
         $('p').add('#aspnetForm').show();
         $('#mainContent').before('<b>Quick Paste</b><br>Copy multiple part numbers and quantities from a spreadsheet and paste into this box (experimental).  '+
             '<br>Exclude any header lines.  It should be able to pick out Quantity and Part Number in either order. Customer Ref not yet supported.  <br />'+
-            '<textarea rows="2" cols="40" id="pastebox"></textarea> <br /><div class="thoughtbot" style="width:40px">OK</div>');
+            '<textarea rows="2" cols="40" id="pastebox"></textarea> <br /><div class="thoughtbot2" style="width:40px">OK</div>');
         
         $('#pastebox').change(function(){
             var lines = $('#pastebox').val().split(/\n\r?/gi);
