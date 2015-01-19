@@ -36,7 +36,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.5
+// @version     2.9.6
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -164,9 +164,12 @@
 //2.9.3     hid customers who evaluated box
 //2.9.4     added fonts, restyled checkboxes, filter page bug fixes
 //2.9.5     fixed bugs in similar to feature, fixed button highlighting problems, style changes
+//2.9.6     added clear button rules, worked on speed, sending ot to fix dropbox serving error
 
-//TODO fix apply filters red style where black text shows up
-//TODO only add "clear" buttons if options are selected
+
+//TODO fix checkboxes in controls form
+//TODO work on column combine speed
+//TODO work on filters-panel speed
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //TODO hide associated product rows
 //TODO Make graphs into filter inputs. look in drawChart function
@@ -184,7 +187,7 @@
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '1/14/15';
+var lastUpdate = '1/19/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -375,111 +378,111 @@ function addCustomHeader(){
     _log('addCustomHeader() End',DLOG);
 }
 
-function addControlWidgetold() {
-    _log('addControlWidget() Start',DLOG);
-    $('#content').after('<div id="controlDiv" class="gray-grad">'+
-            '<span id="controlSpan" style="cursor:pointer;" > +controls+ v' + version + '</span>' +
-            '<a href="'+downloadLink+'"  style="position:relative; left:10%"> click to manually update</a> ' +
-            '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
-            '<div class="clearfix">'+
-                '<img src="http://goo.gl/53qn5g">'+
-                '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
-                '<input type=checkbox id=qtydefault class="saveState css-checkbox" value="1">Always initially sort by price @ Qty<label class="css-label" for="qtydefault"></label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
-                '<input type=checkbox id=combinePN class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
-                '<input type=checkbox id=pricehoverControl class="saveState css-checkbox" value="1">Turn on price break popup on hovering over prices </label><br>' + 
-                '<input type=checkbox id=queryHighlight class="saveState css-checkbox" value="1">Turn on query term highlighting in on filter pages </label><br>' +   
-                '<label>Explore Mode Popup Delay time<input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
-                // '<label><input type=checkbox id=wrapFilters class="saveState" value="0">Turn on screen wrapping for multiselect filters (in progress)</input></label><br>' + 
-                //'<label><input type=checkbox id=pagesControl >Default number of extra pages to load on filter (drill down) pages</input></label> <input type=text id="pageloadnumberbox" value="4" size="4" ><br>' +
-                //'<label><input type=checkbox id=keepstock> Keep In stock,Lead free, and RoHS checkboxes between visits (not working yet)</label><br>'+
-                //'<label><input type=checkbox id=dragTables> Turn on Draggable Tables</label><br>' +
-                '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
-                '<label><input type=checkbox id=picPrevControl class="saveState" value="1"> Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
-                '<label><input type=checkbox id=qfControl class="saveState" value="1"> Turn on Quick Pick Box</label><br>' +
-                '<label><input type=checkbox id=familyHighlight class="saveState" value="1"> Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
-                '<label><input type=checkbox id=instantfilter class="saveState" value="1">Turn on the Product Index Instant Filter to immediately show matching search box keywords</input></label><br>' +
-                //'<label><input type=checkbox id=altColorTableRows> Turn off alternating shading of table rows</label><br>' +
-                '<br><span style="font-weight:bold">Experimental</span><br>'+
-                '<label><input type=checkbox id=analytics class="saveState" value="0"> Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
-                '<label><input type=checkbox id=spellcheck class="saveState" value="0"> Turn on rudimentary spell check and suggested search terms</label><br>' +
-                '<label><input type=checkbox id=stickyfilters class="saveState" value="0">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</input></label><br>' +
-                '<label><input type=checkbox id=squishedFilters class="saveState" value="0">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</input></label><br>' +  
-            '</div><br><br>'+
-            '<button id=applyControls class="clean-gray" style="float:right; margin-right:40px;"> Apply & Refresh</button>'+
-            '<button id=restoredefaults class="clean-gray" style="margin-left:20px"> restore defaults </button>'+
-            '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
-        '</div>'
-    );
+// function addControlWidgetold() {
+//     _log('addControlWidget() Start',DLOG);
+//     $('#content').after('<div id="controlDiv" class="gray-grad">'+
+//             '<span id="controlSpan" style="cursor:pointer;" > +controls+ v' + version + '</span>' +
+//             '<a href="'+downloadLink+'"  style="position:relative; left:10%"> click to manually update</a> ' +
+//             '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
+//             '<div class="clearfix">'+
+//                 '<img src="http://goo.gl/53qn5g">'+
+//                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
+//                 '<input type=checkbox id=qtydefault class="saveState css-checkbox" value="1">Always initially sort by price @ Qty<label class="css-label" for="qtydefault"></label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
+//                 '<input type=checkbox id=combinePN class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
+//                 '<input type=checkbox id=pricehoverControl class="saveState css-checkbox" value="1">Turn on price break popup on hovering over prices </label><br>' + 
+//                 '<input type=checkbox id=queryHighlight class="saveState css-checkbox" value="1">Turn on query term highlighting in on filter pages </label><br>' +   
+//                 '<label>Explore Mode Popup Delay time<input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
+//                 // '<label><input type=checkbox id=wrapFilters class="saveState" value="0">Turn on screen wrapping for multiselect filters (in progress)</input></label><br>' + 
+//                 //'<label><input type=checkbox id=pagesControl >Default number of extra pages to load on filter (drill down) pages</input></label> <input type=text id="pageloadnumberbox" value="4" size="4" ><br>' +
+//                 //'<label><input type=checkbox id=keepstock> Keep In stock,Lead free, and RoHS checkboxes between visits (not working yet)</label><br>'+
+//                 //'<label><input type=checkbox id=dragTables> Turn on Draggable Tables</label><br>' +
+//                 '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
+//                 '<label><input type=checkbox id=picPrevControl class="saveState" value="1"> Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
+//                 '<label><input type=checkbox id=qfControl class="saveState" value="1"> Turn on Quick Pick Box</label><br>' +
+//                 '<label><input type=checkbox id=familyHighlight class="saveState" value="1"> Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
+//                 '<label><input type=checkbox id=instantfilter class="saveState" value="1">Turn on the Product Index Instant Filter to immediately show matching search box keywords</input></label><br>' +
+//                 //'<label><input type=checkbox id=altColorTableRows> Turn off alternating shading of table rows</label><br>' +
+//                 '<br><span style="font-weight:bold">Experimental</span><br>'+
+//                 '<label><input type=checkbox id=analytics class="saveState" value="0"> Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
+//                 '<label><input type=checkbox id=spellcheck class="saveState" value="0"> Turn on rudimentary spell check and suggested search terms</label><br>' +
+//                 '<label><input type=checkbox id=stickyfilters class="saveState" value="0">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</input></label><br>' +
+//                 '<label><input type=checkbox id=squishedFilters class="saveState" value="0">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</input></label><br>' +  
+//             '</div><br><br>'+
+//             '<button id=applyControls class="clean-gray" style="float:right; margin-right:40px;"> Apply & Refresh</button>'+
+//             '<button id=restoredefaults class="clean-gray" style="margin-left:20px"> restore defaults </button>'+
+//             '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
+//         '</div>'
+//     );
     
-    _log(encodeURIComponent(window.location), true);
-    $('#applyControls').click(function(){
-        $(this).css('color', 'lightgrey');
-        document.location.reload();
-    });
-    $('#restoredefaults').click(function(){
-        $(this).css('color', 'lightgrey');
-        _log(Object.keys(localStorage));
-        localStorage.clear();
-        _log(Object.keys(localStorage));
-    });
+//     _log(encodeURIComponent(window.location), true);
+//     $('#applyControls').click(function(){
+//         $(this).css('color', 'lightgrey');
+//         document.location.reload();
+//     });
+//     $('#restoredefaults').click(function(){
+//         $(this).css('color', 'lightgrey');
+//         _log(Object.keys(localStorage));
+//         localStorage.clear();
+//         _log(Object.keys(localStorage));
+//     });
     
 
-    //TODO convert to JQuery UI
-    $('#controlDiv').css({
-        'position': 'fixed',
-        'right': '10px',
-        'top': '25px',
-        'z-index': '19',
-        'border': '1px solid grey',
-        'width': '105px',
-        'height': '15px',
-        "borderRadius": "5px",
-        'overflow': 'hidden',
-        'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)'
-    });
+//     //TODO convert to JQuery UI
+//     $('#controlDiv').css({
+//         'position': 'fixed',
+//         'right': '10px',
+//         'top': '25px',
+//         'z-index': '19',
+//         'border': '1px solid grey',
+//         'width': '105px',
+//         'height': '15px',
+//         "borderRadius": "5px",
+//         'overflow': 'hidden',
+//         'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)'
+//     });
 
-    $('#controlSpan').click(function(e) {
-        $('#controlDiv').css({
-            'position':'absolute',
-            'box-shadow':'2px 2px 3px 3px rgba(74,74,74,1)'
-        });
-        $('#controlDiv').animate({
-            'width': '600px',
-            'height': '600px',
-            'top': 50,
-            'left': ($(window).scrollLeft() + $(window).width() / 2 - 300)
-        }, 200);
-        $("body").append($("<div>").css({
-            'position': "fixed",
-            'width': "100%",
-            'height': "100%",
-            "background-color": "#000",
-            'opacity': 0.6,
-            "z-index": 18,
-            'top': 0,
-            'left': 0
-        }).attr("id","page-cover"));
-    });
+//     $('#controlSpan').click(function(e) {
+//         $('#controlDiv').css({
+//             'position':'absolute',
+//             'box-shadow':'2px 2px 3px 3px rgba(74,74,74,1)'
+//         });
+//         $('#controlDiv').animate({
+//             'width': '600px',
+//             'height': '600px',
+//             'top': 50,
+//             'left': ($(window).scrollLeft() + $(window).width() / 2 - 300)
+//         }, 200);
+//         $("body").append($("<div>").css({
+//             'position': "fixed",
+//             'width': "100%",
+//             'height': "100%",
+//             "background-color": "#000",
+//             'opacity': 0.6,
+//             "z-index": 18,
+//             'top': 0,
+//             'left': 0
+//         }).attr("id","page-cover"));
+//     });
 
-    $('#closeControlDiv').click(function(e) {
-        $('#controlDiv').css({
-            'position':'fixed',
-            'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)',
-            'left': ''
-        });
-        $('#controlDiv').animate({
-            'width': '105px',
-            'height': '15px',
-            'right': '25px',
-            'top': '25px'
-        }, 200);
+//     $('#closeControlDiv').click(function(e) {
+//         $('#controlDiv').css({
+//             'position':'fixed',
+//             'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)',
+//             'left': ''
+//         });
+//         $('#controlDiv').animate({
+//             'width': '105px',
+//             'height': '15px',
+//             'right': '25px',
+//             'top': '25px'
+//         }, 200);
 
-        $('#page-cover').remove();
-    });
+//         $('#page-cover').remove();
+//     });
 
-    addControlWidgetActions2();
-    _log('addControlWidget() End',DLOG);
-}
+//     addControlWidgetActions2();
+//     _log('addControlWidget() End',DLOG);
+// }
 function addControlWidget() {
     _log('addControlWidget() Start',DLOG);
     $('#content').after('<div id="controlDiv" class="gray-grad" title="settings for advancedsearch v'+version+'">'+
@@ -489,7 +492,7 @@ function addControlWidget() {
                 '<img src="http://goo.gl/53qn5g">'+
                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
                 '<input type=checkbox id=qtydefault class="saveState css-checkbox" value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
-                '<input type=checkbox id=combinePN class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
+                '<input type=checkbox id="combinePN" class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
                 '<input type=checkbox id=pricehoverControl class="saveState css-checkbox" value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
                 '<input type=checkbox id=queryHighlight class="saveState css-checkbox" value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
                 '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
@@ -741,7 +744,7 @@ function formatFilterResultsPage(){
         
         picsToAccel(); //add the thumnails to picture accelerator block
         if(localStorage.getItem('combinePN') == 1) {
-            setTimeout(function(){combinePN();}, 100);
+            setTimeout(function(){combinePN();}, 10);
         }
         if(localStorage.getItem('dragTables') == 1) {
             $('#productTable').addClass('draggable');
@@ -1497,10 +1500,108 @@ function wrapFilterClickFunc(somespan, buttonval){
     }
 }
 
+// function wrapFilterTableOLD(){
+//     _log('wrapFilterTable() Start',DLOG);
+//     //button code
+//     $('#mainform').wrap('<div id=mainformdiv />');
+//     $('#mainformdiv table').hide();
+//     var thehtml = '<span id="wrapfilterschooser" class="tabbedbutton" style="" title="Instead of scrolling horizontally the filters will wrap to the next line">'+
+//         '<input id="wrapFilters" value="0" class="saveState" type="hidden">' +
+//         '<button id=wrapfilteron value=0>Off</button>'+
+//         '<button id=wrapfilteroff value=1>On</button>'+
+//         ' Wrap Filters'+
+//     '</span>';
+    
+//     $('.filters-panel').prepend(thehtml);   
+//     addChooserButtonAction($('#wrapfilterschooser'), wrapFilterClickFunc);
+//     //end button code
+
+//     var selectlist = $('#mainform select');
+//     selectlist.each(function(ind){
+//         $(this).data('pname', $(this).closest('table').find('th:eq('+ind+')').text());
+//         // _log('pv '+ $(this).attr('name') + ' columnname ' + 
+//         //      $(this).closest('table').find('th:eq('+ind+')').text()
+//             // );
+//         });
+//     _log('wrapFilterTable() tick',DLOG);
+//     $('#mainform').prepend('<div id=selectboxdiv class="morefilters" />');
+//     $(selectlist.get().reverse()).each(function(){
+//         $('#selectboxdiv').prepend('<div class="selectboxdivclass" style="max-width:'+ ($(this).width()*1.6)+'px;"><b>'+
+//             $(this).data('pname')+'</b><br>'+$(this).parent().html()+
+//             '<br><a name="'+$(this).attr('name')+'" class="clearselect" style="visibility:hidden;" href="#">clear</a></div>'
+//         );
+//         if($(this).find('option:selected').length == 1){
+//             $(this).find('.clearselect').css({visibility:'visible'});
+//         }
+//     });
+//     _log('wrapFilterTable() tick2',DLOG);
+//     $('.clearselect').click(function(e){
+//         e.preventDefault();
+//         $('select[name="'+$(this).attr('name')+'"]').find('option').each(function(){
+//             $(this).prop('selected',$(this).prop('defaultSelected'));
+//         });
+//         addApplyFiltersButtonHighlight();
+//     });
+//     $('#mainform').on('mouseup', 'option', function(){
+        
+//         if($(this).parent().find('option').filter(':selected').length >=1){
+//             $(this).closest('div').find('.clearselect').css({visibility:'visible'});
+//         }else{
+//             $(this).closest('div').find('.clearselect').css({visibility:'hidden'});
+//         }
+//     })
+    
+//     $('#mainformdiv table').detach().remove();
+
+//     $('.filters-group').append(
+//         '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">'+
+        
+//         '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none"> - see less filters - </span>'+
+//         '</div>'+
+//         '<div style="float:right;">'+
+//             '<input style="float:right" type="checkbox" class="css-checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand">'+
+//             '<label class="css-label" for="filterAlwaysExpand">Always Expand</label>'+
+//         '</div>'
+//     );
+
+//     //test area
+
+//     // end test area
+
+//     restoreInputState($('#filterAlwaysExpand'));
+//     if($('#filterAlwaysExpand').val() == 1){
+//         _log('filterAlwaysExpand ' + $('#filterAlwaysExpand').val(), true);
+//         $('#selectboxdiv').toggleClass('morefilters lessfilters');
+//         $('#morefiltersbutton span').toggle();
+//     }
+//     $('#morefiltersbutton').click(function(){
+//         //$('#mainformdiv').animate({'height': '100%'},200);
+//         $('#selectboxdiv').toggleClass('morefilters lessfilters');
+//         $('#morefiltersbutton>span').toggle();
+//         _log('finished morefiltersbutton click func', true);
+//     });
+
+//     if($('#wrapFilters').val() == 0){
+//         $('#selectboxdiv').removeClass('morefilters lessfilters');
+//         $('#morefiltersbutton').hide();
+//         $('#selectboxdiv').addClass('wsnowrap');
+//     }else{
+//         //$('#selectboxdiv').removeClass('morefilters lessfilters');
+//     }
+
+//     location.assign("javascript:setupAttForm();void(0)");
+
+//     _log('wrapFilterTable() End',DLOG);
+// }
+
 function wrapFilterTable(){
     _log('wrapFilterTable() Start',DLOG);
     //button code
     $('#mainform').wrap('<div id=mainformdiv />');
+    var $filtersPanel = $('.filters-panel').detach();
+    var $mainform = $filtersPanel.find('form[name=attform]');
+    _log('wrapFilterTable() tick2',DLOG);
+    $mainform.find('table').hide();
     var thehtml = '<span id="wrapfilterschooser" class="tabbedbutton" style="" title="Instead of scrolling horizontally the filters will wrap to the next line">'+
         '<input id="wrapFilters" value="0" class="saveState" type="hidden">' +
         '<button id=wrapfilteron value=0>Off</button>'+
@@ -1508,33 +1609,56 @@ function wrapFilterTable(){
         ' Wrap Filters'+
     '</span>';
     
-    $('.filters-panel').prepend(thehtml);   
-    addChooserButtonAction($('#wrapfilterschooser'), wrapFilterClickFunc);
+    $filtersPanel.prepend(thehtml);   
+    addChooserButtonAction($filtersPanel.find('#wrapfilterschooser'), wrapFilterClickFunc);
+    _log('wrapFilterTable() tick3',DLOG);
     //end button code
 
-    var selectlist = $('#mainform select');
+    var selectlist = $mainform.find('select');
     selectlist.each(function(ind){
         $(this).data('pname', $(this).closest('table').find('th:eq('+ind+')').text());
         // _log('pv '+ $(this).attr('name') + ' columnname ' + 
         //      $(this).closest('table').find('th:eq('+ind+')').text()
             // );
         });
-    $('#mainform').prepend('<div id=selectboxdiv class="morefilters" />');
+    _log('wrapFilterTable() tick4',DLOG);
+    $mainform.prepend('<div id=selectboxdiv class="morefilters" />');
+    _log('wrapFilterTable() tick5',DLOG);
+    
     $(selectlist.get().reverse()).each(function(){
-        $('#selectboxdiv').prepend('<div class="selectboxdivclass" style="max-width:'+ ($(this).width()*1.6)+'px;"><b>'+
-            $(this).data('pname')+'</b><br>'+$(this).parent().html()+
-            '<br><a name="'+$(this).attr('name')+'" class="clearselect" href="#">clear</a></div>'
+        var $this = $(this)
+        $mainform.find('#selectboxdiv').prepend(
+            '<div class="selectboxdivclass" style="max-width:'+ ($this.width()*1.6)+'px;"><b>'+
+            // '<div class="selectboxdivclass" ><b>'+
+                $this.data('pname')+'</b><br>'+$this.parent().html()+
+            '<br><a name="'+$this.attr('name')+'" class="clearselect" style="visibility:hidden;" href="#">clear</a></div>'
         );
+        // if($(this).find('option').filter(':selected').length == 1){
+        //     $(this).find('.clearselect').css({visibility:'visible'});
+        // }
     });
-    $('.clearselect').click(function(e){
+    _log('wrapFilterTable() tick6',DLOG);
+    $filtersPanel.on('click','.clearselect', function(e){
         e.preventDefault();
-        $('select[name="'+$(this).attr('name')+'"]').find('option').each(function(){
+        $filtersPanel.find('select[name="'+$(this).attr('name')+'"]').find('option').each(function(){
             $(this).prop('selected',$(this).prop('defaultSelected'));
         });
         addApplyFiltersButtonHighlight();
     });
+    $('.seohtagbold:first').after($filtersPanel);  //TODO continue moving down???<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    _log('wrapFilterTable() tick7',DLOG);
+    $('#mainform').on('mouseup', 'option', function(){
+        
+        if($(this).parent().find('option').filter(':selected').length >=1){
+            $(this).closest('div').find('.clearselect').css({visibility:'visible'});
+        }else{
+            $(this).closest('div').find('.clearselect').css({visibility:'hidden'});
+        }
+    })
     
-    $('#mainformdiv table').remove();
+    _log('wrapFilterTable() tick8',DLOG);
+    $('#mainformdiv table').detach();
+    _log('wrapFilterTable() tick9',DLOG);
 
     $('.filters-group').append(
         '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">'+
@@ -1576,6 +1700,11 @@ function wrapFilterTable(){
 
     _log('wrapFilterTable() End',DLOG);
 }
+
+function replaceResetButtons(){
+
+}
+
 
 function squishedFilters(){
     // hover animation in advancedsearch.css
@@ -3310,6 +3439,7 @@ function addApplyFiltersButtonHighlight(){
     $('#mainform').on('click','.clearselect', function(e){
         //dependancy on clearselect link being added/existing
         buttonHighlightAction();
+        $(this).css({visibility:'hidden'});
     });
     _log('addApplyFiltersButtonHighlight() End',DLOG);
 }

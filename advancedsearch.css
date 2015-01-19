@@ -8,6 +8,13 @@
 	z-index: 12;
 }
 
+a{
+	text-decoration: none;
+}
+a:hover{
+	text-decoration: underline;
+}
+
 #productTable th:first-child {
 	/*border-top-left-radius: 5px;*/
 	border-spacing:0;
@@ -129,8 +136,15 @@ input[type="search"].focus {
   box-shadow: inset 1px 1px 2px 0 #c9c9c9;
 }*/
 
- input[type="text"], select[multiple], input[type="search"]{ font-size:14px; border-width:2px; border-style:solid; background-color:#fbfcfc; border-color:#e9eced; padding:3px; color:#465660;  } 
-		 .css-input:focus { outline:none; } 
+ input[type="text"], select, input[type="search"]{ 
+ 	font-size:14px; 
+ border-width:2px; 
+ border-style:solid; 
+ background-color:#fbfcfc; 
+ border-color:#e9eced; 
+ padding:3px; 
+ color:#465660;  } 
+.css-input:focus { outline:none; } 
 
 /*hover highlight css*/
 .explorehhl {
