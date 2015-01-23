@@ -11,6 +11,7 @@
 // @include     http://ordering.digikey.*/Ordering/AddPart.aspx*
 // @include     http*digikey.*/classic/Ordering/AddPart*
 // @include     http*digikey.*/classic/Ordering/FastAdd*
+// @include     http*digikey.*/short/*
 // @exclude     http://www.digikey.com
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js
 // @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js
@@ -36,7 +37,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.6
+// @version     2.9.7
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -165,9 +166,13 @@
 //2.9.4     added fonts, restyled checkboxes, filter page bug fixes
 //2.9.5     fixed bugs in similar to feature, fixed button highlighting problems, style changes
 //2.9.6     added clear button rules, worked on speed, sending ot to fix dropbox serving error
+//2.9.6.1   chrome fix for selectbox width
+//2.9.6.3   fixed bugs in wrap filters area
+//2.9.7     handled change in breadcrumbs, styled index page
 
 
-//TODO fix checkboxes in controls form
+//TODO fix applied filters not showing up
+//TODO wrapping filters stickyness.
 //TODO work on column combine speed
 //TODO work on filters-panel speed
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -183,13 +188,14 @@
 //TODO add feature to research on "no results found" when in stock checkboxes are checked.
 //TODO check out IndexedDB for caching
 //TODO explore adding upper and lower limit filters to sequential filters.
+//TODO fix checkboxes in controls form
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '1/19/15';
+var lastUpdate = '1/23/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = false; //control detailed logging.
+var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -211,13 +217,113 @@ function preloadFormat(){
 
     addResourceCSS();
 
-    $('#header').remove();
+    $('#header').detach();
     // $('#footer').remove();
 
     _log('preloadFormat() End',DLOG);
 }
+(function($){
+    $.fn.lazybind = function(event, fn, timeout, abort){
+        var timer = null;
+        $(this).bind(event, function(){
+            timer = setTimeout(fn, timeout);
+        });
+        if(abort == undefined){
+            return;
+        }
+        $(this).bind(abort, function(){
+            if(timer != null){
+                clearTimeout(timer);
+            }
+        });
+    };
+})(jQuery);
+(function($){
+    jQuery.fn.gmload = function( url, params, callback ) {
+        var rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+        if ( typeof url !== "string" && _load ) {
+            return _load.apply( this, arguments );
+        }
+
+        // Don't do a request if no elements are being requested
+        if ( !this.length ) {
+            return this;
+        }
+
+        var selector, type, response,
+            self = this,
+            off = url.indexOf(" ");
+
+        if ( off >= 0 ) {
+            selector = url.slice( off, url.length );
+            url = url.slice( 0, off );
+        }
+
+        // If it's a function
+        if ( jQuery.isFunction( params ) ) {
+
+            // We assume that it's the callback
+            callback = params;
+            params = undefined;
+
+        // Otherwise, build a param string
+        } else if ( params && typeof params === "object" ) {
+            type = "POST";
+        }
+
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: url,
+            headers: {
+                "User-Agent": "Mozilla/5.0",    // If not specified, navigator.userAgent will be used.
+                "Accept": "text/xml"            // If not specified, browser defaults will be used.
+            },
+            onload: function(response) {
+                var responseXML = null;
+                // Inject responseXML into existing Object (only appropriate for XML content).
+                if (!response.responseXML) {
+                    responseXML = new DOMParser()
+                    .parseFromString(response.responseText, "text/xml");
+                }
+                // See if a selector was specified
+                self.html( selector ?
+
+                // Create a dummy div to hold the results
+                jQuery("<div>")
+
+                    // inject the contents of the document in, removing the scripts
+                    // to avoid any 'Permission Denied' errors in IE
+                    .append( response.responseText.replace( rscript, "" ) )
+
+                    // Locate the specified elements
+                    .find( selector ) :
+
+                // If not, just inject the full result
+                response.responseText );
+                callback();
+            }
+        });
+    };
+})(jQuery);
+//highlighting function
+(function($) {
+    $.fn.highlight = function(str, className) {
+        str = str.replace(/\W/gi, '');
+        var regex = new RegExp(str, "gi");
+        return this.each(function() {
+            $(this).contents().filter(function() {
+                return this.nodeType == 3 && regex.test(this.nodeValue);
+            }).replaceWith(function() {
+                return(this.nodeValue || "").replace(regex, function(match) {
+                    return "<span class=\"" + className + "\">" + match + "</span>";
+                });
+            });
+        });
+    };
+})(jQuery);
 
 preloadFormat();
+// formatPages();
 
 $(document).ready(function() {
     _log('[ready] advanced search starts here. Jquery version '+ jQuery.fn.jquery);
@@ -238,7 +344,9 @@ function addResourceCSS(){
         "fontAwesomeCSS"
     ];
     for ( var x in cssNames){
+        // _log('style tick start '+cssNames[x], DLOG);
         GM_addStyle(GM_getResourceText(cssNames[x]));
+        // _log('style tick start'+ cssNames[x], DLOG);
     }
 
 }
@@ -266,7 +374,7 @@ function formatPages() {
     tc(formatFastAddPage,'formatFastAddPage');
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
-    tc(addBreadcrumLink, 'addBreadcrumLink');
+    tc(addBreadCrumbLink, 'addBreadCrumbLink');
     tc(addCartHover, 'addCartHover');
     tc(replaceQuestionMark, 'replaceQuestionMark');
     // tc(lazyLoadFix, 'lazyLoadFix');
@@ -292,10 +400,15 @@ function getIndexLink(){
 }
 
 function replaceQuestionMark(){
-    $('img[src*="help.png"]').attr('src', 'https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png');
+    _log('replaceQuestionMark() Start',DLOG);
+    // $('img[src*="help.png"]').attr('src', 'https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png');
+    $('img[src*="help.png"]').addClass('qmark');// css used to replace image as a background image
+    _log('replaceQuestionMark() End',DLOG);
 }
 
-function cleanup () {   
+function cleanup () {
+    _log('cleanup() Start',DLOG);
+
     askpermission();
 
     $('input[type=submit],input[type=reset]').addClass('button-small pure-button').css({
@@ -303,6 +416,7 @@ function cleanup () {
     });
     $('p:contains("No records match your")').show();
     hoveringHelpHighlighter();
+    _log('cleanup() End',DLOG);
 }
 
 function askpermission(){
@@ -348,8 +462,9 @@ function addCustomHeader(){
         // '<label class="css-label"><input type="checkbox" value="1" name="rohs" id="hrohs" class="css-checkbox"><b>RoHS Compliant </b></label> '+
         '<input align=right type="submit" value="New Search" id="searchbutton">'+
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
-        '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
-        '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form><span id="resnum"></span>'+
+        // '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
+        // '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form>'+
+        '<span id="resnum"></span>'+
         '<span id=quicklinks><a href="'+indexlink+'">Product Index</a> | '+
         '<a href="'+mydklink+'">My Digi-Key</a> | '+
         '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><img src="https://dl.dropboxusercontent.com/u/26263360/img/carticon.png"> Cart<span id=cartquant></span> <img src="http://he-st.com/img/downarrowred.png"></img></a> | '+
@@ -378,165 +493,59 @@ function addCustomHeader(){
     _log('addCustomHeader() End',DLOG);
 }
 
-// function addControlWidgetold() {
-//     _log('addControlWidget() Start',DLOG);
-//     $('#content').after('<div id="controlDiv" class="gray-grad">'+
-//             '<span id="controlSpan" style="cursor:pointer;" > +controls+ v' + version + '</span>' +
-//             '<a href="'+downloadLink+'"  style="position:relative; left:10%"> click to manually update</a> ' +
-//             '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
-//             '<div class="clearfix">'+
-//                 '<img src="http://goo.gl/53qn5g">'+
-//                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
-//                 '<input type=checkbox id=qtydefault class="saveState css-checkbox" value="1">Always initially sort by price @ Qty<label class="css-label" for="qtydefault"></label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
-//                 '<input type=checkbox id=combinePN class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
-//                 '<input type=checkbox id=pricehoverControl class="saveState css-checkbox" value="1">Turn on price break popup on hovering over prices </label><br>' + 
-//                 '<input type=checkbox id=queryHighlight class="saveState css-checkbox" value="1">Turn on query term highlighting in on filter pages </label><br>' +   
-//                 '<label>Explore Mode Popup Delay time<input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
-//                 // '<label><input type=checkbox id=wrapFilters class="saveState" value="0">Turn on screen wrapping for multiselect filters (in progress)</input></label><br>' + 
-//                 //'<label><input type=checkbox id=pagesControl >Default number of extra pages to load on filter (drill down) pages</input></label> <input type=text id="pageloadnumberbox" value="4" size="4" ><br>' +
-//                 //'<label><input type=checkbox id=keepstock> Keep In stock,Lead free, and RoHS checkboxes between visits (not working yet)</label><br>'+
-//                 //'<label><input type=checkbox id=dragTables> Turn on Draggable Tables</label><br>' +
-//                 '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
-//                 '<label><input type=checkbox id=picPrevControl class="saveState" value="1"> Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
-//                 '<label><input type=checkbox id=qfControl class="saveState" value="1"> Turn on Quick Pick Box</label><br>' +
-//                 '<label><input type=checkbox id=familyHighlight class="saveState" value="1"> Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
-//                 '<label><input type=checkbox id=instantfilter class="saveState" value="1">Turn on the Product Index Instant Filter to immediately show matching search box keywords</input></label><br>' +
-//                 //'<label><input type=checkbox id=altColorTableRows> Turn off alternating shading of table rows</label><br>' +
-//                 '<br><span style="font-weight:bold">Experimental</span><br>'+
-//                 '<label><input type=checkbox id=analytics class="saveState" value="0"> Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
-//                 '<label><input type=checkbox id=spellcheck class="saveState" value="0"> Turn on rudimentary spell check and suggested search terms</label><br>' +
-//                 '<label><input type=checkbox id=stickyfilters class="saveState" value="0">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</input></label><br>' +
-//                 '<label><input type=checkbox id=squishedFilters class="saveState" value="0">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</input></label><br>' +  
-//             '</div><br><br>'+
-//             '<button id=applyControls class="clean-gray" style="float:right; margin-right:40px;"> Apply & Refresh</button>'+
-//             '<button id=restoredefaults class="clean-gray" style="margin-left:20px"> restore defaults </button>'+
-//             '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
-//         '</div>'
-//     );
-    
-//     _log(encodeURIComponent(window.location), true);
-//     $('#applyControls').click(function(){
-//         $(this).css('color', 'lightgrey');
-//         document.location.reload();
-//     });
-//     $('#restoredefaults').click(function(){
-//         $(this).css('color', 'lightgrey');
-//         _log(Object.keys(localStorage));
-//         localStorage.clear();
-//         _log(Object.keys(localStorage));
-//     });
-    
-
-//     //TODO convert to JQuery UI
-//     $('#controlDiv').css({
-//         'position': 'fixed',
-//         'right': '10px',
-//         'top': '25px',
-//         'z-index': '19',
-//         'border': '1px solid grey',
-//         'width': '105px',
-//         'height': '15px',
-//         "borderRadius": "5px",
-//         'overflow': 'hidden',
-//         'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)'
-//     });
-
-//     $('#controlSpan').click(function(e) {
-//         $('#controlDiv').css({
-//             'position':'absolute',
-//             'box-shadow':'2px 2px 3px 3px rgba(74,74,74,1)'
-//         });
-//         $('#controlDiv').animate({
-//             'width': '600px',
-//             'height': '600px',
-//             'top': 50,
-//             'left': ($(window).scrollLeft() + $(window).width() / 2 - 300)
-//         }, 200);
-//         $("body").append($("<div>").css({
-//             'position': "fixed",
-//             'width': "100%",
-//             'height': "100%",
-//             "background-color": "#000",
-//             'opacity': 0.6,
-//             "z-index": 18,
-//             'top': 0,
-//             'left': 0
-//         }).attr("id","page-cover"));
-//     });
-
-//     $('#closeControlDiv').click(function(e) {
-//         $('#controlDiv').css({
-//             'position':'fixed',
-//             'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)',
-//             'left': ''
-//         });
-//         $('#controlDiv').animate({
-//             'width': '105px',
-//             'height': '15px',
-//             'right': '25px',
-//             'top': '25px'
-//         }, 200);
-
-//         $('#page-cover').remove();
-//     });
-
-//     addControlWidgetActions2();
-//     _log('addControlWidget() End',DLOG);
-// }
 function addControlWidget() {
     _log('addControlWidget() Start',DLOG);
     $('#content').after('<div id="controlDiv" class="gray-grad" title="settings for advancedsearch v'+version+'">'+
-            '<a href="'+downloadLink+'"  style="float:right;"> click to manually update</a> ' +
+            '<a href="'+downloadLink+'" class="button-small pure-button" style="float:right;"> click to manually update</a> ' +
             // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
-            '<div class="clearfix">'+
+            '<div class="" >'+
                 '<img src="http://goo.gl/53qn5g">'+
                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
-                '<input type=checkbox id=qtydefault class="saveState css-checkbox" value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
-                '<input type=checkbox id="combinePN" class="saveState css-checkbox" value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
-                '<input type=checkbox id=pricehoverControl class="saveState css-checkbox" value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
-                '<input type=checkbox id=queryHighlight class="saveState css-checkbox" value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
+                '<input type=checkbox id=qtydefault class="saveState " value="1"><label class="" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
+                '<input type=checkbox id="combinePN" class="saveState " value="1"> <label class="" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
+                '<input type=checkbox id=pricehoverControl class="saveState " value="1"><label class="" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
+                '<input type=checkbox id=queryHighlight class="saveState " value="1"><label class="" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
                 '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
-                // '<label><input type=checkbox id=wrapFilters class="saveState" value="0">Turn on screen wrapping for multiselect filters (in progress)</input></label><br>' + 
-                //'<label><input type=checkbox id=pagesControl >Default number of extra pages to load on filter (drill down) pages</input></label> <input type=text id="pageloadnumberbox" value="4" size="4" ><br>' +
-                //'<label><input type=checkbox id=keepstock> Keep In stock,Lead free, and RoHS checkboxes between visits (not working yet)</label><br>'+
                 //'<label><input type=checkbox id=dragTables> Turn on Draggable Tables</label><br>' +
                 '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
-                '<label><input type=checkbox id=picPrevControl class="saveState css-checkbox" value="1"> <label class="css-label" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
-                '<label><input type=checkbox id=qfControl class="saveState css-checkbox" value="1"> <label class="css-label" for="qfControl">Turn on Quick Pick Box</label><br>' +
-                '<label><input type=checkbox id=familyHighlight class="saveState css-checkbox" value="1"> <label class="css-label" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
-                '<label><input type=checkbox id=instantfilter class="saveState css-checkbox" value="1"><label class="css-label" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
-                //'<label><input type=checkbox id=altColorTableRows> Turn off alternating shading of table rows</label><br>' +
+                '<label><input type=checkbox id=picPrevControl class="saveState " value="1"> <label class="" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
+                '<label><input type=checkbox id=qfControl class="saveState " value="1"> <label class="" for="qfControl">Turn on Quick Pick Box</label><br>' +
+                '<label><input type=checkbox id=familyHighlight class="saveState " value="1"> <label class="" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
+                '<label><input type=checkbox id=instantfilter class="saveState " value="1"><label class="" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
                 '<br><span style="font-weight:bold">Experimental</span><br>'+
-                '<input type=checkbox id=analytics class="saveState css-checkbox" value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
-                '<input type=checkbox id=spellcheck class="saveState css-checkbox" value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
-                '<input type=checkbox id=stickyfilters class="saveState css-checkbox" value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
-                '<input type=checkbox id=squishedFilters class="saveState css-checkbox" value="0"><label class="css-label" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
+                '<input type=checkbox id=analytics class="saveState " value="0"> <label class="" for="analytics">Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
+                '<input type=checkbox id=spellcheck class="saveState " value="0"> <label class="" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
+                '<input type=checkbox id=stickyfilters class="saveState " value="0"><label class="" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
+                '<input type=checkbox id=squishedFilters class="saveState " value="0"><label class="" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
             '</div><br><br>'+
-            // '<button id=applyControls class="clean-gray" style="float:right; margin-right:40px;"> Apply & Refresh</button>'+
-            '<button id=restoredefaults class="clean-gray" style="margin-left:20px"> restore defaults </button>'+
+            '<button id=restoredefaults class="button-small pure-button" style="margin-left:20px"> restore defaults </button>'+
             '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
         '</div>'
     );
 
     $('#content').after('<div id="controlSpan" class="pure-button"><i class="fa fa-cog"></i> settings v' + version + '</div>');
-    
-    $('#controlDiv').dialog({
-        autoOpen: false,
-        resizable: false,
-        height:600,
-        width:800,
-        modal: true,
-        buttons: {
-            "Apply & Refesh Page": function() {
-                $(this).css('color', 'lightgrey');
-                $( this ).dialog( "close" );
-                document.location.reload();
-            },
-            Cancel: function() {
-                $( this ).dialog( "close" );
-            }
-        }
-    });
+    _log('control dialog tick start ', DLOG);
+    // setTimeout(function(){
+            $('#controlDiv').dialog({
+                autoOpen: false,
+                resizable: false,
+                // draggable: false,
+                height:600,
+                width:800,
+                modal: true,
+                buttons: {
+                    "Apply & Refesh Page": function() {
+                        $(this).css('color', 'lightgrey');
+                        $( this ).dialog( "close" );
+                        document.location.reload();
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        // },1500);
+    _log('control dialog tick end ', DLOG);
 
     $('#controlSpan').click(function(){
         $('#controlDiv').dialog('open');
@@ -561,20 +570,14 @@ function addControlWidget() {
         'right': '10px',
         'top': '22px',
         'z-index': '19',
-        // 'border': '1px solid grey',
-        // 'width-max': '105px',
-        // 'height': '15px',
-        // "borderRadius": "5px",
-        // 'overflow': 'hidden',
-        // 'box-shadow': '3px 1px 1px 1px rgba(221,221,221,0.79)',
-        'cursor':'pointer',
-        // 'padding':'1px 3px'
+        'cursor':'pointer'
     });
 
     addControlWidgetActions2();
     _log('addControlWidget() End',DLOG);
 }
 function addpiwik(){
+    _log('addpiwik() Start',DLOG);
 	var theuid = getID();
     var webref = document.referrer.toString();//.replace(/\&/g, '_');
     var docloc = document.location.toString().replace(/\&/g, 'xxx');
@@ -589,16 +592,18 @@ function addpiwik(){
         '&amp;_cvar='+ encodeURIComponent(cvar)
     );
     $('body').append('<img src="'+imgsrc+'" style="border:0" alt="" />');
+    _log('addpiwik() End',DLOG);
 }
 
 function hoveringHelpHighlighter(){
+    _log('hoveringHelpHighlighter() Start',DLOG);
     // var hlarray = [
     // [$('#exploremodecheckbox').parent(), $('select[multiple]')],
     // [$('#qtydefault').parent(), $('select[multiple]')],
     // ];
     var zind = $('#headKeySearch').css('z-index');
 
-    $('#picPrevControl').parent().hoverIntent({
+    $('#picPrevControl, [for=picPrevControl]').hoverIntent({
         over: function(){$('.catfilterlink').addClass('zlevelhhl'); },
         out: function(){$('.catfilterlink').removeClass('zlevelhhl'); },
         interval: 2,
@@ -608,7 +613,7 @@ function hoveringHelpHighlighter(){
     //  out: function(){$('#content').removeClass('cwhhl'); },
     //  interval: 2,
     // });
-    $('#instantfilter, #spellcheck').parent().hoverIntent({
+    $('#instantfilter, [for=instantfilter], #spellcheck, [for=spellcheck]').hoverIntent({
         over: function(){$('#cHeader').addClass('zlevelhhl'); },
         out: function(){$('#cHeader').removeClass('zlevelhhl');},
         interval: 2,
@@ -618,26 +623,28 @@ function hoveringHelpHighlighter(){
         out: function(){$('#qpDiv').removeClass('zlevelhhl');},
         interval: 2,
     }); 
-    $('#combinePN').parent().hoverIntent({
-        over: function(){$('td:contains("-ND")').addClass('zlevelhhl');},
-        out: function(){$('td:contains("-ND")').removeClass('zlevelhhl');},
+    $('#combinePN, [for=combinePN]').hoverIntent({
+        over: function(){$('.mfg-partnumber').addClass('zlevelhhl');},
+        out: function(){ $('.mfg-partnumber').removeClass('zlevelhhl');},
         interval: 2,
     }); 
-    $('#pricehoverControl').parent().hoverIntent({
+    $('#pricehoverControl, [for=pricehoverControl]').hoverIntent({
         over: function(){$('a:contains(.)').addClass('zlevelhhl');},
         out: function(){$('a:contains(.)').removeClass('zlevelhhl');},
         interval: 2,
     });
-    $('#qtydefault').parent().hoverIntent({
+    $('#qtydefault, [for=qtydefault]').hoverIntent({
         over: function(){$('input[name=quantity]').addClass('zlevelhhl');},
         out: function(){$('input[name=quantity]').removeClass('zlevelhhl');},
         interval: 2,
     });
-    $('#exploremodecheckbox, #stickyfilters, #wrapFilters, #squishedFilters').parent().hoverIntent({
+    $('#exploremodecheckbox, [for=exploremodecheckbox], #stickyfilters, [for=stickyfilters], #wrapFilters, [for=wrapFilters], #squishedFilters, [for=squishedFilters]').hoverIntent({
         over: function(){$('select[multiple]').addClass('explorehhl');},
         out: function(){$('select[multiple]').removeClass('explorehhl');},
         interval: 100,
     });
+    _log('hoveringHelpHighlighter() End',DLOG);
+
 }
 
 function addControlWidgetActions2(){
@@ -667,7 +674,7 @@ function addControlWidgetActions2(){
         }
     });
 
-    $('#qtydefault').click(function() {
+    $('#qtydefault').on('click',function() {
         if($(this).prop('checked') != 'checked') {
             localStorage.setItem($(this).attr('id'), 0);
             $('.engquan').attr('disabled', 'disabled');
@@ -744,7 +751,7 @@ function formatFilterResultsPage(){
         
         picsToAccel(); //add the thumnails to picture accelerator block
         if(localStorage.getItem('combinePN') == 1) {
-            setTimeout(function(){combinePN();}, 10);
+            setTimeout(function(){combinePN();}, 1);
         }
         if(localStorage.getItem('dragTables') == 1) {
             $('#productTable').addClass('draggable');
@@ -809,23 +816,28 @@ function formatFilterResultsPage(){
 
 
 function addMatchingRecordsToApply(){
+    _log('addMatchingRecordsToApply() Start',DLOG);
     $('.filters-buttons').append('<div class="matching-records" style="display:inline; margin-left:30px; position:relative;">'+$('.matching-records').text()+'</div>');
     //$(".matching-records:last").css({display:'inline', 'margin-left': '30px', postion:'relative'});
+    _log('addMatchingRecordsToApply() End',DLOG);
 }
 
 function addColumnMath(){
+    _log('addColumnMath() Start',DLOG);
     $('#productTable').before('<button id="doMath" style="margin:2px 5px;"class="button-small pure-button">Do Column Math</button>');
-    addColumnMathDialog();
+    setTimeout(addColumnMathDialog, 3000);
     $('#doMath').click(function(e){
         _log('ready to do math', true);
         $('#colMathDialog').dialog("open")
         e.preventDefault();
     });
+    _log('addColumnMath() End',DLOG);
 }
 
 function addColumnMathDialog(){
     //TODO add units of precision in form
     //TODO add normalization checkbox
+    _log('addColumnMathDialog() Start',DLOG);
     $('body').append(
         '<div id="colMathDialog" title="Column Math">'+
             '<form><select id="firstMathColumn"></select><br>'+
@@ -852,9 +864,11 @@ function addColumnMathDialog(){
         'modal': true,
         'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
     });
+    _log('addColumnMathDialog() End',DLOG);
 }
 
 function openMathDialog(){
+    _log('openMathDialog() Start',DLOG);
     insertTableSelectValues('#firstMathColumn', '#secondMathColumn');
     $('#firstMathColumn, #secondMathColumn').on('mouseenter.math', 'option', function(){
         var colval = +$(this).val()+1;
@@ -864,14 +878,18 @@ function openMathDialog(){
         var colval = +$(this).val()+1;
         $('table tr td:nth-child('+colval+'),table tr th:nth-child('+colval+')').removeClass('mathHighlight');
     });
+    _log('openMathDialog() End',DLOG);
 }
 
 function closeMathDialog(){
+    _log('closeMathDialog() Start',DLOG);
     $('#firstMathColumn').empty();
     $('#secondMathColumn').empty();
+    _log('closeMathDialog() End',DLOG);
 }
 
 function insertTableSelectValues(firstSelector, secondSelector){
+    _log('insertTableSelectValues() Start',DLOG);
     var skipClasses = ['.rd-compare-parts','.rd-datasheet','.image', '.mfg-partnumber', '.description','.series', '.packaging' ];
     $('#productTable>thead>tr:eq(0) th').each(function(ind){
 
@@ -883,7 +901,7 @@ function insertTableSelectValues(firstSelector, secondSelector){
             $(firstSelector).find('option[value='+ind+']').prop('selected',true); // set default option to price
         }
     });
-
+    _log('insertTableSelectValues() End',DLOG);
 }
 
 function addMathCol(){
@@ -1061,16 +1079,19 @@ function highlightKeywords(){
 }
 
 function addGraphInterface(){
+    _log('addGraphInterface() Start', DLOG);
     $('body').append('<div id=graphDialog></div>')
-    $('#graphDialog').dialog({
-        'autoOpen':false,
-        'open': openGraphDialog,
-        'close': closeGraphDialog,
-        'modal': true,
-        'height': 550,
-        'width': 900,
-        'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
-    });
+    setTimeout(function(){
+        $('#graphDialog').dialog({
+            'autoOpen':false,
+            'open': openGraphDialog,
+            'close': closeGraphDialog,
+            'modal': true,
+            'height': 550,
+            'width': 900,
+            'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
+        });
+    },3000);
 
     
     $('#productTable').before('<button id="buildChart" style="margin:2px 5px;"class="button-small pure-button">Build Chart</button>');
@@ -1097,6 +1118,7 @@ function addGraphInterface(){
     });
 
     $('#graphDialog').append('<div class="graphErrorNotice"></div>')
+    _log('addGraphInterface() End', DLOG);
 }
     
 function openGraphDialog(){
@@ -1254,17 +1276,19 @@ function drawChart(xcol, ycol){
 
 function formatQtyBox(){
     _log('formatQtyBox() Start',DLOG);
-    $('form[name=srform]').find('label,input').appendTo($('form[name=srform]'));
-    $('form[name=srform]').wrap('<div id=srformdiv style="display:inline-block"/>');
-    // $('form[name=srform]').wrap('<div id=srformdiv style="display:inline-block"/>');
+    var $srform = $('form[name=srform]');
+    $srform.find('label,input').appendTo($srform);
+    $srform.wrap('<div id=srformdiv style="display:inline-block"/>');
+    // $srform.wrap('<div id=srformdiv style="display:inline-block"/>');
     // $('.quantity-form').addClass('pure-form');
     
 
-    //$('form[name=srform]').children().addBack().css({'display':'inline'});
-    $('form[name=srform]').attr('title', $('form[name=srform]>p').text());
+    //$srform.children().addBack().css({'display':'inline'});
+    $srform.attr('title', $srform.find('p').text());
     $('#productTable').before($('#srformdiv'));
-    $('form[name=srform]>p').hide();    // hide descriptive paragraph
-    $('p:contains("To see real-time pricing")').html('');   //hide the "To see reel-time pricing" paragraph
+    $srform.find('p').detach();    // hide descriptive paragraph
+    _log('formatQtyBox() tick1',DLOG);
+    $('p:contains("To see real-time pricing")').detach();   //hide the "To see reel-time pricing" paragraph
     _log('formatQtyBox() End',DLOG);
 }
 
@@ -1500,118 +1524,28 @@ function wrapFilterClickFunc(somespan, buttonval){
     }
 }
 
-// function wrapFilterTableOLD(){
-//     _log('wrapFilterTable() Start',DLOG);
-//     //button code
-//     $('#mainform').wrap('<div id=mainformdiv />');
-//     $('#mainformdiv table').hide();
-//     var thehtml = '<span id="wrapfilterschooser" class="tabbedbutton" style="" title="Instead of scrolling horizontally the filters will wrap to the next line">'+
-//         '<input id="wrapFilters" value="0" class="saveState" type="hidden">' +
-//         '<button id=wrapfilteron value=0>Off</button>'+
-//         '<button id=wrapfilteroff value=1>On</button>'+
-//         ' Wrap Filters'+
-//     '</span>';
-    
-//     $('.filters-panel').prepend(thehtml);   
-//     addChooserButtonAction($('#wrapfilterschooser'), wrapFilterClickFunc);
-//     //end button code
-
-//     var selectlist = $('#mainform select');
-//     selectlist.each(function(ind){
-//         $(this).data('pname', $(this).closest('table').find('th:eq('+ind+')').text());
-//         // _log('pv '+ $(this).attr('name') + ' columnname ' + 
-//         //      $(this).closest('table').find('th:eq('+ind+')').text()
-//             // );
-//         });
-//     _log('wrapFilterTable() tick',DLOG);
-//     $('#mainform').prepend('<div id=selectboxdiv class="morefilters" />');
-//     $(selectlist.get().reverse()).each(function(){
-//         $('#selectboxdiv').prepend('<div class="selectboxdivclass" style="max-width:'+ ($(this).width()*1.6)+'px;"><b>'+
-//             $(this).data('pname')+'</b><br>'+$(this).parent().html()+
-//             '<br><a name="'+$(this).attr('name')+'" class="clearselect" style="visibility:hidden;" href="#">clear</a></div>'
-//         );
-//         if($(this).find('option:selected').length == 1){
-//             $(this).find('.clearselect').css({visibility:'visible'});
-//         }
-//     });
-//     _log('wrapFilterTable() tick2',DLOG);
-//     $('.clearselect').click(function(e){
-//         e.preventDefault();
-//         $('select[name="'+$(this).attr('name')+'"]').find('option').each(function(){
-//             $(this).prop('selected',$(this).prop('defaultSelected'));
-//         });
-//         addApplyFiltersButtonHighlight();
-//     });
-//     $('#mainform').on('mouseup', 'option', function(){
-        
-//         if($(this).parent().find('option').filter(':selected').length >=1){
-//             $(this).closest('div').find('.clearselect').css({visibility:'visible'});
-//         }else{
-//             $(this).closest('div').find('.clearselect').css({visibility:'hidden'});
-//         }
-//     })
-    
-//     $('#mainformdiv table').detach().remove();
-
-//     $('.filters-group').append(
-//         '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">'+
-        
-//         '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none"> - see less filters - </span>'+
-//         '</div>'+
-//         '<div style="float:right;">'+
-//             '<input style="float:right" type="checkbox" class="css-checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand">'+
-//             '<label class="css-label" for="filterAlwaysExpand">Always Expand</label>'+
-//         '</div>'
-//     );
-
-//     //test area
-
-//     // end test area
-
-//     restoreInputState($('#filterAlwaysExpand'));
-//     if($('#filterAlwaysExpand').val() == 1){
-//         _log('filterAlwaysExpand ' + $('#filterAlwaysExpand').val(), true);
-//         $('#selectboxdiv').toggleClass('morefilters lessfilters');
-//         $('#morefiltersbutton span').toggle();
-//     }
-//     $('#morefiltersbutton').click(function(){
-//         //$('#mainformdiv').animate({'height': '100%'},200);
-//         $('#selectboxdiv').toggleClass('morefilters lessfilters');
-//         $('#morefiltersbutton>span').toggle();
-//         _log('finished morefiltersbutton click func', true);
-//     });
-
-//     if($('#wrapFilters').val() == 0){
-//         $('#selectboxdiv').removeClass('morefilters lessfilters');
-//         $('#morefiltersbutton').hide();
-//         $('#selectboxdiv').addClass('wsnowrap');
-//     }else{
-//         //$('#selectboxdiv').removeClass('morefilters lessfilters');
-//     }
-
-//     location.assign("javascript:setupAttForm();void(0)");
-
-//     _log('wrapFilterTable() End',DLOG);
-// }
 
 function wrapFilterTable(){
     _log('wrapFilterTable() Start',DLOG);
     //button code
     $('#mainform').wrap('<div id=mainformdiv />');
-    var $filtersPanel = $('.filters-panel').detach();
-    var $mainform = $filtersPanel.find('form[name=attform]');
-    _log('wrapFilterTable() tick2',DLOG);
-    $mainform.find('table').hide();
-    var thehtml = '<span id="wrapfilterschooser" class="tabbedbutton" style="" title="Instead of scrolling horizontally the filters will wrap to the next line">'+
+    var thehtml = '<div id="wrapfilterschooser" class="tabbedbutton" style="display:inline-block;" title="Instead of scrolling horizontally the filters will wrap to the next line"><div>'+
         '<input id="wrapFilters" value="0" class="saveState" type="hidden">' +
         '<button id=wrapfilteron value=0>Off</button>'+
         '<button id=wrapfilteroff value=1>On</button>'+
         ' Wrap Filters'+
-    '</span>';
-    
-    $filtersPanel.prepend(thehtml);   
-    addChooserButtonAction($filtersPanel.find('#wrapfilterschooser'), wrapFilterClickFunc);
-    _log('wrapFilterTable() tick3',DLOG);
+    '</div></div>';
+    var originalSelects = $('.filters-panel').find('form[name=attform] select');
+    originalSelects.each(function(){
+        $(this).data('limitwidth', ($(this).width()*1.6));
+    })
+
+    $('.filters-panel').prepend(thehtml);   
+    addChooserButtonAction($('.filters-panel').find('#wrapfilterschooser'), wrapFilterClickFunc);
+    var $filtersPanel = $('.filters-panel');
+    // var $filtersPanel = $('.filters-panel').detach();
+    var $mainform = $filtersPanel.find('form[name=attform]');
+    $mainform.find('table').hide();
     //end button code
 
     var selectlist = $mainform.find('select');
@@ -1621,23 +1555,20 @@ function wrapFilterTable(){
         //      $(this).closest('table').find('th:eq('+ind+')').text()
             // );
         });
-    _log('wrapFilterTable() tick4',DLOG);
     $mainform.prepend('<div id=selectboxdiv class="morefilters" />');
-    _log('wrapFilterTable() tick5',DLOG);
     
     $(selectlist.get().reverse()).each(function(){
-        var $this = $(this)
+        var $thisSelect = $(this);
+        
         $mainform.find('#selectboxdiv').prepend(
-            '<div class="selectboxdivclass" style="max-width:'+ ($this.width()*1.6)+'px;"><b>'+
-            // '<div class="selectboxdivclass" ><b>'+
-                $this.data('pname')+'</b><br>'+$this.parent().html()+
-            '<br><a name="'+$this.attr('name')+'" class="clearselect" style="visibility:hidden;" href="#">clear</a></div>'
+            '<div class="selectboxdivclass" style="max-width:'+ $thisSelect.data('limitwidth')+'px;"><b>'+ // this line forces the select header to wrap
+                $thisSelect.data('pname')+'</b><br>'+$thisSelect.parent().html()+
+            '<br><a name="'+$thisSelect.attr('name')+'" class="clearselect" style="visibility:hidden;" href="#">clear</a></div>'
         );
         // if($(this).find('option').filter(':selected').length == 1){
         //     $(this).find('.clearselect').css({visibility:'visible'});
         // }
     });
-    _log('wrapFilterTable() tick6',DLOG);
     $filtersPanel.on('click','.clearselect', function(e){
         e.preventDefault();
         $filtersPanel.find('select[name="'+$(this).attr('name')+'"]').find('option').each(function(){
@@ -1645,8 +1576,7 @@ function wrapFilterTable(){
         });
         addApplyFiltersButtonHighlight();
     });
-    $('.seohtagbold:first').after($filtersPanel);  //TODO continue moving down???<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    _log('wrapFilterTable() tick7',DLOG);
+    // $('.seohtagbold:first').after($filtersPanel);  //part of a possible speedup detach, do stuff and reattach?  probably no benefit
     $('#mainform').on('mouseup', 'option', function(){
         
         if($(this).parent().find('option').filter(':selected').length >=1){
@@ -1656,14 +1586,12 @@ function wrapFilterTable(){
         }
     })
     
-    _log('wrapFilterTable() tick8',DLOG);
-    $('#mainformdiv table').detach();
-    _log('wrapFilterTable() tick9',DLOG);
+    $('#mainformdiv table').detach(); //use this instead of empty or remove to maintain speed
 
     $('.filters-group').append(
         '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">'+
         
-        '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none"> - see less filters - </span>'+
+        '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none; position:relative; top:-2px;"> - see less filters - </span>'+
         '</div>'+
         '<div style="float:right;">'+
             '<input style="float:right" type="checkbox" class="css-checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand">'+
@@ -1689,6 +1617,7 @@ function wrapFilterTable(){
     });
 
     if($('#wrapFilters').val() == 0){
+
         $('#selectboxdiv').removeClass('morefilters lessfilters');
         $('#morefiltersbutton').hide();
         $('#selectboxdiv').addClass('wsnowrap');
@@ -1748,15 +1677,18 @@ function formatIndexResultsPage(){
 
         addToTopButton();
         $('#content').css('top','70px');
+        $('.dk-url-shortener').insertBefore($('#content')).css({position:'relative', top: '70px'});
 
         _log('formatIndexResultsPage() End',DLOG);
     }
 }
 
 function categoryDivWrap(){
+    _log('categoryDivWrap() Start',DLOG);
     $('.catfiltertopitem').each(function(){
         $(this).next('ul').addBack().wrapAll('<div />');
     });
+    _log('categoryDivWrap() End',DLOG);
 }
 
 function addIndexColumnizerControls(){
@@ -1877,7 +1809,7 @@ function addQuickPicksDisplayControls(){
         $(this).toggleClass('thoughtbot2 clean-gray');
     }).css('padding','3px 3px 3px 3px');
 
-    _log('addQuickPicksDisplayControls() Start', DLOG);
+    _log('addQuickPicksDisplayControls() End', DLOG);
 }
 
 //TODO Evaluate if needed
@@ -2134,68 +2066,6 @@ function dataSheetButtonAction(){
     }
 }
 
-//also referred to as "similar to"
-// function addReverseFilteringOLD($tableToFilter){
-//     _log('addReverseFiltering() Start',DLOG);
-//     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
-//     _log('reversefiltering category '+$tableToFilter.find('th:contains("Category")').parent().index());
-//     //TODO make this into object
-//     var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("OtherNames")').eq(0);
-//     var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());
-//     //formRows.wrapAll('<form id="reverseForm" />');
-//     formRowsTD.each(function(ind){
-//         if (ind==0){
-//             $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
-//         }else if (ind==1){
-//             $(this).append('<span style="float:right"><input id="familyfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="familyfilter"></label></span>');
-//         }else{
-//             $(this).append('<span style="float:right"><input type=checkbox class="css-checkbox" id="revcheck'+ind+'"><label class="css-label" for="revcheck'+ind+'"></label></span>');
-//         }
-//     });
-
-//     var revFiltConfig = {
-//         id:'ReverseFilterHover', 
-//         title : 'Find Similar Results',
-//         message : '', 
-//         hoverOver : formRowsTD, 
-//         highlight : false,
-//         //height : '420px', 
-//         //width :'815pxx', 
-//         interactive : true, 
-//         my : 'left top',
-//         at : 'right top', 
-//         offset : '0 0', 
-//         collision : 'fit flipfit',
-//         someFunc : function(){}
-//     };
-//     createHoverWindow(revFiltConfig);
-
-//     $('#ReverseFilterHoverContent').empty().append('<span id="revres"> <p>click <br>checkboxes</p></span><a id="reverseFilterLink" href="'+getReverseFilterLink(formRowsTD)+
-//         '"><div id="applyRevFilter">See Results</div></a>');
-//     $('#applyRevFilter').css({
-//         'background':'lightgrey',
-//         'border': '1px solid #ccc',
-//         'border-radius':'5px',
-//         'text-align': 'center',
-//         'box-shadow': 'inset -3px -3px 3px #888',
-//         'width': '95%',
-//         'height': '20px',
-//         'text-decoration': 'none'
-//     });
-
-//     formRowsTD.find('input').change(function(){
-//         var i = getReverseFilterLink(formRowsTD);
-//         $('#reverseFilterLink').attr('href', i);
-//         $('#revres').html('<p>loading..<br>.</p>');
-//         $('#revres').load(i + ' #content>p:first', function() {
-//             $(this).html($(this).html().replace('ing cr', 'ing<br>cr'));
-            
-//         });
-//     });
-
-//     $('.attributes-table-main form:first').css({float:'left'}).find('input').addClass('pure-button');
-//     _log('addReverseFiltering() End',DLOG);
-// }
 
 function addReverseFiltering($tableToFilter){
     _log('addReverseFiltering() Start',DLOG);
@@ -2254,23 +2124,45 @@ function getReverseFilterLink(formRowsTD){
     return reverseFilterLink;
 }
 
-function addBreadcrumLink(){
-    _log('addBreadcrumLink() Start',DLOG);
+function addBreadCrumbLink(){
+    _log('addBreadCrumbLink() Start',DLOG);
     if ($('#productTable').size() > 0) {
-        var thesplit = $('h1.seohtagbold').html().split(/&gt;/g);
-        var mypop = thesplit.pop();
-        var finalhref = getFamilyLink();
-        mypop = '<a id="famBreadCrumb" href="'+finalhref+'">'+mypop+'</a>';
-        thesplit.push(mypop);
-        $('h1.seohtagbold').html(thesplit.join('&nbsp;&gt;&nbsp;'));
-        $('h1.seohtagbold').find('a:eq(1)').append(' <img src="https://dl.dropboxusercontent.com/u/26263360/img/downarrowred.png">');
+        appendURLParam($('.seohtagbold a:last'), 'akamai-feo', 'off');
     }
-
     addBreadcrumbHover();
-    _log('addBreadcrumLink() End',DLOG);
+    _log('addBreadCrumbLink() End',DLOG);
 }
 
-function getFamilyLink(){
+function appendURLParam(href, param, value){
+    _log('appendURLParam() Start',DLOG);
+    
+    if (href instanceof $){
+        var $a = href;
+        href = $a.attr('href');
+        if( href.indexOf('?') !== -1){
+            href += '&'+param+'='+value;
+        }else{
+            href += '?'+param+'='+value;
+        }
+        $a.attr('href', href);
+        _log('added param to jquery object '+param ,DLOG);
+
+    }
+    else if ($.type(href) === 'string'){
+        console.log('im a string');
+        if( href.indexOf('?') !== -1){
+            href += '&'+param+'='+value;
+        }else{
+            href += '?'+param+'='+value;
+        }
+        return href;
+    }
+    _log('appendURLParam() End',DLOG);
+}
+
+
+
+function getFamilyLinkOLD(){
     _log('getFamilyLink() Start',DLOG);
     var myhref = $('h1.seohtagbold').find('a:last').attr('href').split('?')[0];
     var myhtml = $('h1.seohtagbold').html();
@@ -2288,6 +2180,16 @@ function getFamilyLink(){
         '?'+modifiers;
     _log('getFamilyLink() End',DLOG);
     return finalhref;
+}
+
+function getFamilyLink(){
+    _log('getFamilyLink() Start',DLOG);
+    var myhref = $('.seohtagbold').find('a:last').attr('href');
+    var mainform = $('#mainform')
+    var modifiers = mainform.find('input[type=checkbox], input[name=quantity], input[name=ColumnSort]').serialize()+'&akamai-feo=off';
+
+    _log('getFamilyLink() End',DLOG);
+    return myhref;
 }
 
 function addStickyHeader () {
@@ -2495,20 +2397,32 @@ function addToTopButton(){
 }
 
 function addChooserButtonAction(somespan, clickfunc){
-    restoreInputState($('#'+somespan.find('input').attr('id')));
-    somespan.find('button').css({'padding':'3px 5px 4px 5px'});
-    //$('#qpchooser').val($('#qfLocation').val());
+    _log('addChooserButtonAction() Start' ,DLOG);
+    somespan.find('button').css({'padding':'3px 5px 4px 5px'}); //TODO fix
+
+    var $input = somespan.find('input') ;
+    var inputid = $input.attr('id');
+    restoreInputState($('#'+inputid));
+
+    _log('restored input state of '+inputid + ' is '+ $input.val(), DLOG);
+    // console.log('$input',$input);
+    somespan.find('button').removeClass();
+    somespan.find('button[value='+$input.val()+']').addClass('thoughtbot2');
+    somespan.find('button').not('[value='+$input.val()+']').addClass('clean-gray');
+
+    somespan.on('click', 'button' , function(){
+        var bval = $(this).val();
+        $input.val(bval);
+        _log('setting ' + inputid + ' to ' + $input.val() + ' button val is ' + bval, true);
+        localStorage.setItem(inputid, $(this).val());   
+        _log('setting ' + inputid + ' to ' + $input.val() + ' button val is ' + bval, true);
+        _log('getting ' + inputid + ' is ' + localStorage.getItem(inputid) + ' button val is ' + $(this).val(), true);        
         somespan.find('button').removeClass();
-        somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot2');
-        somespan.find('button').not('[value='+somespan.find('input').val()+']').addClass('clean-gray');
-        somespan.on('click', 'button' , function(){
-            somespan.find('input:first').val($(this).val());
-            localStorage.setItem(somespan.find('input:first').attr('id'), $(this).val());           
-            somespan.find('button').removeClass();
-            somespan.find('button[value='+somespan.find('input').val()+']').addClass('thoughtbot2');
-            somespan.find('button').not('[value='+somespan.find('input').val()+']').addClass('clean-gray');
-            clickfunc(somespan, $(this).val());
-        });
+        somespan.find('button[value='+$input.val()+']').addClass('thoughtbot2');
+        somespan.find('button').not('[value='+$input.val()+']').addClass('clean-gray');
+        clickfunc(somespan, $(this).val());
+    });
+        _log('addChooserButtonAction() End',DLOG);
 }
 
 function exploreModeClickFunc(somespan, buttonval){
@@ -2521,16 +2435,17 @@ function exploreModeClickFunc(somespan, buttonval){
 
 function addExploreMode(){
     _log('addExploreMode() Start',DLOG);
-    var thehtml = '<span id="exploremodechooser" class="tabbedbutton" style="" title="Hover over each option in the multi-select boxes below to get a preview">'+
+    var thehtml = '<div id="exploremodechooser" class="tabbedbutton" style="display:inline-block;" title="Hover over each option in the multi-select boxes below to get a preview">'+
         '<input id="exploremodecheckbox" value="0" class="saveState" type="hidden">' +
         '<button id=exploremodeon value=0>Off</button>'+
         '<button id=exploremodeoff value=1>On</button>'+
         ' Explore Mode (beta)'+
-    '</span><div class="dummydiv"></div>';
+    '</div><div class="dummydiv"></div>';
     
     // $('#mainform').before(thehtml);
     $('.filters-panel').prepend(thehtml);
     addChooserButtonAction($('#exploremodechooser'),exploreModeClickFunc);
+    _log('addExploreMode() tick1',DLOG);
 
     var exploreHoverConfig = {
         id:'exploreMode', 
@@ -2557,6 +2472,7 @@ function addExploreMode(){
             getExplorePreview($(this).parent());
         });
     }, 500);
+    _log('addExploreMode() tick2',DLOG);
 
     _log('addExploreMode() End',DLOG);
 }
@@ -2997,7 +2913,7 @@ function getAttributeExampleImgs(name,$selectElem) {
 
 function akamaiLazyLoadFixForIndexResults(){
     $('.catfilterlink').each(function(){
-            var querycheckedURL = ($(this).attr('href').indexOf('?') != -1) ? ($(this).attr('href') + '&akamai-feo=off&"') : ($(this).attr('href') + '?akamai-feo=off');
+            var querycheckedURL = ($(this).attr('href').indexOf('?') != -1) ? ($(this).attr('href') + '&akamai-feo=off') : ($(this).attr('href') + '?akamai-feo=off');
             $(this).attr('href', querycheckedURL);
     });
 }
@@ -3054,12 +2970,13 @@ function addQuickFilter3(){
         if($('#qpLinkList').length != 0) {
             $('#qpDivCont').append($('#qpLinkList'));
             $('#quickPicksDisplay').hide();
-            $('#quickPicksDisplayClone').remove();
+            $('#quickPicksDisplayClone').detach();
             $('#qpDiv li').add('.catfiltersub li, .catfilteritem').css('white-space','');
-            $('#productIndexList').css('width','100%');
+            $('#productIndexList').css('width','90%');
         }
         else{
             addJumpToCategory();
+            $('#productIndexList').css('width','90%');
         }
         // remove list bullets
         $('#productIndexList').css({'list-style-type':' none'});
@@ -3121,8 +3038,9 @@ function addKeywordMatchedSprites(){
 function addCategorySprites(){
     _log('addCategorySprites() Start',DLOG);
     $('.catfiltertopitem').each(function(ind) {
-        $(this).prepend('<div align=center class="'+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
-                '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
+        $(this).prepend('<div align=center class="catSprite '+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
+                '" >'+
+                // '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
                 '</div>' 
         );
         //**************************************
@@ -3140,29 +3058,47 @@ function addCategorySprites(){
 
 function addJumpToCategory(){
     _log('addJumpToCategory() Start',DLOG);
+    _log('addJumpToCategory() tick2',DLOG);
     $('#qpDivCont').addClass('mediaColumnizer');
     $('#qpTitle').html('<b>Jump to Category: </b></br><hr>');
     $('.catfiltertopitem').each(function() {
         $(this).attr('id', $(this).text().replace(/[\s\(\)\\\/\,]/g, ''));
     });
+    _log('addJumpToCategory() tick3',DLOG);
+    var thehtml = '';
     $('.catfiltertopitem').each(function(ind) {
-        $('#qpDivCont').append(
-            '<div class="clearfix"><div style="display:inline-block;"> '+
-            '<a class="" href="#' + $(this).text().replace(/[\s\(\)\\\/\,]/g, '') + '">'+
-                '<div align=center class="'+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
-                '" style="margin:1px; border:1px solid gray; float:left; border-radius:5px;" >'+
-                '</div>' + 
+        // $('#qpDivCont').append(
+        //     '<div class="clearfix"><div style="display:inline-block;"> '+
+        //     '<a class="" href="#' + $(this).text().replace(/[\s\(\)\\\/\,]/g, '') + '">'+
+        //         '<div align=center class="'+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
+        //         '" style="margin:1px; border:1px solid gray; float:left; border-radius:5px;" >'+
+        //         '</div>' + 
+        //         $(this).text() + 
+        //     '</a>'+
+        //     '</div></div>'
+        // ); 
+        thehtml += 
+            '<div class="clearfix"><div class="jumptoParentDiv" style="display:inline-block;"> '+
+            '<a class="jumptoLink" href="#' + $(this).text().replace(/[\s\(\)\\\/\,]/g, '') + '">'+'<div class="jumptoHoverDiv">'+
+                '<div align=center class="jumptoSprite '+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
+                '"  >'+
+                // '" style="margin:1px; border:1px solid gray; float:left; border-radius:5px;" >'+
+                '</div><span>' + 
                 $(this).text() + 
-            '</a>'+
+            '<span></div></a>'+
             '</div></div>'
-        );  
+          
 
     });
+    $('#qpDivCont').append(thehtml);
+
+    _log('addJumpToCategory() tick4',DLOG);
     $('#qpDivCont').on('click', 'a', function() {
         var highlight = $($(this).attr('href')).parent();
         $('.shadowhighlight').removeClass('shadowhighlight');
         highlight.addClass('shadowhighlight');
     });
+    _log('addJumpToCategory() tick5',DLOG);
 
     $('#qpDivCont').localScroll({
         offset: {
@@ -3214,7 +3150,7 @@ function getQFAlts(searchterm) {
     ];
     _log('altarray.length is '+altArray.length,DLOG);
     for(var x = 0; x < altArray.length; x++) {
-        _log(' trying ' + altArray[x][0],DLOG);
+        //_log(' trying ' + altArray[x][0],DLOG);
         if(searchterm.match(altArray[x][0])) {
             //if(searchterm.match(/microcontroller/i)){
             var returnString = '';
@@ -3662,7 +3598,7 @@ function loadPrices($hoveredObj){
     });
 }
 
-function combinePN(){
+function combinePNOLD(){
     _log('combinePN() Start',DLOG);
     var mfpnIndex = $('#productTable').find('th').index($('th:contains("Manufacturer Part Number")')) + 1;
 
@@ -3688,6 +3624,35 @@ function combinePN(){
 
     _log('combinePN() End',DLOG);
 }
+function combinePN(){
+    _log('combinePN() Start',DLOG);
+    // var productTable = $('#productTable').eq(0).detach();
+    var productTable = $('#productTable').eq(0);
+    var mfpnIndex = productTable.find('th').index($('th.mfg-partnumber')) + 1;
+
+    productTable.find('td:nth-child(' + mfpnIndex + ')').each(function() {
+        $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().text());
+        //$(this).css('white-space', 'nowrap');
+        
+    });
+    
+    var firstcol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex)-1) + '),th:nth-child(' + (parseInt(mfpnIndex)-1) + ')');
+    var seccol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex)+1) + '),th:nth-child(' + (parseInt(mfpnIndex)+1) + ')');
+    firstcol.remove();
+    seccol.remove();
+
+    $('a[href*=1000002]').parent().empty(); // remove
+    productTable.find('th:contains("Manufacturer Part Number")').each(function() {
+        $(this).text('Part# & Manu');
+    });
+    productTable.find('th:contains("Number")').each(function() {
+        $(this).text($(this).text().replace('Number', '#'));
+    });
+    $('#ColSort1000002,#ColSort-1000002,#ColSort1000001,#ColSort-1000001').parent().parent().empty();
+
+    // console.log(productTable);
+    _log('combinePN() End',DLOG);
+}
 
 function picsToAccel() {
     _log('picsToAccel() Start',DLOG);
@@ -3704,7 +3669,9 @@ function picsToAccel() {
             piclinkhtml = piclinkhtml +'<a href="#popthumb'+ mykey +'">'+ imganchor.html() + '</a>';
         } else {}
     });
+    _log('picsToAccel() tick1',DLOG);
     $('#accContent').append(piclinkhtml);
+    _log('picsToAccel() tick2',DLOG);
     $('#accContent img').each(function(){ $(this).attr('src', $(this).attr('data-blzsrc'));});
     _log('picsToAccel() afterpicturelinkset ',DLOG);
 
@@ -3792,6 +3759,7 @@ function hideAccelTmb(e) {
 function addBreadcrumbHover(){
     //add hover over to the category link of the bread crumbs
     _log('addBreadcrumbHover() Start',DLOG);
+    $('h1.seohtagbold').find('a:eq(1)').append(' <img src="https://dl.dropboxusercontent.com/u/26263360/img/downarrowred.png">');
     var breadcrumbConfig = {
         id:'breadcrumbHover', 
         title : 'Families',
@@ -4246,6 +4214,7 @@ function createHoverWindow2(wcon){
         selector: wcon.selector || null,
     };
 
+    _log('createHoverWindow2() tick1',DLOG);
     $('#content').after(
         '<div id="'+ wcon.id +'" class="gray-grad">'+
         '<div class="clearfix" style="font-weight:bolder; width:100%; margin:4px 3px 3px 5px; display:inline;">'+
@@ -4255,6 +4224,7 @@ function createHoverWindow2(wcon){
         '<div id="'+ wcon.id +'Content">'+ wcon.message +'</div><br /></div>'
     );
 
+    _log('createHoverWindow2() tick2',DLOG);
     $('#'+wcon.id).css({
         'position': 'fixed',
         'box-shadow': '0 0 3px 5px #888',
@@ -4264,6 +4234,7 @@ function createHoverWindow2(wcon){
         'height': wcon.height,
     }).hide();
     
+    _log('createHoverWindow2() tick3',DLOG);
         wcon.bubbleTo.hoverIntent({
             over: function(){
                 $('#'+wcon.id).slideDown(200);
@@ -4295,6 +4266,7 @@ function createHoverWindow2(wcon){
             selector : wcon.selector,
         });
     
+    _log('createHoverWindow2() tick4',DLOG);
     if(wcon.interactive){
         $('#'+wcon.id).add(wcon.hoverOver).lazybind(
             'mouseout', 
@@ -4307,8 +4279,9 @@ function createHoverWindow2(wcon){
             540,
             'mouseover'
         );
+    _log('createHoverWindow2() tick5',DLOG);
     }
-    $('#'+wcon.id+' .close').click(function() {
+    $('#'+wcon.id).on('click', '.close', function() {
         $(this).parent().parent().slideUp(400);
     });
     _log('createHoverWindow2() End',DLOG);
@@ -4376,111 +4349,111 @@ jQuery.expr.filters.offscreen = function(el) {
 };
 
 //combinational hack of GM_xmlhttp and .load funciton in jquery
-(function($){
-    jQuery.fn.gmload = function( url, params, callback ) {
-        var rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-        if ( typeof url !== "string" && _load ) {
-            return _load.apply( this, arguments );
-        }
+// (function($){
+//     jQuery.fn.gmload = function( url, params, callback ) {
+//         var rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+//         if ( typeof url !== "string" && _load ) {
+//             return _load.apply( this, arguments );
+//         }
 
-        // Don't do a request if no elements are being requested
-        if ( !this.length ) {
-            return this;
-        }
+//         // Don't do a request if no elements are being requested
+//         if ( !this.length ) {
+//             return this;
+//         }
 
-        var selector, type, response,
-            self = this,
-            off = url.indexOf(" ");
+//         var selector, type, response,
+//             self = this,
+//             off = url.indexOf(" ");
 
-        if ( off >= 0 ) {
-            selector = url.slice( off, url.length );
-            url = url.slice( 0, off );
-        }
+//         if ( off >= 0 ) {
+//             selector = url.slice( off, url.length );
+//             url = url.slice( 0, off );
+//         }
 
-        // If it's a function
-        if ( jQuery.isFunction( params ) ) {
+//         // If it's a function
+//         if ( jQuery.isFunction( params ) ) {
 
-            // We assume that it's the callback
-            callback = params;
-            params = undefined;
+//             // We assume that it's the callback
+//             callback = params;
+//             params = undefined;
 
-        // Otherwise, build a param string
-        } else if ( params && typeof params === "object" ) {
-            type = "POST";
-        }
+//         // Otherwise, build a param string
+//         } else if ( params && typeof params === "object" ) {
+//             type = "POST";
+//         }
 
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: url,
-            headers: {
-                "User-Agent": "Mozilla/5.0",    // If not specified, navigator.userAgent will be used.
-                "Accept": "text/xml"            // If not specified, browser defaults will be used.
-            },
-            onload: function(response) {
-                var responseXML = null;
-                // Inject responseXML into existing Object (only appropriate for XML content).
-                if (!response.responseXML) {
-                    responseXML = new DOMParser()
-                    .parseFromString(response.responseText, "text/xml");
-                }
-                // See if a selector was specified
-                self.html( selector ?
+//         GM_xmlhttpRequest({
+//             method: "GET",
+//             url: url,
+//             headers: {
+//                 "User-Agent": "Mozilla/5.0",    // If not specified, navigator.userAgent will be used.
+//                 "Accept": "text/xml"            // If not specified, browser defaults will be used.
+//             },
+//             onload: function(response) {
+//                 var responseXML = null;
+//                 // Inject responseXML into existing Object (only appropriate for XML content).
+//                 if (!response.responseXML) {
+//                     responseXML = new DOMParser()
+//                     .parseFromString(response.responseText, "text/xml");
+//                 }
+//                 // See if a selector was specified
+//                 self.html( selector ?
 
-                // Create a dummy div to hold the results
-                jQuery("<div>")
+//                 // Create a dummy div to hold the results
+//                 jQuery("<div>")
 
-                    // inject the contents of the document in, removing the scripts
-                    // to avoid any 'Permission Denied' errors in IE
-                    .append( response.responseText.replace( rscript, "" ) )
+//                     // inject the contents of the document in, removing the scripts
+//                     // to avoid any 'Permission Denied' errors in IE
+//                     .append( response.responseText.replace( rscript, "" ) )
 
-                    // Locate the specified elements
-                    .find( selector ) :
+//                     // Locate the specified elements
+//                     .find( selector ) :
 
-                // If not, just inject the full result
-                response.responseText );
-                callback();
-            }
-        });
-    };
-})(jQuery);
-//highlighting function
-(function($) {
-    $.fn.highlight = function(str, className) {
-        str = str.replace(/\W/gi, '');
-        var regex = new RegExp(str, "gi");
-        return this.each(function() {
-            $(this).contents().filter(function() {
-                return this.nodeType == 3 && regex.test(this.nodeValue);
-            }).replaceWith(function() {
-                return(this.nodeValue || "").replace(regex, function(match) {
-                    return "<span class=\"" + className + "\">" + match + "</span>";
-                });
-            });
-        });
-    };
-})(jQuery);
+//                 // If not, just inject the full result
+//                 response.responseText );
+//                 callback();
+//             }
+//         });
+//     };
+// })(jQuery);
+// //highlighting function
+// (function($) {
+//     $.fn.highlight = function(str, className) {
+//         str = str.replace(/\W/gi, '');
+//         var regex = new RegExp(str, "gi");
+//         return this.each(function() {
+//             $(this).contents().filter(function() {
+//                 return this.nodeType == 3 && regex.test(this.nodeValue);
+//             }).replaceWith(function() {
+//                 return(this.nodeValue || "").replace(regex, function(match) {
+//                     return "<span class=\"" + className + "\">" + match + "</span>";
+//                 });
+//             });
+//         });
+//     };
+// })(jQuery);
 
 //change contains expression to case insensitive
 jQuery.expr[':'].contains = function(a, i, m) {
     return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
 };
 
-(function($){
-    $.fn.lazybind = function(event, fn, timeout, abort){
-        var timer = null;
-        $(this).bind(event, function(){
-            timer = setTimeout(fn, timeout);
-        });
-        if(abort == undefined){
-            return;
-        }
-        $(this).bind(abort, function(){
-            if(timer != null){
-                clearTimeout(timer);
-            }
-        });
-    };
-})(jQuery);
+// (function($){
+//     $.fn.lazybind = function(event, fn, timeout, abort){
+//         var timer = null;
+//         $(this).bind(event, function(){
+//             timer = setTimeout(fn, timeout);
+//         });
+//         if(abort == undefined){
+//             return;
+//         }
+//         $(this).bind(abort, function(){
+//             if(timer != null){
+//                 clearTimeout(timer);
+//             }
+//         });
+//     };
+// })(jQuery);
 
 
 
