@@ -416,15 +416,10 @@ input[type="search"].focus {
 	margin-top:0;
 }
 
-/*h2:first-child{
-	position: relative;
-	top:-15px;
-}
-*/
 .blockdivon2 > ul {
 	/*display: inline-block;*/
-	-moz-column-width:300px;
-	-webkit-column-width:300px;
+	-moz-column-width:450px;
+	-webkit-column-width:450px;
 	-moz-column-gap:10px; 
 	-webkit-column-gap:10px;
 }
@@ -742,7 +737,7 @@ option:hover{
 
 /*replacing question mark*/
 .qmark {
-  display: block;
+  display: inline;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   background: url(https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png) no-repeat;

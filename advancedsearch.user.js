@@ -37,7 +37,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.7
+// @version     2.9.8
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -169,12 +169,10 @@
 //2.9.6.1   chrome fix for selectbox width
 //2.9.6.3   fixed bugs in wrap filters area
 //2.9.7     handled change in breadcrumbs, styled index page
+//2.9.8     Started wizards, added LEDwiz, changed qty form, fixed double fill bug in associated product, moved detail image.
 
 
 //TODO fix applied filters not showing up
-//TODO wrapping filters stickyness.
-//TODO work on column combine speed
-//TODO work on filters-panel speed
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //TODO hide associated product rows
 //TODO Make graphs into filter inputs. look in drawChart function
@@ -193,7 +191,7 @@
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '1/23/15';
+var lastUpdate = '1/29/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -222,6 +220,13 @@ function preloadFormat(){
 
     _log('preloadFormat() End',DLOG);
 }
+
+$.extend($.expr[":"], {
+    exactly: function( element, index, details, collection ){
+        return $(element).text().trim() === details[3];
+    }
+});
+
 (function($){
     $.fn.lazybind = function(event, fn, timeout, abort){
         var timer = null;
@@ -966,36 +971,43 @@ function addMathCol(){
 
 function preProcessForQty($elem){
     var parsableText = '';
-    var etext = $elem.text()
-    if($elem.hasClass('CLS 1')){
-        //console.log('type = resistance');
-        parsableText = etext + 'Ohm'
-    }else if ($elem.hasClass('unitprice') || $elem.hasClass('priceme')){
-        //console.log('type = price')
-        parsableText = etext.split('@')[0] + ' USD';
-    }else if ($elem.hasClass('CLS 2')){
-        parsableText = etext.split(',')[0];
-        if((etext.split(',').length > 2)){
-            console.log('there may be more values in this cell than were handled');
+
+    if(typeof $elem === 'string'){ //taking care of the case where there is a need to pass in a string.
+        parsableText = $elem;
+        // console.log ( parsableText, 'parsabletext');
+    }else {
+        var etext = $elem.text();
+
+        if($elem.hasClass('CLS 1')){
+            //console.log('type = resistance');
+            parsableText = etext + 'Ohm'
+        }else if ($elem.hasClass('unitprice') || $elem.hasClass('priceme')){
+            //console.log('type = price')
+            parsableText = etext.split('@')[0] + ' USD';
+        }else if ($elem.hasClass('CLS 2')){
+            parsableText = etext.split(',')[0];
+            if((etext.split(',').length > 2)){
+                console.log('there may be more values in this cell than were handled');
+            }
+        }else if ($elem.hasClass('CLS 33')){
+            // console.log('type = Capacity cls 33');
+            if(etext.indexOf('Ah') != -1){
+                parsableText = etext.replace('Ah', 'A h');
+                // console.log('change to A h', parsableText);
+            }else{ 
+                parsableText = etext;
+            }
+        }else if (etext.indexOf('(') !== -1){
+            parsableText = etext.split('(')[0];
+            console.log('type with multiple units in ()');
+        }else if ($elem.hasClass('qtyAvailable')){
+            // this will have problems with European notation '5,4' vs '5.4'
+            parsableText = etext.split('-')[0].replace(/,/g, '');
         }
-    }else if ($elem.hasClass('CLS 33')){
-        // console.log('type = Capacity cls 33');
-        if(etext.indexOf('Ah') != -1){
-            parsableText = etext.replace('Ah', 'A h');
-            // console.log('change to A h', parsableText);
-        }else{ 
+        else{
             parsableText = etext;
+            // console.log('general case', parsableText);
         }
-    }else if (etext.indexOf('(') !== -1){
-        parsableText = etext.split('(')[0];
-        console.log('type with multiple units in ()');
-    }else if ($elem.hasClass('qtyAvailable')){
-        // this will have problems with European notation '5,4' vs '5.4'
-        parsableText = etext.split('-')[0].replace(/,/g, '');
-    }
-    else{
-        parsableText = etext;
-        // console.log('general case', parsableText);
     }
     return parsableText;
 }
@@ -1276,12 +1288,17 @@ function drawChart(xcol, ycol){
 
 function formatQtyBox(){
     _log('formatQtyBox() Start',DLOG);
-    var $srform = $('form[name=srform]');
+    var $srform = $('.quantity-form');
     $srform.find('label,input').appendTo($srform);
     $srform.wrap('<div id=srformdiv style="display:inline-block"/>');
     // $srform.wrap('<div id=srformdiv style="display:inline-block"/>');
     // $('.quantity-form').addClass('pure-form');
-    
+    // $srform.find('[name=quantity]').after('<input name="quantity" type="search" maxlength=9>').detach();
+    $srform.find('[type=submit]:first').val('See Price @ qty');
+    $srform.find('[type=submit]:last').val('x');
+    $srform.find('.quantity-title').hide();
+
+    $srform.css({'margin-right': '10px'});
 
     //$srform.children().addBack().css({'display':'inline'});
     $srform.attr('title', $srform.find('p').text());
@@ -1444,9 +1461,9 @@ function trueFilterCallback(){
         for(x=0; x < FVarray.length; x++){
             pvnum = parseInt(masterResetArray[y][1].replace('pv', '').replace('s','16379').replace('v','16383'), 10);
             shiftedFV = parseInt(FVarray[x],16)>>>18;
-            _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, 1);
+            // _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, DLOG);
             if(parseInt(FVarray[x],16)>>>18 == pvnum){
-                _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, 1);
+                // _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, DLOG);
                 $('#filterResetDiv').append('<span class="trueReset">'+ masterResetArray[y][0]+
                     ' </span><button class="trueResetButton minimal" style="margin-right:20px" value="'+
                     pvnum+'"">x</button> ');
@@ -1814,7 +1831,7 @@ function addQuickPicksDisplayControls(){
 
 //TODO Evaluate if needed
 function fixAssProdFamilyLinks(){
-    //trying to fix the problem of associated product being in multiple families and the links to those familes not working.... 
+    //trying to fix the problem of associated product being in multiple families and the links to those families not working.... 
     //not working for now
     _log('fixAssProdFamilyLinks() Start',DLOG);
     $('.catfilterlink[href*="part="]').each(function(){
@@ -1835,7 +1852,7 @@ function fixAssProdFamilyLinks(){
             }
         }
         
-        $(this).parent().append('<input type=hidden cat=>');
+        $(this).parent().append('<input type="hidden" cat=>');
         $(this).click(function(){
             $(this).parent().submit();
         });
@@ -1924,6 +1941,9 @@ function formatDetailPage(){
         var trtdcss = {
             'border': '1px solid #ccc'
         };
+
+
+
         var priceTable = $('#reportpartnumber').parent().parent().parent();
         var discPriceTable = priceTable.parent().find('table:contains("Discount Pricing")');
         var digireelTable = $('.product-details-reel-pricing');
@@ -1946,29 +1966,29 @@ function formatDetailPage(){
         dataTable.css(tablegeneralcss);
         dataTable.find('td,th').css(trtdcss);
         
-        priceTable.find('td:first').css({
-            'border-top-left-radius': '5px',
-            'border-top-right-radius': '5px'
-        });
-        priceTable.find('tr:last>th:first').css({
-            'border-bottom-left-radius': '5px'
-        });
-        $('#pricing').parent().css({
-            'border-bottom-right-radius': '5px'
-        });     
+        // priceTable.find('td:first').css({
+        //     'border-top-left-radius': '5px',
+        //     'border-top-right-radius': '5px'
+        // });
+        // priceTable.find('tr:last>th:first').css({
+        //     'border-bottom-left-radius': '5px'
+        // });
+        // $('#pricing').parent().css({
+        //     'border-bottom-right-radius': '5px'
+        // });     
         
-        dataTable.find('th:first').css({
-            'border-top-left-radius': '5px'
-        });
-        dataTable.find('td:first').css({
-            'border-top-right-radius': '5px'
-        });
-        dataTable.find('th:last').css({
-            'border-bottom-left-radius': '5px'
-        });
-        dataTable.find('td:last').css({
-            'border-bottom-right-radius': '5px'
-        });
+        // dataTable.find('th:first').css({
+        //     'border-top-left-radius': '5px'
+        // });
+        // dataTable.find('td:first').css({
+        //     'border-top-right-radius': '5px'
+        // });
+        // dataTable.find('th:last').css({
+        //     'border-bottom-left-radius': '5px'
+        // });
+        // dataTable.find('td:last').css({
+        //     'border-bottom-right-radius': '5px'
+        // });
 
         $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
 
@@ -1979,6 +1999,7 @@ function formatDetailPage(){
         $('.product-details-discount-pricing br').hide();
         $('.update-quantity br').hide();
         $('.product-details-discount-pricing tr:last').css({'background':'#eeeeee'});
+        $('#pricing th').css({'background-color':'#555'});
 
 
         //addAssProdLinkToFilters();
@@ -1991,14 +2012,164 @@ function formatDetailPage(){
 
         addDataSheetLoader();
         makeImageHolder();
-        
+        if($('.seohtagbold').find('a[href$=525140]').length == 1){
+            addCOBLEDWizard();
+        }
 
-        $('td:contains("obsolete")').css('background-color','#FF8080'); // changes the color of the obsolete callout
+        $('td:contains("obsolete") p').css('background-color','#FF8080'); // changes the color of the obsolete callout
 
 
         _log('formatDetailPage() End',DLOG);
     }
 }
+
+function addCOBLEDWizard(){
+    _log('addCOBLEDWizard() End',DLOG);
+    var voltageOutput = 'pv48';
+    var currentOutputMax = 'pv1120';
+    var id = 'ledwiz';
+    var param1 = 'Voltage - Forward (Vf) (Typ)';
+    var param1Escaped = selectorEscape(param1);
+    var param2 = 'Current - Test';
+    var param2Escaped = selectorEscape(param2);
+    var param1Text = getParametricValueText(param1);
+    var param2Text = getParametricValueText(param2);
+    var driverLink = '/product-search/en/power-supplies-external-internal-off-board/led-supplies/591038';
+
+    $('.attributes-optional-table').prepend('<div id="'+id+'" style="width:100%;" class="panel panel-default">'+
+        '<div class="panel-heading">Compatible Driver Wizard</div>'+
+            '<div class="panel-body" style="padding:10px; ">'+
+                '<div class="" style="line-height:2em; display:inline-block;">'+
+                    'Find Drivers with Vout Max of at least '+
+                    '<input id="'+param1Escaped+'" type="text" size='+param1Text.length+' value="'+param1Text+'">'+
+                    ' and Current Output Max of less than <input id="'+param2Escaped+'" type="text" value="'+param2Text+'"> '+
+                '</div>'+
+                // '<div class="" style="line-height:2em; display:inline-block;"></div>'+
+                '<div><div id="compatibleDriverWizzardButton" class="button-small pure-button">See Compatible Drivers</div></div>'+
+                '<div class="hiddenLEDForm" ></div>'+
+                // '<div class="hiddenLEDForm" style="display:none;"></div>'+
+            '</div>'+
+        '</div>');
+
+
+    // var param2Text = $('.attributes-table-main').find('tr:contains("'+param2+'")').last().find('td').text();
+
+    $('#compatibleDriverWizzardButton').click(function(){
+        console.log(driverLink);
+        $('#compatibleDriverWizzardButton').after('<img class="loadingicon" style="margin-left:10px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
+        $('.hiddenLEDForm').load(driverLink+' [name=attform]', function(){
+            $('form[name=attform]').attr('target', '_blank').hide();
+            var vOptions = $(this).find('[name='+voltageOutput+'] option');
+            var cOptions = $(this).find('[name='+currentOutputMax+'] option');
+            // console.log(cOptions);
+
+            selectSingleValueOptions(cOptions, '<', Qty(param2Text) );
+            selectRangeValueOption(vOptions, Qty(param1Text));
+
+            location.assign("javascript:function methodChooser(f) { var serializedEarl = $(f).serialize(); f.method = serializedEarl.length < 1800 ? 'get' : 'post'; return true; } void(0)");
+            location.assign("javascript:$('form[name=attform]').submit(); void(0)");
+            $('.loadingicon').remove();
+            _log('driver wizard done');
+            return true;
+        });
+    });
+
+    hoverHighlightDetailWizParams(param1, $('#'+id));
+    hoverHighlightDetailWizParams(param2, $('#'+id));
+    
+    _log('paramtext '+ param1Text + param2Text, DLOG);
+
+    _log('addCOBLEDWizard() End',DLOG);
+}
+
+function selectSingleValueOptions($options, operator, qtyValue ){
+    _log('selectSingleValueOptions() Start', DLOG);
+    var doNotMatch = '-*';
+    if (operator === '<'){
+        $options.each(function(){
+            var opText = $(this).text().trim();
+            if(doNotMatch.indexOf(opText) == -1){
+                if(qtyValue.gte(parseElemForQty($(this)))) {
+                    $(this).prop('selected',true);
+                    // console.log(parseElemForQty($(this)));
+                }
+            }
+            //console.log(qtyValue, parseElemForQty($(this)));
+        });
+    }
+    _log('selectSingleValueOptions() End', DLOG);
+}
+
+function selectRangeValueOption($options, qtyValue){
+    _log('selectRangeValueOption() Start', DLOG);
+    //only checked in LED supplies family
+    var doNotMatch = '-*';
+        $options.each(function(){
+            var opText = $(this).text();
+            try{
+                opText = $(this).text().trim();
+                if(doNotMatch.indexOf(opText) == -1){
+                    if(opText.indexOf('~') !== -1 || opText.indexOf('Max') !== -1){
+                        // _log('Range to Process '+ opText, DLOG);
+                        var range = processRangeText(opText);
+                        // _log('After Range Process' + range, DLOG);
+                        var fval = preProcessForQty(range[0]);
+                        var sval = preProcessForQty(range[1]);
+                        if( qtyValue.gte(fval) && qtyValue.lte(sval)){
+                            $(this).prop('selected',true);
+                        }
+                    }else{
+                        if(opText.indexOf('AC') !== -1){
+
+                        }else{
+                            var singleVal = preProcessForQty(opText);
+                            var singleValQty = Qty(singleVal);
+                            if(qtyValue.eq(singleValQty)){
+                                $(this).prop('selected',true);
+                            }
+                        }
+                    }
+                }
+            }catch(e){
+                console.log('selectRangeValueOption failed to parse', opText, ' error ', e);
+            }
+        });
+    _log('selectRangeValueOption() End', DLOG);
+}
+function processRangeText(rtext){
+    //only check in LED supplies family
+    if(rtext.indexOf('Max') !== -1){
+        rtext = rtext.replace(' (Max)', '');
+        // console.log(' rtext ', rtext, ' base ');
+        var baseUnit = rtext.replace(/^.*\d(.*)$/, "$1");
+         // console.log(opText, ' max processor');
+         return ['0 '+ baseUnit, rtext];
+    }else{
+        var splitRange = rtext.split('~');
+        var val1 = splitRange[0].trim();
+        var val2 = splitRange[1].trim();
+        var baseUnit = val2.split(' ')[1];
+        if (val1.indexOf(baseUnit) === -1){
+            if(baseUnit){
+                return [val1 + ' ' + baseUnit, val2];
+            }else{ return [val1 , val2];}
+        }else{ return splitRange;}
+    }
+}
+
+function getParametricValueText(paramtext){
+    return $('.attributes-table-main').find('th:exactly("'+paramtext+'")').parent().find('td').text();
+}
+
+function hoverHighlightDetailWizParams(paramtext, $hoverObject){
+    $hoverObject.on('mouseenter', function(){
+       $('.attributes-table-main').find('th:exactly("'+paramtext+'")').parent().find('td').css({'background-color':'#ffc10e'}); 
+    }); 
+    $hoverObject.on('mouseleave', function(){
+       $('.attributes-table-main').find('th:exactly("'+paramtext+'")').parent().find('td').css({'background-color':''}); 
+    }); 
+}
+
 
 function addPriceBreakHelper(){
     var ptable = $('#pricing');
@@ -2160,27 +2331,6 @@ function appendURLParam(href, param, value){
     _log('appendURLParam() End',DLOG);
 }
 
-
-
-function getFamilyLinkOLD(){
-    _log('getFamilyLink() Start',DLOG);
-    var myhref = $('h1.seohtagbold').find('a:last').attr('href').split('?')[0];
-    var myhtml = $('h1.seohtagbold').html();
-    var thesplit = myhtml.split(/&gt;/g);
-    var mypop = thesplit.pop();
-    var modifiers = $('#mainform input[type=checkbox], #mainform input[name=quantity], #mainform input[name=ColumnSort]').serialize()+'&akamai-feo=off';
-    //this needs to remain in this logical order of replacement to get desired results.  Do not combine.
-    var finalhref = myhref+'/'+mypop.toLowerCase().trim()
-        .replace('&nbsp;','')
-        .replace('\/', '-')
-        .replace(/-\s/,'')
-        .replace(/[,\(\)]/g,'')
-        .replace(/&nbsp;|\s/g,'-')
-        .replace('---','-')+
-        '?'+modifiers;
-    _log('getFamilyLink() End',DLOG);
-    return finalhref;
-}
 
 function getFamilyLink(){
     _log('getFamilyLink() Start',DLOG);
@@ -3434,7 +3584,7 @@ function addEvents(){
         $('#headKeySearch').keydown(function(myevent){ 
             _log(myevent.keyCode +' keydown event happend');
             if(myevent.keyCode == 13){
-                _log('event 13 happend '+ this + ' has ben passed');
+                _log('event 13 happend '+ this + ' has been passed');
                 processInput(this);
             }
         });
@@ -3922,7 +4072,7 @@ var ap = (function(){
         var row = $('.'+rowSel);
 
         for (var x=0; x<cLen; x++){
-            row.find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f($DetailPageContent));
+            row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f($DetailPageContent));
             if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+pnlinkobj.href+'" />') ; }
         }
         row.addClass('filled');
@@ -4297,7 +4447,6 @@ function previewLoader() {
 
             });
         });
-
     }
 }
 
@@ -4307,7 +4456,7 @@ function makeImageHolder(){
     $('.image-disclaimer').after('<div id="imageTray"></div>')
     var images = getImageLinks();
     images.forEach(function(image){
-        $('#imageTray').append('<img class="trayThumbnail" height=64px style="border:1px solid gray; margin:1px;" src="'+image+'">');
+        $('#imageTray').append('<img class="trayThumbnail" height=64px style="border:1px solid #ccc; margin:1px;" src="'+image+'">');
     });
     $('.trayThumbnail').mouseenter(function(){
         console.log('hovering', $(this).attr('src'))
@@ -4315,6 +4464,11 @@ function makeImageHolder(){
         $('.image-table a:first').attr('href', $(this).attr('src'));
     });
     $('.image-disclaimer').hide();
+
+    $('.image-table').insertBefore($('.product-details-main'));
+    $('.beablock-image').css({'margin-left':'0px', 'border':'1px solid #ccc'});
+    $('.beablock-image img').css({'border':'1px solid #ccc'});
+
     _log('makeImageHolder() End',DLOG);
 }
 
@@ -4832,6 +4986,26 @@ function wrapText(container, text) {
     }
 }
 
+
+// function getFamilyLinkOLD(){
+//     _log('getFamilyLink() Start',DLOG);
+//     var myhref = $('h1.seohtagbold').find('a:last').attr('href').split('?')[0];
+//     var myhtml = $('h1.seohtagbold').html();
+//     var thesplit = myhtml.split(/&gt;/g);
+//     var mypop = thesplit.pop();
+//     var modifiers = $('#mainform input[type=checkbox], #mainform input[name=quantity], #mainform input[name=ColumnSort]').serialize()+'&akamai-feo=off';
+//     //this needs to remain in this logical order of replacement to get desired results.  Do not combine.
+//     var finalhref = myhref+'/'+mypop.toLowerCase().trim()
+//         .replace('&nbsp;','')
+//         .replace('\/', '-')
+//         .replace(/-\s/,'')
+//         .replace(/[,\(\)]/g,'')
+//         .replace(/&nbsp;|\s/g,'-')
+//         .replace('---','-')+
+//         '?'+modifiers;
+//     _log('getFamilyLink() End',DLOG);
+//     return finalhref;
+// }
 
 //useful for unbinding functions that are outside of the scope of greasemonkey
 // location.assign("javascript:$(window).unbind('scroll resize');void(0)");
