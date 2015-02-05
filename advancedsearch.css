@@ -46,7 +46,7 @@ a:hover{
 	background-color: white;
 }
 .stickyThead>thead tr:last-child {
-	background-color: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+	background-color: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%);
 }
 /**********************/
 #productTable.lightblue th {
@@ -78,7 +78,7 @@ a:hover{
 	line-height: 1.2em;
 }
 #productTable.gray th  {
-	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+	background: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%);
 	font: bold 12px/1 "helvetica neue", helvetica, arial, sans-serif;
 } #productTable.gray th a {
 	/*color: #fff;*/
@@ -96,11 +96,11 @@ a:hover{
 	margin-left:20px; 
 	z-index:6; 
 	border-width:1px 1px 0px 1px; 
-	border-color:rgba(10,0,0,.3); 
+	border-color:#ddd; 
 	border-style:solid; 
 	border-radius: 2px 2px 0px 0px; 
 	padding: 7px;
-	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+	background: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%)
 }
 
 #mainform b{
@@ -169,8 +169,8 @@ input[type="search"].focus {
 	font-weight: bolder;
 }
 #qpDiv {
-	background: #ddd;
-	box-shadow: inset 3px 0px 10px #AAA;
+	background: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%);
+	box-shadow: inset 3px 0px 10px #ddd;
 }
 #qpDiv.rightside {
 	position: fixed;
@@ -252,9 +252,15 @@ input[type="search"].focus {
 	background: -webkit-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
 }
 .gray-grad2 {
-	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%); 
+	background: #f5f5f5; 
+	border-bottom: 1px solid #e1e1e1;
 }
-
+.ps-sortButtons{
+	border-width: 0;
+}
+.ps-sortButtons:hover{
+	background: linear-gradient(transparent, rgba(0, 0, 0, 0.075) 40%, rgba(0, 0, 0, 0.15));
+}
 .centerme {
 	display:block;
 	margin-left: auto;
@@ -402,11 +408,13 @@ input[type="search"].focus {
 	display: inline-block;
 }
 .blockdivon > h2 ,.blockdivon2 > h2{
-	background: lightgray;
-	box-shadow: inset 1px -1px 4px #AAA;
+	background: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%);
+	box-shadow: inset 1px -1px 4px #ddd;
 	border-radius: 2px;
 	padding: 0px 0px 16px 10px;
 	margin:0;
+	position: sticky;
+	top:50px;
 }
 .blockdivon > h2 {
 	width: 430px;
@@ -604,6 +612,7 @@ p.alert{
 }
 
 
+
 .arrow{
 	background: -moz-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
 	background: -webkit-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);
@@ -640,10 +649,17 @@ p.alert{
 }
 .adv{
 	height: 12px;
+	/*line-height: 2em;*/
 	padding: 2px;
 	cursor: pointer;
 	display: inline-block;
-	float: right;
+	/*margin: 0 auto;*/
+	float:left;
+	margin-left: 2px;
+}
+
+.download-table{
+	margin-right: 20px;
 }
 
 /*addAccelerator CSS*/
@@ -679,14 +695,18 @@ option:hover{
 .trueReset {
 	font-weight: bolder;
 }
-.trueReset:nth-child(odd) {
-	background: lightgray;
-}
+
 .trueResetButton{
+	background: lightgray;
 	margin-right: 20px;
-	width:20px;
+	/*width:20px;*/
 	height: 20px;
-	padding:2px;
+	padding:2px 8px;
+	cursor:pointer;
+}
+
+.ired{
+	color: #d0451b;
 }
 
 .lessfilters{
@@ -708,14 +728,14 @@ option:hover{
 #mainformdiv{
 	display:inline-block; 
 	margin:0px 10px 4px 0px; 
-	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%); 
+	background: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%); 
 	border: 1px solid rgba(0,0,0,0.1); 
 	border-radius: 1px; 
 	/*width: 100%;*/
 }
 
 #floatApply{
-	background: linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%);
+	background: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%); 
 	border:1px 0px 0px 0px solid rgba(10,0,0,.3);
 	border-radius: 0px 0px 4px 4px;
 	position:relative; 
@@ -779,6 +799,60 @@ input[type=checkbox].css-checkbox {
       }
 /*checkbox end*/
 
+
+/*new red button*/
+.myRedButton {
+	-moz-box-shadow:inset 0px 1px 0px 0px #cf866c;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #cf866c;
+	box-shadow:inset 0px 1px 0px 0px #cf866c;
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #d0451b), color-stop(1, #bc3315));
+	background:-moz-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background:-webkit-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background:-o-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background:-ms-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background:linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#d0451b', endColorstr='#bc3315',GradientType=0);
+	background-color:#d0451b;
+	-moz-border-radius:1px;
+	-webkit-border-radius:1px;
+	border-radius:1px;
+	border:1px solid #942911;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff !important;
+	font-family:arial;
+	font-size:13px;
+	padding:.5em 1em;
+	text-decoration:none;
+	/*text-shadow:0px 1px 0px #854629;*/
+}
+.myRedButton:hover {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
+	background:-moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:-webkit-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:-o-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:-ms-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b',GradientType=0);
+	background-color:#bc3315;
+}
+.myRedButton:active {
+	position:relative;
+	top:1px;
+}
+
+.myRedButton:focus {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
+	background:-moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:-webkit-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:-o-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:-ms-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background:linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b',GradientType=0);
+	background-color:#bc3315;
+}
+
+/*new red button end*/
 
 
 /*button sizing*/

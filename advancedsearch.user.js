@@ -22,14 +22,13 @@
 // @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.dg-magnet-combo.js
 // @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.dragtable.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.spellchecker.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/raphael-min.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/prettyCheckable/prettyCheckable.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/quantities.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
+// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/dklib/dklib.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
-// @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base-min.css
-// @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure-min.css
+// @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base.css
+// @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure.css
 // @resource    fontAwesomeCSS https://dl.dropboxusercontent.com/u/26263360/script/css/font-awesome.css
 // @updateURL   https://goo.gl/vbjoi
 // @downloadURL https://bit.ly/advsearch-user-js
@@ -37,7 +36,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     2.9.8
+// @version     3.0
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -170,11 +169,11 @@
 //2.9.6.3   fixed bugs in wrap filters area
 //2.9.7     handled change in breadcrumbs, styled index page
 //2.9.8     Started wizards, added LEDwiz, changed qty form, fixed double fill bug in associated product, moved detail image.
+//3.0       Large refactor, fixed price break hover
 
-
-//TODO fix applied filters not showing up
+//TODO display percentage of parameter on page, possibly graph  
+//TODO think about logging lib, global vars
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-//TODO hide associated product rows
 //TODO Make graphs into filter inputs. look in drawChart function
 //TODO Add graphs to the show pricing curve
 //TODO redesign header
@@ -186,14 +185,13 @@
 //TODO add feature to research on "no results found" when in stock checkboxes are checked.
 //TODO check out IndexedDB for caching
 //TODO explore adding upper and lower limit filters to sequential filters.
-//TODO fix checkboxes in controls form
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
 var lastUpdate = '1/29/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = true; //control detailed logging.
+var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -221,114 +219,8 @@ function preloadFormat(){
     _log('preloadFormat() End',DLOG);
 }
 
-$.extend($.expr[":"], {
-    exactly: function( element, index, details, collection ){
-        return $(element).text().trim() === details[3];
-    }
-});
-
-(function($){
-    $.fn.lazybind = function(event, fn, timeout, abort){
-        var timer = null;
-        $(this).bind(event, function(){
-            timer = setTimeout(fn, timeout);
-        });
-        if(abort == undefined){
-            return;
-        }
-        $(this).bind(abort, function(){
-            if(timer != null){
-                clearTimeout(timer);
-            }
-        });
-    };
-})(jQuery);
-(function($){
-    jQuery.fn.gmload = function( url, params, callback ) {
-        var rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-        if ( typeof url !== "string" && _load ) {
-            return _load.apply( this, arguments );
-        }
-
-        // Don't do a request if no elements are being requested
-        if ( !this.length ) {
-            return this;
-        }
-
-        var selector, type, response,
-            self = this,
-            off = url.indexOf(" ");
-
-        if ( off >= 0 ) {
-            selector = url.slice( off, url.length );
-            url = url.slice( 0, off );
-        }
-
-        // If it's a function
-        if ( jQuery.isFunction( params ) ) {
-
-            // We assume that it's the callback
-            callback = params;
-            params = undefined;
-
-        // Otherwise, build a param string
-        } else if ( params && typeof params === "object" ) {
-            type = "POST";
-        }
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: url,
-            headers: {
-                "User-Agent": "Mozilla/5.0",    // If not specified, navigator.userAgent will be used.
-                "Accept": "text/xml"            // If not specified, browser defaults will be used.
-            },
-            onload: function(response) {
-                var responseXML = null;
-                // Inject responseXML into existing Object (only appropriate for XML content).
-                if (!response.responseXML) {
-                    responseXML = new DOMParser()
-                    .parseFromString(response.responseText, "text/xml");
-                }
-                // See if a selector was specified
-                self.html( selector ?
-
-                // Create a dummy div to hold the results
-                jQuery("<div>")
-
-                    // inject the contents of the document in, removing the scripts
-                    // to avoid any 'Permission Denied' errors in IE
-                    .append( response.responseText.replace( rscript, "" ) )
-
-                    // Locate the specified elements
-                    .find( selector ) :
-
-                // If not, just inject the full result
-                response.responseText );
-                callback();
-            }
-        });
-    };
-})(jQuery);
-//highlighting function
-(function($) {
-    $.fn.highlight = function(str, className) {
-        str = str.replace(/\W/gi, '');
-        var regex = new RegExp(str, "gi");
-        return this.each(function() {
-            $(this).contents().filter(function() {
-                return this.nodeType == 3 && regex.test(this.nodeValue);
-            }).replaceWith(function() {
-                return(this.nodeValue || "").replace(regex, function(match) {
-                    return "<span class=\"" + className + "\">" + match + "</span>";
-                });
-            });
-        });
-    };
-})(jQuery);
 
 preloadFormat();
-// formatPages();
 
 $(document).ready(function() {
     _log('[ready] advanced search starts here. Jquery version '+ jQuery.fn.jquery);
@@ -414,7 +306,7 @@ function replaceQuestionMark(){
 function cleanup () {
     _log('cleanup() Start',DLOG);
 
-    askpermission();
+    askpermission(version);
 
     $('input[type=submit],input[type=reset]').addClass('button-small pure-button').css({
         'margin': '2px',
@@ -422,24 +314,6 @@ function cleanup () {
     $('p:contains("No records match your")').show();
     hoveringHelpHighlighter();
     _log('cleanup() End',DLOG);
-}
-
-function askpermission(){
-    if(localStorage.getItem('achoice') == undefined){
-        var conf = confirm('---- Message from advancedsearch Greasemonkey userscript author ----\n\n Can I collect some analytics to help improve this script?  \n\n Please say yes (OK)... It will make a big difference in the future. To opt out click Cancel.\n\nYou can turn this on or off in the +controls+ menu at any point in the future.');
-        if (conf){
-
-            addpiwik();
-            localStorage.setItem('achoice', 1);
-            localStorage.setItem('analytics', 1);
-            $('#analytics').prop('checked', 1);
-            $('#analytics').val(1);
-        }else{
-            localStorage.setItem('achoice', 0);
-        }
-    }else if (localStorage.getItem('analytics') == 1){
-        addpiwik();
-    }else {}
 }
 
 //TODO FINISH  UNUSED
@@ -580,24 +454,6 @@ function addControlWidget() {
 
     addControlWidgetActions2();
     _log('addControlWidget() End',DLOG);
-}
-function addpiwik(){
-    _log('addpiwik() Start',DLOG);
-	var theuid = getID();
-    var webref = document.referrer.toString();//.replace(/\&/g, '_');
-    var docloc = document.location.toString().replace(/\&/g, 'xxx');
-    var cvar = '{"1":["version", "'+version+'"]}'
-    // var docloc = document.location.toString().replace(/\&/g, '&');
-    _log(docloc, DLOG);
-    var imgsrc = ('http://he-st.com/p/piwik.php?idsite=1&amp;rec=1'+
-        '&amp;url='+ encodeURIComponent( docloc) +
-        '&amp;_id='+ encodeURIComponent( theuid) +
-        // '&amp;action_name='+ webref +
-        '&amp;res='+ window.screen.availHeight + 'x' + window.screen.availWidth +
-        '&amp;_cvar='+ encodeURIComponent(cvar)
-    );
-    $('body').append('<img src="'+imgsrc+'" style="border:0" alt="" />');
-    _log('addpiwik() End',DLOG);
 }
 
 function hoveringHelpHighlighter(){
@@ -814,6 +670,8 @@ function formatFilterResultsPage(){
         addColumnMath();
         addGraphInterface();
         styleCheckboxes();
+        // $('.ps-sortButtons').css('sortFocus');
+
 
         _log('formatFilterResultsPage() End',DLOG);
     }
@@ -1425,7 +1283,12 @@ function addtrueFilterReset(){
         var fv = $('#mainform').find('input[name=FV]').length ? $('#mainform').find('input[name=FV]').val() : '0' ;
     if (fv.split(',').length > 2){  
         var famlink = getFamilyLink().split('?')[0];
-        $('#mainform').prepend('<div id=filterResetDiv class=gray-grad2 style="padding-left:5px; border-radius:5px 5px 0 0; width:auto;"><span><b>Applied Filters: <b> </span><div id="tempdiv" style="display:none; postion:fixed;"></div></div>');
+        $('#mainform').prepend('<div id=filterResetDiv class=gray-grad2 style="padding:5px 5px; width:auto;">'+
+                '<span><b>Applied Filters: <b> </span>'+
+                '<div id="tempdiv" style="display:none; postion:fixed;"></div>'+
+                '<a id="startOverInFam" style="float:right" href='+famlink+'>Start Over in: '+$('.seohtagbold a:last').text()+'</a>'+
+            '</div>');
+        // _log('')
         setTimeout(function(){
             if (sessionStorage.getItem(famlink) == null){
                 $('#tempdiv').load(famlink+' form[name=attform]', function(){
@@ -1464,49 +1327,47 @@ function trueFilterCallback(){
             // _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, DLOG);
             if(parseInt(FVarray[x],16)>>>18 == pvnum){
                 // _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, DLOG);
-                $('#filterResetDiv').append('<span class="trueReset">'+ masterResetArray[y][0]+
-                    ' </span><button class="trueResetButton minimal" style="margin-right:20px" value="'+
-                    pvnum+'"">x</button> ');
+                $('#filterResetDiv').append('<span class="trueReset trueResetButton" data-pvnum='+pvnum+' title="Click to Remove this Filter">'+ masterResetArray[y][0]+
+                    ' <i class="fa fa-remove ired"></i></span>');
+                console.log('pvnum', pvnum);
+                    //                 $('#filterResetDiv').append('<span class="trueReset">'+ masterResetArray[y][0]+
+                    // ' </span><button class="trueResetButton minimal" style="margin-right:20px" value="'+
+                    // pvnum+'"">x</button> ');
                 break;
             }
         }
     }
 
-    $('.trueResetButton').click(function(){
+    $('.trueReset').click(function(){
         var x=0;
         var temparr=[];
         for(x=0; x< FVarray.length; x++){
-            _log((parseInt(FVarray[x],16)>>>18) + ' '+ parseInt($(this).val(), 10));
-            if( (parseInt(FVarray[x],16)>>>18) != parseInt($(this).val(), 10) ){
+            _log('datapvnum '+(parseInt(FVarray[x],16)>>>18) + ' '+ parseInt($(this).attr('data-pvnum'),10));
+            if( (parseInt(FVarray[x],16)>>>18) != parseInt($(this).attr('data-pvnum'), 10) ){
                 temparr.push(FVarray[x]);
             }
         }
         _log($('#mainform input[name=FV]').val());
         $('#mainform input[name=FV]').val(temparr.join(','));
         _log($('#mainform input[name=FV]').val());
-        $('#mainform').submit();
+        $('#mainform').submit();        
+        // var x=0;
+        // var temparr=[];
+        // for(x=0; x< FVarray.length; x++){
+        //     _log((parseInt(FVarray[x],16)>>>18) + ' '+ parseInt($(this).val(), 10));
+        //     if( (parseInt(FVarray[x],16)>>>18) != parseInt($(this).val(), 10) ){
+        //         temparr.push(FVarray[x]);
+        //     }
+        // }
+        // _log($('#mainform input[name=FV]').val());
+        // $('#mainform input[name=FV]').val(temparr.join(','));
+        // _log($('#mainform input[name=FV]').val());
+        // $('#mainform').submit();
 
     });
     _log('trueFilterCallback() End',DLOG);
 }
 
-function htmlEscape(str) {
-    return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-}
-
-function htmlUnescape(value){
-    return String(value)
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&');
-}
 
 function getParamList(){
     //TODO finish
@@ -1548,13 +1409,13 @@ function wrapFilterTable(){
     $('#mainform').wrap('<div id=mainformdiv />');
     var thehtml = '<div id="wrapfilterschooser" class="tabbedbutton" style="display:inline-block;" title="Instead of scrolling horizontally the filters will wrap to the next line"><div>'+
         '<input id="wrapFilters" value="0" class="saveState" type="hidden">' +
-        '<button id=wrapfilteron value=0>Off</button>'+
-        '<button id=wrapfilteroff value=1>On</button>'+
+        '<button id=wrapfilteron value=0 class="pure-button">Off</button>'+
+        '<button id=wrapfilteroff value=1 class="pure-button">On</button>'+
         ' Wrap Filters'+
     '</div></div>';
     var originalSelects = $('.filters-panel').find('form[name=attform] select');
     originalSelects.each(function(){
-        $(this).data('limitwidth', ($(this).width()*1.6));
+        $(this).data('limitwidth', ($(this).width()+25));
     })
 
     $('.filters-panel').prepend(thehtml);   
@@ -1580,7 +1441,7 @@ function wrapFilterTable(){
         $mainform.find('#selectboxdiv').prepend(
             '<div class="selectboxdivclass" style="max-width:'+ $thisSelect.data('limitwidth')+'px;"><b>'+ // this line forces the select header to wrap
                 $thisSelect.data('pname')+'</b><br>'+$thisSelect.parent().html()+
-            '<br><a name="'+$thisSelect.attr('name')+'" class="clearselect" style="visibility:hidden;" href="#">clear</a></div>'
+            '<br><a name="'+$thisSelect.attr('name')+'" class="clearselect" style="display:none; " href="#">clear</a></div>'
         );
         // if($(this).find('option').filter(':selected').length == 1){
         //     $(this).find('.clearselect').css({visibility:'visible'});
@@ -1597,9 +1458,9 @@ function wrapFilterTable(){
     $('#mainform').on('mouseup', 'option', function(){
         
         if($(this).parent().find('option').filter(':selected').length >=1){
-            $(this).closest('div').find('.clearselect').css({visibility:'visible'});
+            $(this).closest('div').find('.clearselect').show();
         }else{
-            $(this).closest('div').find('.clearselect').css({visibility:'hidden'});
+            $(this).closest('div').find('.clearselect').hide();
         }
     })
     
@@ -1646,11 +1507,6 @@ function wrapFilterTable(){
 
     _log('wrapFilterTable() End',DLOG);
 }
-
-function replaceResetButtons(){
-
-}
-
 
 function squishedFilters(){
     // hover animation in advancedsearch.css
@@ -1713,9 +1569,9 @@ function addIndexColumnizerControls(){
     _log('addIndexColumnizerControls() Start',DLOG);
     var thehtml = '<span id="columnchooser" style="position:relative; top:70px; margin-left:20px; z-index:6;" >'+
         '<input id="columnchooserstate" type="hidden" value="2" class="saveState">'+
-        '<button id=cwfull value=0>Off</button>'+
-        '<button id=cw300 value=1>|||</button>'+
-        '<button id=cw301 value=2>&#9776</button>'+
+        '<button id=cwfull value=0  class="pure-button">Off</button>'+
+        '<button id=cw300 value=1 class="pure-button">|||</button>'+
+        '<button id=cw301 value=2 class="pure-button">&#9776</button>'+
         ' columns'+
     '</span>';
     $('#content').before(thehtml);
@@ -1728,9 +1584,9 @@ function addIndexColumnizerControls(){
             //$(this).next('ul').addBack().wrapAll('<div  class="blockdivoff" />');
             $(this).parent().addClass('blockdivoff');
             $('#content').addClass('cwfull');
-            $('#cwfull').addClass('thoughtbot2');
-            $('#cw300').addClass('clean-gray');
-            $('#cw301').addClass('clean-gray');
+            $('#cwfull').addClass('myRedButton');
+            // $('#cw300').addClass('clean-gray');
+            // $('#cw301').addClass('clean-gray');
         }); 
     }else if($('#columnchooserstate').val() == 1){
         _log('columnchooserstate columns', DLOG);
@@ -1738,18 +1594,18 @@ function addIndexColumnizerControls(){
             $(this).parent().addClass('blockdivon');
             //$(this).next('ul').addBack().wrapAll('<div  class="blockdivon" />');
             $('#content').addClass('cw300');
-            $('#cwfull').addClass('clean-gray');
-            $('#cw300').addClass('thoughtbot2');
-            $('#cw301').addClass('clean-gray');
+            // $('#cwfull').addClass('clean-gray');
+            $('#cw300').addClass('myRedButton');
+            // $('#cw301').addClass('clean-gray');
         }); 
     }else if($('#columnchooserstate').val() == 2){
         _log('columnchooserstate lines', DLOG);
         $('.catfiltertopitem').each(function(){
             $(this).parent().addClass('blockdivon2');
             $('#content').addClass('cw301');
-            $('#cwfull').addClass('clean-gray');
-            $('#cw300').addClass('clean-gray');
-            $('#cw301').addClass('thoughtbot2');
+            // $('#cwfull').addClass('clean-gray');
+            // $('#cw300').addClass('clean-gray');
+            $('#cw301').addClass('myRedButton');
         }); 
     }
 
@@ -1764,8 +1620,9 @@ function addIndexColumnizerControls(){
             $('.blockdivon, .blockdivoff, .blockdivon2').attr('class','blockdivon2');   
         }
 
-        $('#columnchooser button').removeClass().addClass('clean-gray');
-        $(this).toggleClass('thoughtbot2 clean-gray');
+        // $('#columnchooser button').removeClass('myRedButton').addClass('clean-gray');
+        $('#columnchooser button').removeClass('myRedButton');
+        $(this).toggleClass('myRedButton');
     }).css('padding','3px 3px 3px 3px');
 
     _log('addIndexColumnizerControls() End',DLOG);
@@ -1776,9 +1633,9 @@ function addQuickPicksDisplayControls(){
     _log('addQuickPicksDisplayControls() Start', DLOG);
     var thehtml = '<span id="qpchooser" style="position:relative; top:70px; margin-left:20px; z-index:6;" >'+
         '<input type=hidden id=qfLocation class="saveState" value="2">' +
-        '<button id=qpoff value=0>Off</button>'+
-        '<button id=qpside value=1>Right</button>'+
-        '<button id=qptop value=2>Top</button>'+
+        '<button id=qpoff value=0 class="pure-button">Off</button>'+
+        '<button id=qpside value=1 class="pure-button">Right</button>'+
+        '<button id=qptop value=2 class="pure-button">Top</button>'+
         ' Jump To / Top Results Box'+
     '</span>';
     $('#content').before(thehtml);
@@ -1788,21 +1645,21 @@ function addQuickPicksDisplayControls(){
     if($('#qfLocation').val() == 0){
         _log('qpchooser off', DLOG);
         $('#qpDiv').hide();
-        $('#qpoff').addClass('thoughtbot2');
-        $('#qpside').addClass('clean-gray');
-        $('#qptop').addClass('clean-gray');
+        $('#qpoff').addClass('myRedButton');
+        // $('#qpside').addClass('clean-gray');
+        // $('#qptop').addClass('clean-gray');
     }else if($('#qfLocation').val() == 1){
         _log('qpchooser columns', DLOG);    
     
-        $('#qpoff').addClass('clean-gray');
-        $('#qpside').addClass('thoughtbot2');
-        $('#qptop').addClass('clean-gray');
+        // $('#qpoff').addClass('clean-gray');
+        $('#qpside').addClass('myRedButton');
+        // $('#qptop').addClass('clean-gray');
     }else if($('#qfLocation').val() == 2){
         _log('qpchooser lines', DLOG);
 
-        $('#qpoff').addClass('clean-gray');
-        $('#qpside').addClass('clean-gray');
-        $('#qptop').addClass('thoughtbot2');
+        // $('#qpoff').addClass('clean-gray');
+        // $('#qpside').addClass('clean-gray');
+        $('#qptop').addClass('myRedButton');
     }
 
     $('#qpchooser button').on('click', function(){
@@ -1822,8 +1679,8 @@ function addQuickPicksDisplayControls(){
             $('#qpHandle').hide();
         }
 
-        $('#qpchooser button').removeClass().addClass('clean-gray');
-        $(this).toggleClass('thoughtbot2 clean-gray');
+        $('#qpchooser button').removeClass('myRedButton');
+        $(this).toggleClass('myRedButton');
     }).css('padding','3px 3px 3px 3px');
 
     _log('addQuickPicksDisplayControls() End', DLOG);
@@ -1942,8 +1799,6 @@ function formatDetailPage(){
             'border': '1px solid #ccc'
         };
 
-
-
         var priceTable = $('#reportpartnumber').parent().parent().parent();
         var discPriceTable = priceTable.parent().find('table:contains("Discount Pricing")');
         var digireelTable = $('.product-details-reel-pricing');
@@ -1966,29 +1821,6 @@ function formatDetailPage(){
         dataTable.css(tablegeneralcss);
         dataTable.find('td,th').css(trtdcss);
         
-        // priceTable.find('td:first').css({
-        //     'border-top-left-radius': '5px',
-        //     'border-top-right-radius': '5px'
-        // });
-        // priceTable.find('tr:last>th:first').css({
-        //     'border-bottom-left-radius': '5px'
-        // });
-        // $('#pricing').parent().css({
-        //     'border-bottom-right-radius': '5px'
-        // });     
-        
-        // dataTable.find('th:first').css({
-        //     'border-top-left-radius': '5px'
-        // });
-        // dataTable.find('td:first').css({
-        //     'border-top-right-radius': '5px'
-        // });
-        // dataTable.find('th:last').css({
-        //     'border-bottom-left-radius': '5px'
-        // });
-        // dataTable.find('td:last').css({
-        //     'border-bottom-right-radius': '5px'
-        // });
 
         $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
 
@@ -2210,8 +2042,8 @@ function addDataSheetLoader(){
         $('#content').append('<div id=datasheetdiv><div>'+
             '<span id="datasheetchooser" class="tabbedbutton" style="" title="Enable or Disable the autoloading datasheets">'+
             '<input id="datasheetchooserinput" value="1" class="saveState" type="hidden">' +
-            '<button id=datasheetoff value=0>Off</button>'+
-            '<button id=datasheeton value=1>On</button>'+
+            '<button id=datasheetoff value=0 class="pure-button">Off</button>'+
+            '<button id=datasheeton value=1 class="pure-button">On</button>'+
             ' Datasheet Autoloader: '+
             '</span></div><br>'+
         '</div>');
@@ -2219,7 +2051,7 @@ function addDataSheetLoader(){
         
         if($('tr:contains("Datasheet") td>a:first').length > 0 && $('#datasheetchooserinput').val() == 1){
             setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
-            $('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="thoughtbot2" style="width:40px; font-size:11px; padding:2px; margin:0px" >&darr;&darr;&darr;&darr;</button></a>').parent().localScroll();
+            $('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" >&darr;&darr;&darr;&darr;</button></a>').parent().localScroll();
             // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
         }
         _log('addDataSheetLoader() End',DLOG);
@@ -2504,9 +2336,9 @@ function addImageBar() {
             'wdith': '100%',
             'height': '66px',
             'border': '1px solid lightgrey',
-            'box-shadow': '1px 1px 3px #888',
+            'box-shadow': '1px 1px 2px #aaa',
             'margin-bottom': '8px',
-            'border-radius': '2px',
+            'border-radius': '1px',
         });
         $('#accContent').css({
             'overflow': 'hidden',
@@ -2516,12 +2348,12 @@ function addImageBar() {
         $('#expand1').css({
             'float': 'right',
             'position': 'relative',
-            'top': 2,
-            'background': 'linear-gradient(to bottom, #C8C8C8 0%, #E8E8E8 100%)',
+            'top': 1,
+            'background': 'linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%)',
             'width': 80,
-            'border': '1px solid gray',
-            'border-radius': '0px 0px 2px 2px',
-            'box-shadow': '1px 1px 3px #888'
+            'border': '1px solid #eee',
+            'border-radius': '0px 0px 1px 1px',
+            'box-shadow': '1px 1px 3px #aaa'
         });
         $('#expand2').css({
             'text-align': 'center',
@@ -2556,9 +2388,10 @@ function addChooserButtonAction(somespan, clickfunc){
 
     _log('restored input state of '+inputid + ' is '+ $input.val(), DLOG);
     // console.log('$input',$input);
-    somespan.find('button').removeClass();
-    somespan.find('button[value='+$input.val()+']').addClass('thoughtbot2');
-    somespan.find('button').not('[value='+$input.val()+']').addClass('clean-gray');
+    somespan.find('button').removeClass('myRedButton');
+    somespan.find('button[value='+$input.val()+']').addClass('myRedButton');
+    // somespan.find('button').not('[value='+$input.val()+']').addClass('clean-gray');
+    somespan.find('button').not('[value='+$input.val()+']');
 
     somespan.on('click', 'button' , function(){
         var bval = $(this).val();
@@ -2567,9 +2400,9 @@ function addChooserButtonAction(somespan, clickfunc){
         localStorage.setItem(inputid, $(this).val());   
         _log('setting ' + inputid + ' to ' + $input.val() + ' button val is ' + bval, true);
         _log('getting ' + inputid + ' is ' + localStorage.getItem(inputid) + ' button val is ' + $(this).val(), true);        
-        somespan.find('button').removeClass();
-        somespan.find('button[value='+$input.val()+']').addClass('thoughtbot2');
-        somespan.find('button').not('[value='+$input.val()+']').addClass('clean-gray');
+        somespan.find('button').removeClass('myRedButton');
+        somespan.find('button[value='+$input.val()+']').addClass('myRedButton');
+        somespan.find('button').not('[value='+$input.val()+']');
         clickfunc(somespan, $(this).val());
     });
         _log('addChooserButtonAction() End',DLOG);
@@ -2587,8 +2420,8 @@ function addExploreMode(){
     _log('addExploreMode() Start',DLOG);
     var thehtml = '<div id="exploremodechooser" class="tabbedbutton" style="display:inline-block;" title="Hover over each option in the multi-select boxes below to get a preview">'+
         '<input id="exploremodecheckbox" value="0" class="saveState" type="hidden">' +
-        '<button id=exploremodeon value=0>Off</button>'+
-        '<button id=exploremodeoff value=1>On</button>'+
+        '<button id=exploremodeon value=0 class="pure-button">Off</button>'+
+        '<button id=exploremodeoff value=1 class="pure-button">On</button>'+
         ' Explore Mode (beta)'+
     '</div><div class="dummydiv"></div>';
     
@@ -2709,7 +2542,7 @@ function displayAdv(){
     ];
 
     for (var x=0; x<filterfunctions.length; x++){
-        $('select[name="'+filterfunctions[x][0]+'"]').parent().append('<span class="adv thoughtbot2" order="'+x+'" > '+filterfunctions[x][3]+'</span>');
+        $('select[name="'+filterfunctions[x][0]+'"]').parent().append('<span class="adv pure-button myRedButton" order="'+x+'" > '+filterfunctions[x][3]+'</span>');
     }
     $('.adv').click(function(){
         var i= $(this).attr('order');
@@ -3015,26 +2848,6 @@ function checkboxHelper2(name, $selectElem){
     });
 
     _log('end checkboxHelper2');
-}
-
-function uniqueArray(ar) {
-    var f = {},
-    i = 0,
-    l = ar.length,
-    r = [];
-    while (i < l) {
-        !f[ar[i]] && r.push(ar[i]);
-        f[ar[i++]] = 1;
-    }
-    return r;
-}
-
-function trim (str) {
-    str = str.replace(/^\s\s*/, ''),
-        ws = /\s/,
-        i = str.length;
-    while (ws.test(str.charAt(--i)));
-    return str.slice(0, i + 1);
 }
 
 function getAttributeExampleImgs(name,$selectElem) {
@@ -3425,14 +3238,6 @@ function commonWordExpand(someword) {
     return null;
 }
 
-function getQuerystring(key, default_) {
-    if(default_ == null) default_ = "";
-    key = key.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + key + "=([^&#]*)", 'i');
-    var qs = regex.exec(window.location.href);
-    if(qs == null) return default_;
-    else return qs[1];
-}
 
 function addQuantityToCatFilterLinks() {
     _log('addQuantityToCatFilterLinks() Start',DLOG);
@@ -3517,15 +3322,17 @@ function addApplyFiltersButtonHighlight(){
         buttonHighlightAction();
     });
     $('#mainform').on('change', 'input[type=checkbox], input[type=text]', function(e){
-        $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
+        $('input[value="Apply Filters"]').addClass('myRedButton');
+        // $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
     });
     $('#mainform').on('keyup', 'input[type=checkbox], input[type=text]', function(e){
-        $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
+        $('input[value="Apply Filters"]').addClass('myRedButton');
+        // $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
     });
     $('#mainform').on('click','.clearselect', function(e){
         //dependancy on clearselect link being added/existing
         buttonHighlightAction();
-        $(this).css({visibility:'hidden'});
+        $(this).hide();
     });
     _log('addApplyFiltersButtonHighlight() End',DLOG);
 }
@@ -3533,12 +3340,16 @@ function addApplyFiltersButtonHighlight(){
 function buttonHighlightAction() {
     setTimeout(function(){
         if($('#mainform option:selected').length>0){
-            $('input[value="Apply Filters"]').toggleClass('thoughtbot2',true);
-            $('input[value="Apply Filters"]').toggleClass('button-small pure-button',false);
+            $('input[value="Apply Filters"]').toggleClass('myRedButton',true);
+            // $('input[value="Apply Filters"]').toggleClass('button-small pure-button',false); 
+            // $('input[value="Apply Filters"]').toggleClass('thoughtbot2',true);
+            // $('input[value="Apply Filters"]').toggleClass('button-small pure-button',false);
             //_log('options selected length '+$('option:selected').length);
         }else{
-            $('input[value="Apply Filters"]').toggleClass('button-small pure-button',true);
-            $('input[value="Apply Filters"]').toggleClass('thoughtbot2',false);
+            // $('input[value="Apply Filters"]').toggleClass('button-small pure-button',true);
+            $('input[value="Apply Filters"]').toggleClass('myRedButton',false);
+            // $('input[value="Apply Filters"]').toggleClass('button-small pure-button',true);
+            // $('input[value="Apply Filters"]').toggleClass('thoughtbot2',false);
         }       
         
     },10);
@@ -3549,11 +3360,17 @@ function buttonHighlightAction() {
 function searchButtonHighlight(){
     $('.dkdirchanger2').on('keyup', function(){
         if($(this).val().length !== 0){
-            $('#searchbutton').removeClass('button-small pure-button').addClass('thoughtbot2');
+            $('#searchbutton').addClass('myRedButton');
         }else{
-            $('#searchbutton').removeClass('thoughtbot2').addClass('button-small pure-button');
+            $('#searchbutton').removeClass('myRedButton');
         }
     });
+        //     if($(this).val().length !== 0){
+        //     $('#searchbutton').removeClass('button-small pure-button').addClass('thoughtbot2');
+        // }else{
+        //     $('#searchbutton').removeClass('thoughtbot2').addClass('button-small pure-button');
+        // }
+  //  });
 }
 
 function addEvents(){
@@ -3599,7 +3416,8 @@ function addColumnHider(){
     $('#showCols').click(function(e){
         e.preventDefault();
         $('.hiddenCol').fadeIn(800);
-        $('#showCols').removeClass('thoughtbot2').addClass('button-small pure-button');
+        // $('#showCols').removeClass('thoughtbot2').addClass('button-small pure-button');
+        $('#showCols').removeClass('myRedButton');
         _log('showing hidden columns');
     });
     $('#productTable').find('th').each(function(i,e){
@@ -3610,7 +3428,8 @@ function addColumnHider(){
             _log($(this).text()+' acc expand click is sibling number ' + $(this).index() );
             _log('trying to hide col ' + colIndex);
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot2');   
+            $('#showCols').addClass('myRedButton');   
+            // $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot2');   
         });
     addDashedColumnsHider();
     _log('addColumnHider() End',DLOG);
@@ -3645,7 +3464,8 @@ function hideIdenticalColumns(){
          result.length + 'tbody tr count: ' + $('#productTable').find('tbody>tr').length);
         if(result.length == $('#productTable').find('tbody>tr').length){
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-            $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot2');   
+            $('#showCols').addClass('myRedButton');   
+            // $('#showCols').removeClass('button-small pure-button').addClass('thoughtbot2');   
         }
 
     })
@@ -3726,14 +3546,14 @@ function addPriceHover(){
         id:'priceHover', 
         title : '^ Price Breaks',
         message : 'Loading....', 
-        hoverOver : $('a:contains(".")'),
+        hoverOver : $('td.unitprice'),
         bubbleTo : $('#productTable'), 
         height : '250px', 
         width :'250px', 
         interactive : false, 
         my : 'left top',
-        at : 'right bottom', 
-        offset :'-5 5', 
+        at : 'right top', 
+        offset :'-20 10', 
         someFunc : loadPrices,
         selector : 'a:contains(".")',
     };
@@ -3743,37 +3563,11 @@ function addPriceHover(){
 
 function loadPrices($hoveredObj){
     $('#priceHoverContent').html('...loading <img style="margin-left:60px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
-    $('#priceHoverContent').load($hoveredObj.attr('href')+' #pricing', function(){
+    $('#priceHoverContent').load($hoveredObj.closest('tr').find('.mfg-partnumber a:first').attr('href')+' #pricing', function(){
         addPriceBreakHelper();
     });
 }
 
-function combinePNOLD(){
-    _log('combinePN() Start',DLOG);
-    var mfpnIndex = $('#productTable').find('th').index($('th:contains("Manufacturer Part Number")')) + 1;
-
-    $('#productTable').find('td:nth-child(' + mfpnIndex + ')').each(function() {
-        $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().text());
-        //$(this).css('white-space', 'nowrap');
-        
-    });
-    
-    var firstcol = $('#productTable').find('td:nth-child(' + (parseInt(mfpnIndex)-1) + '),th:nth-child(' + (parseInt(mfpnIndex)-1) + ')');
-    var seccol = $('#productTable').find('td:nth-child(' + (parseInt(mfpnIndex)+1) + '),th:nth-child(' + (parseInt(mfpnIndex)+1) + ')');
-    firstcol.remove();
-    seccol.remove();
-
-    $('a[href*=1000002]').parent().empty(); // remove
-    $('#productTable').find('th:contains("Manufacturer Part Number")').each(function() {
-        $(this).text('Part# & Manu');
-    });
-    $('#productTable').find('th:contains("Number")').each(function() {
-        $(this).text($(this).text().replace('Number', '#'));
-    });
-    $('#ColSort1000002,#ColSort-1000002,#ColSort1000001,#ColSort-1000001').parent().parent().empty();
-
-    _log('combinePN() End',DLOG);
-}
 function combinePN(){
     _log('combinePN() Start',DLOG);
     // var productTable = $('#productTable').eq(0).detach();
@@ -4484,7 +4278,7 @@ function getImageLinks(){
 }
 
 
-/*Loging function*/
+// Loging function
 function _log(somestring, detailed_logging){
     if (detailed_logging == null) detailed_logging=true;
     try{
@@ -4494,194 +4288,14 @@ function _log(somestring, detailed_logging){
     catch(err){}
 }
 
-jQuery.expr.filters.offscreen = function(el) {
-    return (
-            (el.offsetLeft + el.offsetWidth) < 0 ||
-            (el.offsetTop + el.offsetHeight) < 0 ||
-            (el.offsetLeft > window.innerWidth || el.offsetTop > window.innerHeight)
-    );
-};
 
-//combinational hack of GM_xmlhttp and .load funciton in jquery
-// (function($){
-//     jQuery.fn.gmload = function( url, params, callback ) {
-//         var rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-//         if ( typeof url !== "string" && _load ) {
-//             return _load.apply( this, arguments );
-//         }
-
-//         // Don't do a request if no elements are being requested
-//         if ( !this.length ) {
-//             return this;
-//         }
-
-//         var selector, type, response,
-//             self = this,
-//             off = url.indexOf(" ");
-
-//         if ( off >= 0 ) {
-//             selector = url.slice( off, url.length );
-//             url = url.slice( 0, off );
-//         }
-
-//         // If it's a function
-//         if ( jQuery.isFunction( params ) ) {
-
-//             // We assume that it's the callback
-//             callback = params;
-//             params = undefined;
-
-//         // Otherwise, build a param string
-//         } else if ( params && typeof params === "object" ) {
-//             type = "POST";
-//         }
-
-//         GM_xmlhttpRequest({
-//             method: "GET",
-//             url: url,
-//             headers: {
-//                 "User-Agent": "Mozilla/5.0",    // If not specified, navigator.userAgent will be used.
-//                 "Accept": "text/xml"            // If not specified, browser defaults will be used.
-//             },
-//             onload: function(response) {
-//                 var responseXML = null;
-//                 // Inject responseXML into existing Object (only appropriate for XML content).
-//                 if (!response.responseXML) {
-//                     responseXML = new DOMParser()
-//                     .parseFromString(response.responseText, "text/xml");
-//                 }
-//                 // See if a selector was specified
-//                 self.html( selector ?
-
-//                 // Create a dummy div to hold the results
-//                 jQuery("<div>")
-
-//                     // inject the contents of the document in, removing the scripts
-//                     // to avoid any 'Permission Denied' errors in IE
-//                     .append( response.responseText.replace( rscript, "" ) )
-
-//                     // Locate the specified elements
-//                     .find( selector ) :
-
-//                 // If not, just inject the full result
-//                 response.responseText );
-//                 callback();
-//             }
-//         });
-//     };
-// })(jQuery);
-// //highlighting function
-// (function($) {
-//     $.fn.highlight = function(str, className) {
-//         str = str.replace(/\W/gi, '');
-//         var regex = new RegExp(str, "gi");
-//         return this.each(function() {
-//             $(this).contents().filter(function() {
-//                 return this.nodeType == 3 && regex.test(this.nodeValue);
-//             }).replaceWith(function() {
-//                 return(this.nodeValue || "").replace(regex, function(match) {
-//                     return "<span class=\"" + className + "\">" + match + "</span>";
-//                 });
-//             });
-//         });
-//     };
-// })(jQuery);
-
-//change contains expression to case insensitive
-jQuery.expr[':'].contains = function(a, i, m) {
-    return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
-};
-
-// (function($){
-//     $.fn.lazybind = function(event, fn, timeout, abort){
-//         var timer = null;
-//         $(this).bind(event, function(){
-//             timer = setTimeout(fn, timeout);
-//         });
-//         if(abort == undefined){
-//             return;
-//         }
-//         $(this).bind(abort, function(){
-//             if(timer != null){
-//                 clearTimeout(timer);
-//             }
-//         });
-//     };
-// })(jQuery);
-
-
-
-//buglist
-//http://www.digikey.com/product-detail/en/TEACL-PIC-LV/658-1020-5-ND/1687139
-
-
-
-// extra regexs to save for later
-//frnum = /(\W|\b)([0-9]+)(\.)?[0-9]*[\s\+]?/; // fractional number
-//VOLT = /\s?(volts?|voltage|v-?ac|v-?dc|v)\b/;
-//rVOLT = new RegExp(frnum.source + VOLT.source, 'i');
-// AMP = /\s?(amps?|a)\\b/i;
-// VOLTAMP = /\s?(va)\\b/i;
-// OHM = /\s?(ohms?|meg|resistors?|res|pot)\\b/i;
-// CAP = /\s?(farads?|f|cap(acitor)?)\\b/i;
-// INDUCTOR = /\s?(henry|h)\\b/i;
-// MEMORY = /\s?(byte|b)\\b/i;
-// METER = /\s?(meters?|m)\\b/i;
-// INCH = /[\s]?(inches|inch|(?<![a-z])in|\")\\b/i;
-// FOOT = /\s?(feet|foot|ft|\')\\b/i;
-// HERTZ = /\s?(hertz|hz)\\b/i;
-// TEMP = /\s?(degrees\s[fc]|deg\s[fc])\\b/i;
-// SECOND = /\s?(second|sec|s)\\b/i;
-
-//No longer used, but here for reference
-
-//SAVE FOR REFERENCE
-// var tablelen = $('#mainform>th').length;
-// var maxHeight = Math.max.apply(null, $('#mainform>table>tbody').map(function (){
-// return $(this).height();
-// }).get());
-
-// function addDocRetrieve(){//No longer used, but here for reference
-//     $('#productTable tr a').find('img[src*="8S0j5"],img[src*="datasheet.gif"]').parent().parent()
-//     .append('<br><div class="documentation pointer" style="margin-top:3px; line-height:10px">more v</div>');
-//     $('.documentation').each(function(){
-//         var mylink = $(this).closest('tr').find('a[href*=-ND]:first').attr('href');
-//     });
-//     var docConfig = {
-//         id:'docHover', 
-//         title : 'More Related Documents',
-//         message : 'Loading....', 
-//         hoverOver : $('.documentation'), 
-//         //height : '220px', 
-//         width :'400px', 
-//         interactive : true, 
-//         my : 'left top',
-//         at : 'right top', 
-//         offset :'5 -35', 
-//         someFunc : loadDocs
-//     };
-//     createHoverWindow(docConfig);
-// }
-// function loadDocs($hoveredObj){//No longer used, but here for reference
-//     $('#docHoverContent').text('Loading....');
-//     var mylink = $hoveredObj.closest('tr').find('a[href*=-ND]:first').attr('href');
-//     $('#docHoverContent').load(mylink+ ' table:contains("Datasheets"):first', function(){
-//         $(this).find('tr')
-//             .not(':contains(Datasheets)')
-//             .not(':contains("Product Training")')
-//             .not(':contains("Reference Design Library")')
-//             .not(':contains("Reference Design Library")')
-//             .hide();
-//         $(this).find('td .beablock').hide();
-//     });
-// }
 
 function formatFastAddPage(){
     if($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtQty1').length){
         $('p').add('#aspnetForm').show();
         $('#mainContent').before('<b>Quick Paste</b><br>Copy multiple part numbers and quantities from a spreadsheet and paste into this box (experimental).  '+
             '<br>Exclude any header lines.  It should be able to pick out Quantity and Part Number in either order. Customer Ref not yet supported.  <br />'+
-            '<textarea rows="2" cols="40" id="pastebox"></textarea> <br /><div class="thoughtbot2" style="width:40px">OK</div>');
+            '<textarea rows="2" cols="40" id="pastebox"></textarea> <br /><div class="pure-button button-small myRedButton" style="width:40px">OK</div>');
         
         $('#pastebox').change(function(){
             var lines = $('#pastebox').val().split(/\n\r?/gi);
@@ -4742,270 +4356,17 @@ function addMoreRows(farray){
     }
 }
 
-function addProductDrawer(){//No longer used, but here for reference
-    //localStorage.setItem('drawercontent', $(this).html());
-            //$(this).remove();
-            $('#content').after(
-                '<div id=pDrawer class=container>'+
-                    
-                    '<div id=pDrawerCont style="float:left;" class="left"></div>'+
-                    '<div id=pDrawerHandle style="float:left" class="right">C</div>'+
-                    
-                '</div>'
-            );
-            $('#pDrawer').append(localStorage.getItem('drawercontent'));
-            $('#pDrawer').css({
-                'position': 'fixed',
-                'width': '340px',
-                'height': '100%',
-                'right': '0px',
-                'top': '50px',
-                //'bottom': '50px',
-                'font-size': '15px',
-                'backgroundColor': '#CCC',
-                'border': '1px solid #CCC',
-                "borderRadius": "5px 0px 0px 5px",
-                'padding': '5px',
-                //'box-shadow': ' 1px 1px 2px #888',
-                'overflow': 'auto'
-            });
-            $('#pDrawerCont').css({
-                //'float': 'left',
-                'width': $('#pDrawer').width()-10,
-            });         
-            $('#pDrawerHandle').css({
-                //'float': 'left',
-                //'line-height': '100%',
-                //'position': 'absolute',
-                'height' : '100%',
-                'background': 'white',
-                'width': '10px',
-                "borderRadius": "5px 0px 0px 5px",
-                'cursor': "pointer" 
-            });
 
 
-            $('#pDrawerHandle').click(function(){
-                _log('sliding right');
-                //$('#pDrawer').animate({'width':'10px'});
-                // $('#pDrawer').toggle(
-                //  function(){
-                //      $(this).css({'overflow': ''});
-                //      $(this).animate({'width':'10px'});
-                //  }, function(){
-                //      $(this).css({'overflow': 'auto'});
-                //      $(this).animate({'width':'340px'});
-                // });
-
-            });
-            // $('.clear').css({
-            //  'clear': 'both',
-            // });
-
-            //GM_addStyle('.clearfix:after {visibility: hidden;display: block;font-size: 0;content: " ";clear: both;height: 0;} * html .clearfix { zoom: 1; } /* IE6 */ *:first-child+html .clearfix { zoom: 1; } /* IE7 */');
 
 
-            $('.category').css({
-                'cursor': 'pointer',
-            });
-            
-            $('.category').click(function(){
-                //$('#pDrawerCont').find('ul').toggle(false);
-                $('.category').not(this).next('ul').toggle(false);
-                $('.category').not(this).find('.plus').toggle(true);
-                $('.category').not(this).find('.minus').toggle(false);
-                $(this).next('ul').toggle();
-                $(this).find('.minus,.plus').toggle();
-                // $(this).next('ul').toggle(
-                //  function(){
-                //      $(this).show().height('0%');
-                //      $(this).animate({'height': '100%'}, 200);
-                //      $(this).parent().find('.catexpandplus').hide();
-                //      $(this).parent().find('.catexpandminus').show();
-                //  }, 
-                //  function(){
-                //      $(this).parent().find('.catexpandplus').show();
-                //      $(this).parent().find('.catexpandminus').hide();
-                //  }
-                // );
-                //$(this).find('.catexpand').toggle();
-            });
-}
-
-function updateProductDrawer(){//No longer used, but here for reference
-    var d = new Date();
-    localStorage.removeItem('drawerupdate');
-    if (localStorage.getItem('drawerupdate')==null || localStorage.getItem('drawerupdate')+86400000 < d.getTime()){
-        localStorage.setItem('drawerupdate', d.getTime());
-        _log('drawer '+ localStorage.getItem('drawercontent')+ ' drawerupdate ' +localStorage.getItem('drawerupdate'));
-        saveProductDrawer();
-    } 
-    else if(localStorage.getItem('drawerupdate')+86400000 > d.getTime()){
-        addProductDrawer();
-    }
-    //_log(d.getTime()+' drawer '+ localStorage.getItem('drawercontent').length+ ' drawerupdate ' +localStorage.getItem('drawerupdate'));
-}
-
-function saveProductDrawer(){//No longer used, but here for reference
-    $('<div>').load('http://www.digikey.'+theTLD+'/product-search/en #content', function(){
-        $(this).find('hr,h1,p,form').remove();  
-        $(this).find('#content').children().unwrap();
-
-        $(this).html( $(this).html().replace(/h2/gi, 'div'));
-        $(this).find('.catfiltertopitem').removeClass('catfiltertopitem').addClass('category');
-        $(this).find('ul').css({
-            'display': 'none',
-        });
-        $(this).find('.category>a').each(function(){
-            $(this).before('<span class="toggler plus">+ </span><span class="toggler minus" style="display:none">- </span>'+$(this).text()+' ');
-            $(this).text('(link)');
-        });
-        localStorage.setItem('drawercontent', $(this).html());
-        addProductDrawer();
-    });
-}
-
-function getID(){
-    // console.log('getid ', localStorage.getItem('uid').length, 'uid ', localStorage.getItem('uid'));
-	if (localStorage.getItem('uid') == null){
-		var y = '';
-		var possible = "ABCDEF0123456789";
-		for( var i=0; i < 16; i++ ){
-    		y += possible.charAt(Math.floor(Math.random() * possible.length));
-		}
-		localStorage.setItem('uid', y);
-		return y;
-	}
-	else { return localStorage.getItem('uid'); }
-}
-
-function string2form(form, serializedStr) {// Unused
-    var fields = JSON.parse(serializedStr);
-    for(var i = 0; i < fields.length; i++) {
-        var controlName = fields[i].name;
-        var controlValue = fields[i].value;
-        form.find("[name='" + controlName + "']").val(controlValue);
-    }
-}
-
-function processURL() {/* TODO UNUSED - functionality to parse the search string and preselect values in the drill down search*/
-    _log(window.location.search);
-    _log(decodeURIComponent(window.location.search));
-    var searchString = decodeURIComponent(window.location.search);
-    var fVOLT = rVOLT.exec(searchString)[0].replace('=', '');
-    _log( fVOLT);
-    if(fVOLT) {
-        _log($('select[name="PV48"]').find('option:contains('+fVOLT+')').size());
-        vopt = $('select[name="PV48"]').find('option:contains(' + fVOLT + ')');
-        _log(vopt.size());
-        var x = 0;
-        for(x; x < vopt.size(); x++) {
-            var myregex = new RegExp('([^.\d])(' + fVOLT + '|' + fVOLT.replace(/\s/g, '') + ')', 'i');
-            if((/(\b|[^.])5v/i).test(vopt[x].text)) {
-                _log(vopt[x].text.replace(/\s/g,''));
-            }
-        }
-    }
-}
-
-function selectorEscape(str) {
-    //escapes special characters so a string can safely be used for class names and in selectors.
-    if (str){return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'');}
-    return str;
-}
-
-// function sortingExample(){ //unused keep for example
-//     var ind = $(this).index();
-//     var rows = $('#productTable>tbody>tr').sort(function(a,b){
-//         var atext = $(a).find('td').eq(ind).text();
-//         var btext = $(b).find('td').eq(ind).text();
-//         var anum = parseFloat(atext);
-//         var bnum = parseFloat(btext)
-//         //console.log(anum , bnum);
-//         if(isNaN(anum-bnum)) {
-//             return (isNaN(anum)) ? 1 : 0;   
-//         }
-//         else{
-//             return parseFloat(atext) - parseFloat(btext);
-//         }
-        
-//     });
-    
-//     $('#productTable>tbody').append(rows);
-// }
-
-//Functions off of a stack exchange post
-// Reusable generic function
-function surroundInElement(el, regex, surrounderCreateFunc) {
-    // script and style elements are left alone
-    if (!/^(script|style)$/.test(el.tagName)) {
-        var child = el.lastChild;
-        while (child) {
-            if (child.nodeType == 1) {
-                surroundInElement(child, regex, surrounderCreateFunc);
-            } else if (child.nodeType == 3) {
-                surroundMatchingText(child, regex, surrounderCreateFunc);
-            }
-            child = child.previousSibling;
-        }
-    }
-}
-
-// Reusable generic function
-function surroundMatchingText(textNode, regex, surrounderCreateFunc) {
-    var parent = textNode.parentNode;
-    var result, surroundingNode, matchedTextNode, matchLength, matchedText;
-    while ( textNode && (result = regex.exec(textNode.data)) ) {
-        matchedTextNode = textNode.splitText(result.index);
-        matchedText = result[0];
-        matchLength = matchedText.length;
-        textNode = (matchedTextNode.length > matchLength) ?
-            matchedTextNode.splitText(matchLength) : null;
-        surroundingNode = surrounderCreateFunc(matchedTextNode.cloneNode(true));
-        parent.insertBefore(surroundingNode, matchedTextNode);
-        parent.removeChild(matchedTextNode);
-    }
-}
-
-// This function does the surrounding for every matched piece of text
-// and can be customized  to do what you like
-function createSpan(matchedTextNode) {
-    var el = document.createElement("span");
-    el.style.backgroundColor = "lightgreen";
-    el.appendChild(matchedTextNode);
-    return el;
-}
-
-// The main function
-function wrapText(container, text) {
-	text = text.replace(/\W/gi,'');
-    var wordsToHighlight = text.trim().split(' ');
-    _log(wordsToHighlight, DLOG);
-    for (var x=0; x < wordsToHighlight.length; x++){
-        surroundInElement(container, new RegExp(wordsToHighlight[x], "gi"), createSpan);
-    }
-}
 
 
-// function getFamilyLinkOLD(){
-//     _log('getFamilyLink() Start',DLOG);
-//     var myhref = $('h1.seohtagbold').find('a:last').attr('href').split('?')[0];
-//     var myhtml = $('h1.seohtagbold').html();
-//     var thesplit = myhtml.split(/&gt;/g);
-//     var mypop = thesplit.pop();
-//     var modifiers = $('#mainform input[type=checkbox], #mainform input[name=quantity], #mainform input[name=ColumnSort]').serialize()+'&akamai-feo=off';
-//     //this needs to remain in this logical order of replacement to get desired results.  Do not combine.
-//     var finalhref = myhref+'/'+mypop.toLowerCase().trim()
-//         .replace('&nbsp;','')
-//         .replace('\/', '-')
-//         .replace(/-\s/,'')
-//         .replace(/[,\(\)]/g,'')
-//         .replace(/&nbsp;|\s/g,'-')
-//         .replace('---','-')+
-//         '?'+modifiers;
-//     _log('getFamilyLink() End',DLOG);
-//     return finalhref;
-// }
+
+
+
+
+
 
 //useful for unbinding functions that are outside of the scope of greasemonkey
 // location.assign("javascript:$(window).unbind('scroll resize');void(0)");
