@@ -36,7 +36,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.0
+// @version     3.0.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -341,6 +341,7 @@ function addCustomHeader(){
         // '<label class="css-label"><input type="checkbox" value="1" name="rohs" id="hrohs" class="css-checkbox"><b>RoHS Compliant </b></label> '+
         '<input align=right type="submit" value="New Search" id="searchbutton">'+
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
+        ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
         // '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
         // '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form>'+
         '<span id="resnum"></span>'+

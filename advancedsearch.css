@@ -91,6 +91,10 @@ a:hover{
 }
 
 #productTable tbody>tr:nth-child(odd) {background-color:#f0f0f0}
+/*#productTable tbody>tr:hover td{
+	background-color: #dddddd;
+		transition-delay:.3s;
+}*/
 
 .tabbedbutton {
 	margin-left:20px; 

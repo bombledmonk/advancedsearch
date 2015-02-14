@@ -204,7 +204,14 @@ function addpiwik(theversion){
     var theuid = getID();
     var webref = document.referrer.toString();//.replace(/\&/g, '_');
     var docloc = document.location.toString().replace(/\&/g, 'xxx');
-    var cvar = '{"1":["version", "'+theversion+'"]}'
+    var iview = 'c:'+localStorage.getItem('columnchooserstate') +
+    ' q:' + localStorage.getItem('qfLocation')+
+    ' w:' + localStorage.getItem('wrapFilters')+
+    ' e:' + localStorage.getItem('exploremodecheckbox')+
+    ' d:' + localStorage.getItem('datasheetchooserinput');
+
+    
+    var cvar = '{"1":["version", "'+theversion+'"], "2":["iview", "'+iview+'"]}';
     // var docloc = document.location.toString().replace(/\&/g, '&');
     // _log(docloc, DLOG);
     var imgsrc = ('http://he-st.com/p/piwik.php?idsite=1&amp;rec=1'+
