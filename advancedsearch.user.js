@@ -36,7 +36,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.0.1
+// @version     3.0.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -170,7 +170,12 @@
 //2.9.7     handled change in breadcrumbs, styled index page
 //2.9.8     Started wizards, added LEDwiz, changed qty form, fixed double fill bug in associated product, moved detail image.
 //3.0       Large refactor, fixed price break hover
+//3.0.1     Fixed Temperature Range helper
+//3.0.2     Fixed European price formatting error, added some icons
 
+//TODO replace special case * and - with descriptive names [none found], n/a, [info not filled in yet], something better?
+//TODO fix the chart decimal place problem for parsing commas in euro sites
+//TODO add links to eewiki.net capacitor page
 //TODO display percentage of parameter on page, possibly graph  
 //TODO think about logging lib, global vars
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -299,7 +304,8 @@ function getIndexLink(){
 function replaceQuestionMark(){
     _log('replaceQuestionMark() Start',DLOG);
     // $('img[src*="help.png"]').attr('src', 'https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png');
-    $('img[src*="help.png"]').addClass('qmark');// css used to replace image as a background image
+    $('img[src*="help.png"]').addClass('qmark').hide();// css used to replace image as a background image
+    $('img[src*="help.png"]').after('<i class="fa fa-question-circle fa-lg" style="color:#999;"></i>');// css used to replace image as a background image
     _log('replaceQuestionMark() End',DLOG);
 }
 
@@ -347,7 +353,7 @@ function addCustomHeader(){
         '<span id="resnum"></span>'+
         '<span id=quicklinks><a href="'+indexlink+'">Product Index</a> | '+
         '<a href="'+mydklink+'">My Digi-Key</a> | '+
-        '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><img src="https://dl.dropboxusercontent.com/u/26263360/img/carticon.png"> Cart<span id=cartquant></span> <img src="http://he-st.com/img/downarrowred.png"></img></a> | '+
+        '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
         // '<a href="'+sitemaplink+'">Site Map</a></span>'+
     '</div>';
 
@@ -672,10 +678,108 @@ function formatFilterResultsPage(){
         addGraphInterface();
         styleCheckboxes();
         // $('.ps-sortButtons').css('sortFocus');
-
+        // addVisualPicker();
 
         _log('formatFilterResultsPage() End',DLOG);
     }
+}
+
+
+function addVisualPicker(){
+    _log('addVisualPicker() Start',DLOG);
+    $('.selectboxdivclass>b').after('<i class="fa fa-camera pickericon" style="float:right; color:#566; margin-left:3px; cursor:pointer;"></i>');
+    $('#content').after('<div id="visualpickerdiv" style="display:none;"><div class="pickerbody"></div></div>')
+    $( "#visualpickerdiv" ).dialog( { 
+        autoOpen: false,
+        modal: true,
+        height: ($(window).height() * 0.8),
+        width: ($(window).width() * 0.8),
+        close: function(){$('.pickerbody').empty('')}, 
+    } );
+
+    $('.pickericon').on('click', function(){
+        // $('.pickerbody').empty();
+        var filtername = $(this).closest('.selectboxdivclass').find('b').text();
+        var $options = $(this).parent().find('select option');
+        console.log($options);
+        $( "#visualpickerdiv" ).dialog('option', 'title', 'Filtering on ' + filtername);
+        // $(this).parent().find('option')
+        // alert('click');
+        $options.each(function(){
+            getOptionImages($(this), filtername);
+        })
+        $( "#visualpickerdiv" ).dialog('open');
+    });
+
+    mediumImageHover();
+    //add special case for manufacturer, pull logo?
+    _log('addVisualPicker() End',DLOG);
+}
+
+function getOptionImages($option, filtername){
+    //special cases replace - and * with descriptive names
+    //limit the number of options loaded at one time
+    //fix special case when it goes to detail page, should not need to worry about no search results found
+    //add apply filters button, and a cancel button
+    //kill on packaging
+    //add larger image on hover
+    //add extra data on hover
+
+
+        var selectname = $option.parent().attr('name');
+        var optionval = $option.val();
+        var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
+        // console.log(selectname, optionval, mylink)
+        // $('#content').append('<div class="xxx dummydiv'+optionval+'"');
+        var ddclass = 'store-'+optionval;
+        if ($('.'+ddclass).length == 0){
+        $('#content').append('<div class="'+ddclass+'" />');
+            var dd = $('.'+ddclass);
+            dd.load(mylink+' #productTable,div:contains("Image shown is a"):last,img[src*=pna_en],.matching-records,#reportpartnumber', function(){
+                var matching = (dd.find('.matching-records').length > 0 ) ? dd.find('.matching-records').text().split(':')[1].trim() : '1';
+                var $images = dd.find('.pszoomer');
+                // console.log($images);
+                // $images = $(this).find('.pszoomer');
+                // $('#pickerbody').append('<div></div>');
+                $('.pickerbody').append('<div style="margin-top:10px; border: 1px solid #ccc; padding:10px;" class="picker'+optionval+'">'+
+                    '<div style="font-weight:bold; font-size:1.1em;">'+$option.text()+' ('+matching+') </div>'+
+                    '<div class="imgholder'+optionval+'"> </div>'+
+                    '</div>');
+                $('.imgholder'+optionval).append($images);
+                
+            });
+            
+        }
+
+}
+
+function mediumImageHover(){
+    _log('mediumImageHover() Start',DLOG);
+    $('#content').after('<img style="display:none; height:200px" id="mzoomie"></img>');
+    $('#mzoomie').css({
+        'border':'0px solid white', 
+        'box-shadow': '0 0 10px 5px #888'
+    });
+    // location.assign("javascript:$('.pszoomer').unbind('mouseenter mouseleave');void(0)");
+
+    $('#visualpickerdiv').hoverIntent(
+        function () {
+            // var d = Math.min(640, 0.8 * Math.min($(window).width(), $(window).height()));
+            $('#mzoomie').attr('src','');
+            $('#mzoomie').attr('src', $(this).attr('zoomimg')).show().position({
+                'my': 'left top',
+                'at': 'left bottom',
+                'of': $(this),
+                'collision':'flip',
+                'offset': '0 0',
+            }).hide().css('z-index', 2000).show();
+        },
+        function () {
+            $('#mzoomie').hide();
+        },
+        '.pszoomer'
+    );
+    _log('mediumImageHover() End',DLOG);
 }
 
 
@@ -688,7 +792,7 @@ function addMatchingRecordsToApply(){
 
 function addColumnMath(){
     _log('addColumnMath() Start',DLOG);
-    $('#productTable').before('<button id="doMath" style="margin:2px 5px;"class="button-small pure-button">Do Column Math</button>');
+    $('#productTable').before('<button id="doMath" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-calculator"></i> Column Math</button>');
     setTimeout(addColumnMathDialog, 3000);
     $('#doMath').click(function(e){
         _log('ready to do math', true);
@@ -965,7 +1069,7 @@ function addGraphInterface(){
     },3000);
 
     
-    $('#productTable').before('<button id="buildChart" style="margin:2px 5px;"class="button-small pure-button">Build Chart</button>');
+    $('#productTable').before('<button id="buildChart" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-line-chart"></i> Build Chart</button>');
     
     $('#graphDialog').append(
         '<form><select id="yGraphColumn"></select>'+
@@ -1845,6 +1949,8 @@ function formatDetailPage(){
 
         addDataSheetLoader();
         makeImageHolder();
+
+        // add3dCad();
         if($('.seohtagbold').find('a[href$=525140]').length == 1){
             addCOBLEDWizard();
         }
@@ -1856,8 +1962,23 @@ function formatDetailPage(){
     }
 }
 
+function add3dCad(){
+    _log('add3dCad() start',DLOG);
+    var items = $('a[href$="igs"]:first');
+
+    if (items.length !== 0 ){
+        $('#content').append('<div>sharecad</div><iframe width="800" height="800" src="//sharecad.org/cadframe/load?url='+items.attr('href')+'" scrolling="no"></iframe>');
+    }
+    // if (items.length !== 0 ){
+    //     // $('#content').append('<div>sharecad</div><iframe width="800" height="800" src="//sharecad.org/cadframe/load?url='+items.attr('href')+'" scrolling="no"></iframe>');
+    //     $('#content').append("<div id='iframe3DviewerContainer' style='width:400px;height:210px;border-width: 2px; border-style: solid; border-color: black;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom-left-radius:5px;border-bottom-right-radius:5px;'><iframe id='iframe3dvieweronline' type='text/html' width='400' height='210' src='http://www.3dvieweronline.com/iframe.php?bg=&textcolor=&text=VIEW THE MODEL' scrolling='no' frameborder='0'/><p>Your browser does not support iframes.</p></iframe></div><div style='font-size:12px;'><strong>Powered by <a href='http://www.3dvieweronline.com' target=_blank>3D Viewer online</a></strong> Allow Pop-Up to use the viewer</div>");
+    // }
+
+    _log('add3dCad() end',DLOG);
+}
+
 function addCOBLEDWizard(){
-    _log('addCOBLEDWizard() End',DLOG);
+    _log('addCOBLEDWizard() start',DLOG);
     var voltageOutput = 'pv48';
     var currentOutputMax = 'pv1120';
     var id = 'ledwiz';
@@ -2004,26 +2125,58 @@ function hoverHighlightDetailWizParams(paramtext, $hoverObject){
 }
 
 
+// function addPriceBreakHelper(){
+//     var ptable = $('#pricing');
+//     // check if part is not orderable
+//     if(ptable.filter(':contains(call)').size() == 0){
+//         var pricingrows = ptable.find('tr:gt(0)');
+//         var firstpb = parseFloat(pricingrows.eq(0).find('td:eq(0)').text(pricingrows.eq(0).find('td:eq(0)').text().replace(/,/g,'')).text());
+//         pricingrows.each(function(index){
+//             if(pricingrows.eq(index+1)){
+//                 var pricebreak =  parseFloat(pricingrows.eq(index).find('td:eq(0)').text(pricingrows.eq(index).find('td:eq(0)').text().replace(/,/g,'')).text());
+//                 var unitprice = parseFloat(pricingrows.eq(index).find('td:eq(1)').text(pricingrows.eq(index).find('td:eq(1)').text().replace(/,/g,'')).text());
+//                 var nextextendedprice = parseFloat(pricingrows.eq(index+1).find('td:eq(2)').text(pricingrows.eq(index+1).find('td:eq(2)').text().replace(/,/g,'')).text());
+//                 var breakeven = Math.ceil(nextextendedprice/unitprice);
+
+//                 if ( breakeven >= pricebreak && firstpb == 1){
+//                     ptable.find('tr:first').eq(index).append('<th style=" border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">Break-Even Qty</th>');
+//                     pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">'+breakeven +' </td>');
+//                 }               
+//             }
+//         });
+//     }
+// }
 function addPriceBreakHelper(){
+    _log('addPriceBreakHelper() Start',DLOG);
     var ptable = $('#pricing');
+    // var eurocheckRE = /(?.*,\d\d)/; 
     // check if part is not orderable
     if(ptable.filter(':contains(call)').size() == 0){
         var pricingrows = ptable.find('tr:gt(0)');
-        var firstpb = parseFloat(pricingrows.eq(0).find('td:eq(0)').text(pricingrows.eq(0).find('td:eq(0)').text().replace(/,/g,'')).text());
-        pricingrows.each(function(index){
-            if(pricingrows.eq(index+1)){
-                var pricebreak =  parseFloat(pricingrows.eq(index).find('td:eq(0)').text(pricingrows.eq(index).find('td:eq(0)').text().replace(/,/g,'')).text());
-                var unitprice = parseFloat(pricingrows.eq(index).find('td:eq(1)').text(pricingrows.eq(index).find('td:eq(1)').text().replace(/,/g,'')).text());
-                var nextextendedprice = parseFloat(pricingrows.eq(index+1).find('td:eq(2)').text(pricingrows.eq(index+1).find('td:eq(2)').text().replace(/,/g,'')).text());
-                var breakeven = Math.ceil(nextextendedprice/unitprice);
+        var tdlast = pricingrows.eq(0).find('td:last').text();
+        var isEuro = (tdlast[tdlast.length-3] == ',');  //check if the last a comma is used before the last two digits of the extend price 
 
-                if ( breakeven >= pricebreak && firstpb == 1){
-                    ptable.find('tr:first').eq(index).append('<th style=" border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">Break-Even Qty</th>');
-                    pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">'+breakeven +' </td>');
-                }               
-            }
-        });
+            var firstpb = simpleInternationalParse(pricingrows.eq(0).find('td:eq(0)').text(), isEuro);
+            pricingrows.each(function(index){
+                if(pricingrows.eq(index+1)){
+                        // priceVal = simpleInternationalParse(price.replace(/[^0-9-.]/g, ''));
+                    var pricebreak =  simpleInternationalParse(pricingrows.eq(index).find('td:eq(0)').text(), isEuro);
+                    var unitprice = simpleInternationalParse(pricingrows.eq(index).find('td:eq(1)').text(), isEuro);
+                    var nextextendedprice = simpleInternationalParse(pricingrows.eq(index+1).find('td:eq(2)').text(), isEuro);
+                    var breakeven = Math.ceil(nextextendedprice/unitprice);
+
+                    if ( breakeven >= pricebreak && firstpb == 1){
+                        ptable.find('tr:first').eq(index).append('<th style=" border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">Break-Even Qty</th>');
+                        pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">'+breakeven +' </td>');
+                    }               
+                }
+            });
     }
+    _log('addPriceBreakHelper() Start',DLOG);
+}
+
+function simpleInternationalParse(text, isEuro){
+    return isEuro ? (parseFloat(text.replace(/\./g, '').replace(/\,/g, '.'))) : (parseFloat(text.replace(/,/g,'')));
 }
 
 function addDataSheetLoader(){
@@ -2052,7 +2205,7 @@ function addDataSheetLoader(){
         
         if($('tr:contains("Datasheet") td>a:first').length > 0 && $('#datasheetchooserinput').val() == 1){
             setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
-            $('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" >&darr;&darr;&darr;&darr;</button></a>').parent().localScroll();
+            $('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" ><i class="fa fa-arrow-circle-down fa-lg"></i></button></a>').parent().localScroll();
             // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
         }
         _log('addDataSheetLoader() End',DLOG);
@@ -2534,7 +2687,7 @@ function displayAdv(){
                             ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv252' ,'Operating Temperature',  function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv252' ,'Operating Temperature',  function(name, e){temperatureHelper(name, e);}, '+ helper'],
                             ['pv772' ,'Voltage - Load', function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv1113' ,'Connectivity',  function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
                             ['pv1114' ,'Peripherals',   function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
@@ -2596,6 +2749,40 @@ function voltageHelper(name, $selectElem) {
 
     $('#helperBoxContent').html('<label><b>desired ' + name + 
         ':</b> <br><input id=voltin type="text" size="5"><b>Volts</b> <br>(enter key or apply)</label><br>'+
+        '<button id=helperbutton class="clean-gray clearfix">apply</button><span id=voltmess></span>');
+    $('#helperbutton').css({
+        'float':'right',
+        'padding':'3px',
+        'margin-right':'10px',
+        'margin-top':'10px',
+    });
+
+    $('#voltin').focus();
+    $('#helperbutton').click(function() {
+        // applyRangeSelect(name, $selectElem);
+        applyRangeSelect2(name, $selectElem);
+        buttonHighlightAction();
+    });
+    $('#helperBoxContent').find('input').change(function(){
+        // applyRangeSelect(name, $selectElem);
+        applyRangeSelect2(name, $selectElem);
+        buttonHighlightAction();
+    });
+    
+    _log('end voltageHelper');
+}
+
+function temperatureHelper(name, $selectElem) {
+    //TODO differentiate between in and out.... add vin min, vin max
+    //TODO add ability to select multi output devices
+    //TODO deal with +- ranges
+    _log('temperaturehelper name is ' +name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
+    //_log(arguments.callee.caller); 
+
+    createHelperBox(name,$selectElem,'150px','200px');
+
+    $('#helperBoxContent').html('<label><b>desired ' + name + 
+        ':</b> <br><input id=voltin type="text" size="5"><b>C</b> <br>(enter key or apply)</label><br>'+
         '<button id=helperbutton class="clean-gray clearfix">apply</button><span id=voltmess></span>');
     $('#helperbutton').css({
         'float':'right',
@@ -3649,11 +3836,12 @@ function picsToAccel() {
 }
 
 function infoHoverIn2(e){
-    var infoselector = $(this).parent().attr('href').replace('<a href="', '').replace('"/>', '');
-    _log('infoselector is '+$(infoselector).attr('href'));
+    // var infoselector = $(this).parent().attr('href').replace('<a href="', '').replace('"/>', '');
+    var targetImageID = $(this).parent().attr('href');
+    _log('targetImageID is '+$(targetImageID).attr('href')+ ' .... '+ targetImageID  );
     var info = '';
     var thisitem = $(this);
-    $(infoselector).parent().siblings().each(function(mykey, myval) {
+    $(targetImageID).parent().siblings().each(function(mykey, myval) {
         info += '<b>' + $('#productTable>thead>tr:first>th:eq(' + (mykey + 1) + ')').text() + '</b> : ' + 
         $(this).text() + '<br>';
     });
@@ -3668,7 +3856,7 @@ function infoHoverIn2(e){
 
     //KEEP  This adds the price breaks to each picture
     //$('#itemInfo').append('<div id="breakdown"></div>');
-    // $('#breakdown').load($(infoselector).attr('href') + ' #pricing', function(){
+    // $('#breakdown').load($(targetImageID).attr('href') + ' #pricing', function(){
     //  $('#itemInfo').position({
     //  'my': 'right top',
     //  'at': 'right bottom',
@@ -3704,7 +3892,7 @@ function hideAccelTmb(e) {
 function addBreadcrumbHover(){
     //add hover over to the category link of the bread crumbs
     _log('addBreadcrumbHover() Start',DLOG);
-    $('h1.seohtagbold').find('a:eq(1)').append(' <img src="https://dl.dropboxusercontent.com/u/26263360/img/downarrowred.png">');
+    $('h1.seohtagbold').find('a:eq(1)').append(' <i class="fa fa-caret-down fa-lg" style="color:red;"></i>');
     var breadcrumbConfig = {
         id:'breadcrumbHover', 
         title : 'Families',
@@ -4356,16 +4544,6 @@ function addMoreRows(farray){
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
