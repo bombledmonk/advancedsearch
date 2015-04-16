@@ -175,6 +175,7 @@
 //3.0.1     Fixed Temperature Range helper
 //3.0.2     Fixed European price formatting error, added some icons
 //3.1       Started reformatting the Index page
+//3.1.1     Fixed indexpicpreview
 
 //TODO offer no reload, infinite scroll? at end of product index page.
 //TODO replace special case * and - with descriptive names [none found], n/a, [info not filled in yet], something better?
@@ -195,6 +196,7 @@
 //TODO check out IndexedDB for caching
 //TODO explore adding upper and lower limit filters to sequential filters.
 //TODO fix focus issue with search bar in header
+//TODO add link to catTitle
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -2277,7 +2279,7 @@ function addIndexPicPrev(){
         var hovercfg = {
             over: showIndexPicPrev,
             out: hideIndexPicPrev,
-            selector: '.catfilterlink',
+            selector: '.famTitle a',
             interval: 300
         };
         $('#content').hoverIntent(hovercfg);
