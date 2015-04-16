@@ -1,11 +1,31 @@
-#content {
-	position: relative;
-	top: 45px;
+#content{
+	/*position: relative;*/
+	/*top: 45px;*/
+	/*border-left: 1px solid #ccc;*/
+	padding: 0px 10px !important;
+	width: 100%;
+	flex:1;
+	margin-left:0;
 }
+
+
 
 #headForm {
 	padding-top: 5px;
 	z-index: 12;
+}
+
+.dropShadow {
+    box-shadow: 0 5px 6px -3px rgba(0, 0, 0, 0.4) inset;
+    height: 6px;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 50px;
+}
+
+#footer{
+	margin-top: 10px;
 }
 
 a{
@@ -287,7 +307,7 @@ input[type="search"].focus {
 	z-index: 6;
 	height: 50px;
 	top: 0px;
-	left: 5px;
+	/*left: 5px;*/
 	background: white;
 }
 
@@ -445,6 +465,22 @@ input[type="search"].focus {
 	-webkit-column-gap:75px;
 }
 
+.catColumns {
+	-moz-column-width:450px;
+	-webkit-column-width:450px;
+	-moz-column-gap:10px; 
+	-webkit-column-gap:10px;
+}
+.familyColumns .familiesContainer{
+	-moz-column-width:450px;
+	-webkit-column-width:450px;
+	-moz-column-gap:10px; 
+	-webkit-column-gap:10px;
+}
+
+.familiesContainer{
+	box-sizing:border-box;
+}
 
 
 .shadowhighlight {
@@ -759,17 +795,168 @@ option:hover{
 	z-index: 1002;
 }
 
-/*replacing question mark*/
-.qmark {
-  display: inline;
+
+/*  */
+.pickerItem{
+	margin:10px; 
+	padding:10px; 
+	display:flex; 
+	row:rtl;
+}
+
+.pickerItemNotSelected {
+	border: 1px solid #ccc; 
+}
+.pickerItemSelected {
+	border: 1px solid red;
+	box-shadow: inset 0 0 2px red;
+}
+
+.superContent{
+	display: flex;
+}
+.mainFlexWrapper {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;  
+  
+  -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
+  
+  /*font-weight: bold;*/
+  /*text-align: center;*/
+}
+
+.sideIndexContent li:hover span{
+	display: inline;
+}
+
+.sideIndexContent{
+	padding: 0px 0px 50px 20px;
+	list-style: none;
+}
+.sideIndexContent a{
+	color: #656;
+	text-decoration: none;
+}
+.sideIndexContent a:hover{
+	text-decoration: underline;
+	color: #333;
+}
+
+/*catfamstyle*/
+.catContainer{
+	margin-bottom: 25px;
+	/*margin-left:300px;*/
+/*// 	width: 95%;*/
+	/*max-width: 800px;*/
+/*// 	overflow: hidden;*/
+}
+.catTitle{
+	font-size: 1.8em;
+	font-weight: bold;
+/*// 	background: -moz-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);*/
+/*// 	background: -webkit-linear-gradient(-45deg, rgba(239,242,244,1) 25%, rgba(222,228,237,1) 88%);*/
+	background: #eee;
+	padding: 5px;
+	position: sticky; /* experimental */
+	top:50px;
+	z-index: 3;
+	display: flex;
+
+}
+
+
+.plTextOnly .catTitle{
+	margin-bottom: 5px;
+}
+
+.plContainerized .famItemContainer > .famTitle{
+	font-weight: bold;	
+}
+.plContainerized .famItemContainer > .fcount{
+	float:right;
+}
+.plContainerized .familiesContainer{
+	border: 1px solid #ccc;
+	padding: 4px;
+	max-width: 800px;
+}
+.plContainerized .familiesContainer a{
+	text-decoration: none;
+	color: #333333;
+}
+/*.familiesContainer:hover a{
+	text-decoration: underline;
+	color: #333333;
+}*/
+.plContainerized .famItemContainer{
+	border: 1px solid #ccc;
+	display: inline-block;
+	vertical-align:top;
+	/*margin-left: 20px;*/
+	/*margin-bottom: 5px;*/
+	margin: 5px 10px;
+	padding: 2px;
+	width: 200px;
+	height: 100px;
+	position: relative;
+}
+.plContainerized .famItemContainer:hover a{
+	text-decoration: underline;
+	color: #333333;
+}
+.plTextOnly .famItemContainer{
+	/*border: 1px solid #ccc;*/
+	/*display: inline-block;*/
+	/*vertical-align:top;*/
+	/*margin-left: 20px;*/
+	/*margin-bottom: 5px;*/
+	/*margin: 5px 10px;*/
+	/*width: 300px;*/
+	/*height: 100px;*/
+	
+}
+.plTextOnly .famItemContainer {
+  display: flex;
+  flex-flow: row wrap;
+  margin-left: 20px;
+}
+
+.plTextOnly .famItemContainer > .fcount{
+	order:2;
+	margin-left: 10px;
+}
+.plTextOnly .famItemContainer > .famTitle{
+	order:1;
+}
+.plContainerized .familyimages{
+	/*height: 64px;*/
+	/*width: 64px;*/
+	position: absolute;
+	bottom: 0px;
+	display: inline;
+}
+.plContainerized .familyimages>a img {
+  /*display: block;*/
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  background: url(https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png) no-repeat;
-  width: 16px; /* Width of new image */
-  height: 16px; /* Height of new image */
-  padding-left: 16px; /* Equal to width of new image */
+  /*background: url(https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png) no-repeat;*/
+  width: 64px; /* Width of new image */
+  height: 64px; /* Height of new image */
 }
-/*replacing question mark end*/
+
+.sideIndexTitle {
+	border-bottom: 1px solid #ccc;
+	display:flex;
+}
+
+
+
+/*catfamstyle*/
+
 
 /*checkbox start*/
 input[type=checkbox].css-checkbox {

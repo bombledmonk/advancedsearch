@@ -25,18 +25,20 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/quantities.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/dklib/dklib.js
+// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
 // @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base.css
 // @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure.css
 // @resource    fontAwesomeCSS https://dl.dropboxusercontent.com/u/26263360/script/css/font-awesome.css
+// @resource    stickyCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.css
 // @updateURL   https://goo.gl/vbjoi
 // @downloadURL https://bit.ly/advsearch-user-js
 // @run-at      document-end
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.0.2
+// @version     3.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -172,7 +174,9 @@
 //3.0       Large refactor, fixed price break hover
 //3.0.1     Fixed Temperature Range helper
 //3.0.2     Fixed European price formatting error, added some icons
+//3.1       Started reformatting the Index page
 
+//TODO offer no reload, infinite scroll? at end of product index page.
 //TODO replace special case * and - with descriptive names [none found], n/a, [info not filled in yet], something better?
 //TODO fix the chart decimal place problem for parsing commas in euro sites
 //TODO add links to eewiki.net capacitor page
@@ -190,11 +194,12 @@
 //TODO add feature to research on "no results found" when in stock checkboxes are checked.
 //TODO check out IndexedDB for caching
 //TODO explore adding upper and lower limit filters to sequential filters.
+//TODO fix focus issue with search bar in header
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '1/29/15';
+var lastUpdate = '4/16/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -243,13 +248,15 @@ function addResourceCSS(){
         "advCSS",
         "normalizeCSS",
         "pureCSS",
-        "fontAwesomeCSS"
+        "fontAwesomeCSS",
+        "stickyCSS"
     ];
     for ( var x in cssNames){
         // _log('style tick start '+cssNames[x], DLOG);
         GM_addStyle(GM_getResourceText(cssNames[x]));
         // _log('style tick start'+ cssNames[x], DLOG);
     }
+
 
 }
 
@@ -267,6 +274,7 @@ function tc(thefunc, name){ // tc = try catch
 function formatPages() {
     _log('formatPages() Start',DLOG);
     //updateProductDrawer();
+
     tc(updateCache, 'updateCache');
     tc(addCustomHeader, 'addCustomHeader');
     tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
@@ -355,6 +363,7 @@ function addCustomHeader(){
         '<a href="'+mydklink+'">My Digi-Key</a> | '+
         '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
         // '<a href="'+sitemaplink+'">Site Map</a></span>'+
+        '<div class="dropShadow" />'+
     '</div>';
 
     var keywordval = $('.psdkdirchanger').val();
@@ -363,7 +372,7 @@ function addCustomHeader(){
     var rohsval = $('#rohs').prop('checked');
     _log('stockval is'+ stockval+ ' checked status is '+ $('#stock').prop('checked'),DLOG);
     $('#content').after(customform);
-    $('.dkdirchanger2').val(keywordval);
+    $('.dkdirchanger2').val(keywordval).focus();
     $('#stock').prop('checked', stockval);
     $('#pbfree').prop('checked', pbfreeval);
     $('#rohs').prop('checked', rohsval);
@@ -375,39 +384,86 @@ function addCustomHeader(){
         $(this).text($(this).text().replace('Results', 'awesome'));
     });
 
+    $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"/>');
+
+
     tc(searchButtonHighlight, 'searchButtonHighlight');
     _log('addCustomHeader() End',DLOG);
 }
+
+// function addCustomHeader(){
+//     _log('addCustomHeader() Start',DLOG);
+//     //TODO style the form with purecss
+//     var customform = '<header id="cHeader" class="" style=""><a href="http://digikey.'+theTLD+'">'+
+//         '<img align=left top="50px" height=50 src="http://dkc1.digikey.com/us/en/mkt/DKinfo/DKCorp_oval.gif"></a>'+
+//         '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">'+
+//         '<a href="http://dkc1.digikey.com/us/en/help/help10.html">'+
+//         '<b>Keywords:</b></a> <input type="search" value="" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
+//         '<input align=right type="submit" value="New Search" id="searchbutton">'+
+//         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
+//         ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
+//         // '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
+//         // '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form>'+
+//         '<span id="resnum"></span>'+
+//         '<span id=quicklinks><a href="'+indexlink+'">Product Index</a> | '+
+//         '<a href="'+mydklink+'">My Digi-Key</a> | '+
+//         '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
+//         '<a href="'+sitemaplink+'">Site Map</a></span>'+
+//     '</header>';
+
+//     $('#content').wrap('<div class="mainFlexWrapper"></div>');
+//     $('.mainFlexWrapper').prepend(customform);
+
+
+
+//     var keywordval = $('.psdkdirchanger').val();
+//     var stockval = $('#stock').prop('checked');
+//     var pbfreeval = $('#pbfree').prop('checked');
+//     var rohsval = $('#rohs').prop('checked');
+//     _log('stockval is'+ stockval+ ' checked status is '+ $('#stock').prop('checked'),DLOG);
+//     $('.dkdirchanger2').val(keywordval);
+//     $('#stock').prop('checked', stockval);
+//     $('#pbfree').prop('checked', pbfreeval);
+//     $('#rohs').prop('checked', rohsval);
+//     // $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
+//     $('.content-keywordSearch-form').closest('form').remove();
+
+
+//     tc(searchButtonHighlight, 'searchButtonHighlight');
+//     _log('addCustomHeader() End',DLOG);
+// }
 
 function addControlWidget() {
     _log('addControlWidget() Start',DLOG);
     $('#content').after('<div id="controlDiv" class="gray-grad" title="settings for advancedsearch v'+version+'">'+
             '<a href="'+downloadLink+'" class="button-small pure-button" style="float:right;"> click to manually update</a> ' +
             // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
-            '<div class="" >'+
+            '<div class="settingscontainer" >'+
                 '<img src="http://goo.gl/53qn5g">'+
                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
-                '<input type=checkbox id=qtydefault class="saveState " value="1"><label class="" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState" value="1" size="7" defval="1"><br>' +
-                '<input type=checkbox id="combinePN" class="saveState " value="1"> <label class="" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
-                '<input type=checkbox id=pricehoverControl class="saveState " value="1"><label class="" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
-                '<input type=checkbox id=queryHighlight class="saveState " value="1"><label class="" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
+                '<input type=checkbox id=qtydefault class="saveState css-checkbox " value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState css-checkbox" value="1" size="7" defval="1"><br>' +
+                '<input type=checkbox id="combinePN" class="saveState css-checkbox " value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
+                '<input type=checkbox id=pricehoverControl class="saveState css-checkbox " value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
+                '<input type=checkbox id=queryHighlight class="saveState css-checkbox " value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
                 '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
                 //'<label><input type=checkbox id=dragTables> Turn on Draggable Tables</label><br>' +
                 '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
-                '<label><input type=checkbox id=picPrevControl class="saveState " value="1"> <label class="" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
-                '<label><input type=checkbox id=qfControl class="saveState " value="1"> <label class="" for="qfControl">Turn on Quick Pick Box</label><br>' +
-                '<label><input type=checkbox id=familyHighlight class="saveState " value="1"> <label class="" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
-                '<label><input type=checkbox id=instantfilter class="saveState " value="1"><label class="" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
+                '<label><input type=checkbox id=picPrevControl class="saveState css-checkbox " value="1"> <label class="css-label" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
+                '<label><input type=checkbox id=qfControl class="saveState css-checkbox " value="1"> <label class="css-label" for="qfControl">Turn on Quick Pick Box</label><br>' +
+                '<label><input type=checkbox id=familyHighlight class="saveState css-checkbox " value="1"> <label class="css-label" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
+                '<label><input type=checkbox id=instantfilter class="saveState css-checkbox " value="1"><label class="css-label" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
                 '<br><span style="font-weight:bold">Experimental</span><br>'+
-                '<input type=checkbox id=analytics class="saveState " value="0"> <label class="" for="analytics">Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
-                '<input type=checkbox id=spellcheck class="saveState " value="0"> <label class="" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
-                '<input type=checkbox id=stickyfilters class="saveState " value="0"><label class="" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
-                '<input type=checkbox id=squishedFilters class="saveState " value="0"><label class="" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
+                '<input type=checkbox id=analytics class="saveState css-checkbox " value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
+                '<input type=checkbox id=spellcheck class="saveState css-checkbox " value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
+                '<input type=checkbox id=stickyfilters class="saveState css-checkbox " value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
+                '<input type=checkbox id=squishedFilters class="saveState css-checkbox " value="0"><label class="css-label" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
             '</div><br><br>'+
             '<button id=restoredefaults class="button-small pure-button" style="margin-left:20px"> restore defaults </button>'+
             '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
         '</div>'
     );
+    $('.settingscontainer .css-checkbox').css('z-index',2005);
+
 
     $('#content').after('<div id="controlSpan" class="pure-button"><i class="fa fa-cog"></i> settings v' + version + '</div>');
     _log('control dialog tick start ', DLOG);
@@ -454,7 +510,7 @@ function addControlWidget() {
     $('#controlSpan').css({
         'position': 'fixed',
         'right': '10px',
-        'top': '22px',
+        'top': '20px',
         'z-index': '19',
         'cursor':'pointer'
     });
@@ -687,8 +743,11 @@ function formatFilterResultsPage(){
 
 function addVisualPicker(){
     _log('addVisualPicker() Start',DLOG);
+    var dialogHeight = ($(window).height() * 0.8);
+    var dialogWidth = ($(window).width() * 0.8);
+
     $('.selectboxdivclass>b').after('<i class="fa fa-camera pickericon" style="float:right; color:#566; margin-left:3px; cursor:pointer;"></i>');
-    $('#content').after('<div id="visualpickerdiv" style="display:none;"><div class="pickerbody"></div></div>')
+    $('#content').after('<div id="visualpickerdiv" style="display:none;"><div class="pickerbody" style="overflow-y:scroll; height:'+(dialogHeight-90)+'px;"></div><div id="" style="height:30px"><button class="pure-button">Apply</button></div></div>')
     $( "#visualpickerdiv" ).dialog( { 
         autoOpen: false,
         modal: true,
@@ -707,8 +766,15 @@ function addVisualPicker(){
         // alert('click');
         $options.each(function(){
             getOptionImages($(this), filtername);
-        })
+        });
         $( "#visualpickerdiv" ).dialog('open');
+    });
+
+    $('#visualpickerdiv').on('click', '.pickerItem', function(){
+        $cb = $(this).find('input[type=checkbox]');
+        // console.log('clicked', $(this).text());
+        $cb.prop("checked", !$cb.prop("checked"));
+        $(this).toggleClass('pickerItemSelected pickerItemNotSelected');
     });
 
     mediumImageHover();
@@ -724,6 +790,7 @@ function getOptionImages($option, filtername){
     //kill on packaging
     //add larger image on hover
     //add extra data on hover
+    //add "please apply or clear currently selected filters before you use this function"
 
 
         var selectname = $option.parent().attr('name');
@@ -735,27 +802,53 @@ function getOptionImages($option, filtername){
         if ($('.'+ddclass).length == 0){
         $('#content').append('<div class="'+ddclass+'" />');
             var dd = $('.'+ddclass);
+
+            $('.pickerbody').append('<div id="pickerid'+optionval+'" class="pickerItem pickerItemNotSelected" >'+
+                        '</div>'
+            );
+
             dd.load(mylink+' #productTable,div:contains("Image shown is a"):last,img[src*=pna_en],.matching-records,#reportpartnumber', function(){
                 var matching = (dd.find('.matching-records').length > 0 ) ? dd.find('.matching-records').text().split(':')[1].trim() : '1';
                 var $images = dd.find('.pszoomer');
                 // console.log($images);
                 // $images = $(this).find('.pszoomer');
                 // $('#pickerbody').append('<div></div>');
-                $('.pickerbody').append('<div style="margin-top:10px; border: 1px solid #ccc; padding:10px;" class="picker'+optionval+'">'+
-                    '<div style="font-weight:bold; font-size:1.1em;">'+$option.text()+' ('+matching+') </div>'+
-                    '<div class="imgholder'+optionval+'"> </div>'+
-                    '</div>');
-                $('.imgholder'+optionval).append($images);
+                // $('.pickerbody').append('<div style="margin:10px; border: 1px solid #ccc; padding:10px; display:flex; row:rtl;" class="picker'+optionval+'" >'+
+                $('#pickerid'+optionval).append(
+                    '<div style="width:40px; display:flex; align-items:center;"><input type=checkbox class="css-checkbox" id="check'+optionval+'" style="z-index:2005;"><label class="css-label" for="check'+optionval+'"></label></div>'+
+                    '<div class="imgholder'+optionval+'">'+
+                        '<div style="font-weight:bold; font-size:1.2em;">'+$option.text()+' ('+matching+') </div>'+
+                    ' </div>'//+
+                    // '</div>'
+                );
                 
+                 $images.css({'height':'40px'});
+                $('.imgholder'+optionval).append(deDuplicateCollection($images, 'src'));
             });
-            
         }
 
 }
 
+function deDuplicateCollection($collection, attribute){
+    _log('deDuplicateCollection() Start',DLOG);
+    var found = {};
+    return $collection.filter(function(){
+        var $this = $(this);
+        if(found[$this.attr(attribute)]){
+           return false;   
+        }
+        else{
+             found[$this.attr(attribute)] = true; 
+             return true;  
+        }
+    });
+    _log('deDuplicateCollection() End',DLOG);
+    return $collection;  
+}
+
 function mediumImageHover(){
     _log('mediumImageHover() Start',DLOG);
-    $('#content').after('<img style="display:none; height:200px" id="mzoomie"></img>');
+    $('#content').after('<img style="display:none; height:300px" id="mzoomie"></img>');
     $('#mzoomie').css({
         'border':'0px solid white', 
         'box-shadow': '0 0 10px 5px #888'
@@ -1633,33 +1726,312 @@ function enableDefaultQty(){
     }
 }
 
+// function formatIndexResultsPageOLD(){
+//     if($('.catfilterlink').length){
+//         _log('formatIndexResultsPage() Start',DLOG);
+
+//         addIndexPicPrev();
+//         if(localStorage.getItem('qfControl') == 1) {
+//             addQuickFilter3();
+//         }
+//         $('h1:contains(Electronic)').hide();
+//         //fixAssProdFamilyLinks();
+//         if(localStorage.getItem('instantfilter') == 1){
+//             indexInstantFilter2();
+//         }
+//         categoryDivWrap();
+//         addIndexColumnizerControls();
+//         addQuickPicksDisplayControls();
+//         akamaiLazyLoadFixForIndexResults();
+//         enableDefaultQty();
+//         fixAssociatedPartsForIndexResultsPage();
+
+//         addToTopButton();
+//         $('#content').css('top','70px');
+//         $('.dk-url-shortener').insertBefore($('#content')).css({position:'relative', top: '70px'});
+
+//         _log('formatIndexResultsPage() End',DLOG);
+//     }
+// }
+
 function formatIndexResultsPage(){
     if($('.catfilterlink').length){
         _log('formatIndexResultsPage() Start',DLOG);
 
         addIndexPicPrev();
         if(localStorage.getItem('qfControl') == 1) {
-            addQuickFilter3();
+            // addQuickFilter3();
         }
         $('h1:contains(Electronic)').hide();
         //fixAssProdFamilyLinks();
         if(localStorage.getItem('instantfilter') == 1){
-            indexInstantFilter2();
+            indexInstantFilter3();
         }
-        categoryDivWrap();
-        addIndexColumnizerControls();
-        addQuickPicksDisplayControls();
+        // categoryDivWrap();
+        // addQuickPicksDisplayControls();
+
+
         akamaiLazyLoadFixForIndexResults();
+
         enableDefaultQty();
         fixAssociatedPartsForIndexResultsPage();
 
+
+        var productTree = storeProductIndexTree();
+        var topResultsData = getTopResultsData();
+        _log('formatIndexResultsPage() log1',1);
+        newProductIndexDiv(productTree)
+        _log('formatIndexResultsPage() log2',1);
+        addSideIndex(productTree);
+        handleTopResults3(topResultsData);
+        addFullResultsTitle();
+        addIndexColumnizerControls();
+
         addToTopButton();
-        $('#content').css('top','70px');
-        $('.dk-url-shortener').insertBefore($('#content')).css({position:'relative', top: '70px'});
+        // $('#content').css('top','70px');
+        $('#content').css({'margin':'0px','padding':'0px 10px 10px 10px', 'border-left': '1px solid #ccc'});// for the sidebar separator
+        $('#headKeySearch').focus();
+        $('.dk-url-shortener').css({position:'fixed', right: '130px', top:'28px','z-index':'30'}); //move url shortener
 
         _log('formatIndexResultsPage() End',DLOG);
     }
 }
+
+function addSideIndex(productTree){
+    // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:70px;"/>');
+    $('.mainFlexWrapper').prepend('<div class="sideIndex"><div class="sideIndexContent"><div class="sideIndexTitle">Index <a href="#content" style="margin-left:auto; margin-right: 4px;">top</a></div></div></div>');
+    var sidetext = '';
+    productTree.forEach(function(item){
+        //$('.sideIndexContent').append(
+            sidetext = sidetext + '<li style="display:flex; align-items:center;"><a href="#'+selectorEscape(item.category)+'">'+item.category+'</a></li>'
+        //);
+    });
+    $('.sideIndexContent').append(sidetext);
+    // $('.sideIndex').css('width',($('.sideIndexContent').width()+50)+'px'); //needs to be there for chrome when using display:flex
+    $('.sideIndex').css('width',(300)+'px'); //needs to be there for chrome when using display:flex
+    // alert($('.sideIndexContent').width());
+    $('.sideIndexContent').addClass('fixedsticky').css('top','55px').fixedsticky();
+    // $('.sideIndexContent').addClass('fixedsticky').css('top','50px');
+    // $('#footer').addClass('fixedsticky').fixedsticky();
+
+    //addCategorySprites2();
+
+    $('.sideIndexContent a').click(smoothScrollToCat);
+}
+
+function smoothScrollToCat(e){
+    e.preventDefault();
+    var destinationHref = $(this).attr('href');
+    var dpos = $(destinationHref).position().top;
+    var clickedon = $(e.target);
+    // clickedon.remove();
+    // $('.catfilteritem').not($(destinationHref).closest('.catfilteritem')).fadeTo('fast', .5);
+    $('.sideIndexContent a').css({'background': ''});
+    setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
+    $('html,body').animate(
+        {scrollTop: dpos-0},
+        {       
+        duration: 350,
+        easing: 'swing', 
+        complete: function(){
+            //hack to get around the complete function firing early and getting stomped on by the scroll event
+            // $(destinationHref).closest('.catfilteritem').fadeTo(0,1);
+            // $('.catfilteritem').not($(destinationHref).closest('.catfilteritem')).fadeTo('slow', 1)
+            setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
+        }   
+    });
+    $('.catfilteritem h2').removeClass('highlightCat');
+    //get the parent catfilteritem and set highlight background
+    $(destinationHref).closest('h2').addClass('highlightCat');
+
+    // $(destinationHref).closest('.catfilteritem').css({'color': '#1af'}).animate({'color': '#eee'}, 3000);
+}
+
+function addFullResultsTitle(){
+    //add Full Results title bar to separate top results from full results. Use keyword in title if available.
+    var keyword = $("#headKeySearch").val();
+    if(keyword !=''){
+        $('#productIndexDiv').before(
+            // '<div id="fullResultsTitle" style="width:100%; border: 1px solid #ccc; background:#eee; padding:3px; margin:3px 20px 3px 0px;">'+
+            '<div id="fullResultsTitle" style="display:flex; border: 1px solid #ccc; background:#eee; padding:3px; margin:8px 0px 3px 0px;">'+
+            '<div style="display:flex; font-weight:bold; font-size:15px;">Full Results for <span style="font-size:15px; font-weight:bold; font-style:italic;">&nbsp'+keyword+'</span></div>'+
+            '</div>'
+        );  
+    }else{
+
+        $('#productIndexDiv').before(
+            // '<div id="fullResultsTitle" style="width:100%; border: 1px solid #ccc; background:#eee; padding:3px; margin:3px 20px 3px 0px;">'+
+            '<div id="fullResultsTitle" style="display:flex; border: 1px solid #ccc; background:#eee; padding:3px; margin:0px 0px 3px 0px;">'+
+            '<div style="display:flex; font-weight:bold; font-size:15px;">Full Results</div>'+
+            '</div>'
+        );
+    }
+
+}
+
+function handleTopResults3(trdata){
+    var keyword = $("#headKeySearch").val();
+    if(keyword !="" && $('#quickPicksDisplay').length > 0){
+        var resultList = $('#quickPicksDisplay li');
+        // console.log(resultList);
+        $('#quickPicksDisplay').remove();
+
+        var topResultsHTML = '<div id="topResultsContainer">'+
+            '<div class="topResultsTitle"><i class="fa fa-arrow"></i>Top Families for <span style="font-size:15px; font-style:italic;">&nbsp'+keyword+'</span></div>'+
+            '<div class="topResultsBody" style="padding: 8px 3px;"></div>'+
+        '</div>';
+
+        $('#content').prepend(topResultsHTML);
+
+        $('#topResultsContainer').css({
+            "border": '1px solid #ccc',
+        });
+        $(".topResultsTitle").css({
+          margin : "0",
+          padding : "3px 2px",
+          // width: '100%',
+          'font-size': '15px',
+          'font-weight':'bold',
+          'background' : "#eee",
+          'border-bottom' : "1px solid #ccc"
+        });
+        
+        $('.topResultsBody').append( '<table id="topResultsTable"><tbody><tr style="font-weight:bold;"><td>Family</td><td>Category</td></tr></tbody></table>');
+        var rows = '';
+        var trt = $('#topResultsTable tbody');
+        var regExp = /\(([^)]+)\)/;
+        trdata.forEach(function(elem){
+            trt.append('<tr><td></td><td></td></tr>');
+            trt.find('tr:last td:first').append(elem.famLink);
+            trt.find('tr:last td:first').append( ' ('+ elem.count + ') ');
+            trt.find('tr:last td:last').append('<a class="catjumpto" href="#'+selectorEscape(elem.cat)+'">'+elem.cat+'</a>');
+        });
+
+        $('.catjumpto').click(smoothScrollToCat);
+        $('head').append('<style>.catjumpto{ textDecoration:none; color:#444;}</style>');
+
+        $('#topResultsContainer a').css("textDecoration", "none");
+    }
+}
+
+
+function getTopResultsData(){
+    var trdata =[];
+    var resultList = $('#quickPicksDisplay li');
+    var itemsRE = /\(\d+\sitems\)/;
+    var itemsREnot = /^(\(\d+\sitems\)).+/;
+    resultList.each(function() {
+        var famLink = $(this).find('a');
+        var cat = $(this).contents().filter(function() {return this.nodeType == 3;}).text().replace(itemsRE, '').trim();
+        var count = itemsRE.exec($(this).contents().text()).toString().replace(/\(|\)|\sitems/g, '');
+
+        trdata.push ({
+            'famLink':famLink,
+            'cat': cat,
+            'count': count
+        });
+    });
+    return trdata;
+}
+
+function getTopResultsCategories(trdata){
+    //collects all the categories represented in the Top Results box
+    var array = [];
+    trdata.forEach( function(item) {
+        array.push(selectorEscape(item.cat));
+    });
+    return uniqueArray(array).reverse();
+}
+
+function storeProductIndexTree(){
+    var container = []; 
+        $('#productIndexList>li').each(function(){
+            var oneCategory = $(this);
+            var familyTree = [];
+            oneCategory.find('.catfiltersub>li').each(function(){
+                familyTree.push(getFamilyItemFromListElem(this)); 
+            });
+            // console.log('familyTree');
+            container.push({
+                'category': oneCategory.find('.catfiltertopitem').text(), 
+                'catlink': oneCategory.find('.catfiltertopitem a').attr('href'), 
+                'families': familyTree
+            })  ;
+        });
+        //console.log(container);
+    return container;
+}
+
+function getFamilyItemFromListElem(item){
+    // var itemsRE = /\(\d+\sitems\)/;
+    // var count = itemsRE.exec($(item).contents().text()).toString().replace(/\(|\)|\sitems/g, '');
+    // count = parseInt(count);
+    var resultCount = $(item).contents().filter(function(){return this.nodeType ===3;}).text().replace('(','');
+    var count = parseInt(resultCount);
+
+    // console.log('getFamilyItemFromListElem');
+
+    var name = $(item).find('a').text();
+    var link = $(item).find('a').attr('href');
+    var famID = $(item).find('a').attr('href').split('/');
+    famID = famID[famID.length-1];
+    return {
+        'name': name,
+        'count': count,
+        'link': link,
+        'famId':  famID
+    };
+}
+
+
+function newProductIndexDiv(productTree){
+    // addStyleTag(catfamStyle);
+// 
+
+    $('#productIndexList').after('<div id="productIndexDiv" class="plTextOnly" style="white-space:normal;" />').detach();
+    // $('#productIndexList').after('<div id="productIndexDiv" class="plContainerized" style="white-space:normal;" />');
+    productTree.forEach(function(item){
+        buildCategoryItem(item);
+    });
+    // $('.catTitle').fixedsticky();
+    // $('.catTitle').addClass('stuck').removeClass('catTitle');
+    // $('.famItemContainer').css({'display':'inline-block'});
+    // $('.familiesContainer, .catContainer').css({'width':'50%'});
+    // console.log('hi', productTree[0], catfamStyle);
+}
+
+
+
+function buildCategoryItem(catItem){
+    var catSelector = selectorEscape(catItem.category.replace(/\s/g, ''));
+    $('#productIndexDiv').append('<div id="'+selectorEscape(catItem.category)+'" class="catContainer '+catSelector+'" data-view=0>'+
+        '<div class="catTitle">'+catItem.category+'</div>'+
+        '<div id="cat-'+catSelector+'" class="familiesContainer"></div>'+
+        '</div> ');
+
+    // _log('newprod1'+catItem.category)
+    var fams = catItem.families;
+    var htmltext = ''
+    for(var i in fams){
+        htmltext += buildFamilyItemHTML(fams[i], catSelector);
+    }
+    $('#cat-'+catSelector).append(htmltext);
+    // _log('newprod2')
+
+}
+
+function buildFamilyItemHTML(fam, catSelector){
+        // console.log(fam);
+        //TODO make toggle for pictures/index
+        var famSelector = selectorEscape(fam.name.replace(/\s/g, ''));
+        // $('#cat-'+catSelector).append('<div class="famItemContainer fam-'+famSelector+'">'+'<div class="fcount">('+fam.count+')</div>'+
+        return'<div class="famItemContainer fam-'+famSelector+'">'+'<div class="fcount">('+fam.count+')</div>'+
+            '<div class="famTitle"><a href="'+fam.link+'">'+fam.name+'</a> </div> '+
+            '</div>';
+        // getCachedImagesForFamily(fam, catSelector, fam.link, MOCKPICS);
+}
+
+// function 
 
 function categoryDivWrap(){
     _log('categoryDivWrap() Start',DLOG);
@@ -1669,63 +2041,122 @@ function categoryDivWrap(){
     _log('categoryDivWrap() End',DLOG);
 }
 
+// function addIndexColumnizerControls(){
+//     //Adds off, right, top controls to the top index results page
+//     _log('addIndexColumnizerControls() Start',DLOG);
+//     var thehtml = '<span id="columnchooser" style="position:relative; top:70px; margin-left:20px; z-index:6;" >'+
+//         '<input id="columnchooserstate" type="hidden" value="2" class="saveState">'+
+//         '<button id=cwfull value=0  class="pure-button">Off</button>'+
+//         '<button id=cw300 value=1 class="pure-button">|||</button>'+
+//         '<button id=cw301 value=2 class="pure-button">&#9776</button>'+
+//         ' columns'+
+//     '</span>';
+//     $('#content').before(thehtml);
+
+//     restoreInputState($('#columnchooserstate'));
+//  _log($('#columnchooserstate').length);
+//     if($('#columnchooserstate').val() == 0){
+//         _log('columnchooserstate off', DLOG);
+//         $('.catfiltertopitem').each(function(){
+//             //$(this).next('ul').addBack().wrapAll('<div  class="blockdivoff" />');
+//             $(this).parent().addClass('blockdivoff');
+//             $('#content').addClass('cwfull');
+//             $('#cwfull').addClass('myRedButton');
+//             // $('#cw300').addClass('clean-gray');
+//             // $('#cw301').addClass('clean-gray');
+//         }); 
+//     }else if($('#columnchooserstate').val() == 1){
+//         _log('columnchooserstate columns', DLOG);
+//         $('.catfiltertopitem').each(function(){
+//             $(this).parent().addClass('blockdivon');
+//             //$(this).next('ul').addBack().wrapAll('<div  class="blockdivon" />');
+//             $('#content').addClass('cw300');
+//             // $('#cwfull').addClass('clean-gray');
+//             $('#cw300').addClass('myRedButton');
+//             // $('#cw301').addClass('clean-gray');
+//         }); 
+//     }else if($('#columnchooserstate').val() == 2){
+//         _log('columnchooserstate lines', DLOG);
+//         $('.catfiltertopitem').each(function(){
+//             $(this).parent().addClass('blockdivon2');
+//             $('#content').addClass('cw301');
+//             // $('#cwfull').addClass('clean-gray');
+//             // $('#cw300').addClass('clean-gray');
+//             $('#cw301').addClass('myRedButton');
+//         }); 
+//     }
+
+//     $('#columnchooser button').on('click', function(){
+//         $('#content').removeClass().addClass($(this).attr('id'));
+//             localStorage.setItem('columnchooserstate', $(this).val());
+//         if(localStorage.getItem('columnchooserstate') == 0){
+//             $('.blockdivon, .blockdivoff, .blockdivon2').attr('class','blockdivoff');
+//         }else if(localStorage.getItem('columnchooserstate') == 1){
+//             $('.blockdivon, .blockdivoff, .blockdivon2').attr('class','blockdivon');    
+//         }else if(localStorage.getItem('columnchooserstate') == 2){
+//             $('.blockdivon, .blockdivoff, .blockdivon2').attr('class','blockdivon2');   
+//         }
+
+//         // $('#columnchooser button').removeClass('myRedButton').addClass('clean-gray');
+//         $('#columnchooser button').removeClass('myRedButton');
+//         $(this).toggleClass('myRedButton');
+//     }).css('padding','3px 3px 3px 3px');
+
+//     _log('addIndexColumnizerControls() End',DLOG);
+// }
 function addIndexColumnizerControls(){
     //Adds off, right, top controls to the top index results page
     _log('addIndexColumnizerControls() Start',DLOG);
-    var thehtml = '<span id="columnchooser" style="position:relative; top:70px; margin-left:20px; z-index:6;" >'+
+    var thehtml = '<span id="columnchooser" style="margin-left:auto;" >'+
         '<input id="columnchooserstate" type="hidden" value="2" class="saveState">'+
         '<button id=cwfull value=0  class="pure-button">Off</button>'+
         '<button id=cw300 value=1 class="pure-button">|||</button>'+
         '<button id=cw301 value=2 class="pure-button">&#9776</button>'+
         ' columns'+
     '</span>';
-    $('#content').before(thehtml);
+    $('#fullResultsTitle').append(thehtml);
 
     restoreInputState($('#columnchooserstate'));
  _log($('#columnchooserstate').length);
     if($('#columnchooserstate').val() == 0){
         _log('columnchooserstate off', DLOG);
-        $('.catfiltertopitem').each(function(){
-            //$(this).next('ul').addBack().wrapAll('<div  class="blockdivoff" />');
-            $(this).parent().addClass('blockdivoff');
-            $('#content').addClass('cwfull');
+        // $('.famItemContainer').each(function(){
             $('#cwfull').addClass('myRedButton');
-            // $('#cw300').addClass('clean-gray');
-            // $('#cw301').addClass('clean-gray');
-        }); 
+        // }); 
     }else if($('#columnchooserstate').val() == 1){
         _log('columnchooserstate columns', DLOG);
-        $('.catfiltertopitem').each(function(){
-            $(this).parent().addClass('blockdivon');
-            //$(this).next('ul').addBack().wrapAll('<div  class="blockdivon" />');
-            $('#content').addClass('cw300');
+        // $('.famItemContainer').each(function(){
+            // $(this).css('-moz-column-width', "450px");            //$(this).next('ul').addBack().wrapAll('<div  class="blockdivon" />');
+            // $('#content').addClass('cw300');
             // $('#cwfull').addClass('clean-gray');
             $('#cw300').addClass('myRedButton');
+                        $('#productIndexDiv').addClass('catColumns');
+
             // $('#cw301').addClass('clean-gray');
-        }); 
+        // }); 
     }else if($('#columnchooserstate').val() == 2){
         _log('columnchooserstate lines', DLOG);
-        $('.catfiltertopitem').each(function(){
-            $(this).parent().addClass('blockdivon2');
-            $('#content').addClass('cw301');
+        // $('.famItemContainer').each(function(){
+            // $(this).addClass('cw301');
+            // $('#content').addClass('cw301');
             // $('#cwfull').addClass('clean-gray');
             // $('#cw300').addClass('clean-gray');
+            // $('.familiesContainer').addClass('columnWidth450');
+            $('#productIndexDiv').addClass('familyColumns');
+
             $('#cw301').addClass('myRedButton');
-        }); 
+        // }); 
     }
 
     $('#columnchooser button').on('click', function(){
-        $('#content').removeClass().addClass($(this).attr('id'));
-            localStorage.setItem('columnchooserstate', $(this).val());
+        localStorage.setItem('columnchooserstate', $(this).val());
         if(localStorage.getItem('columnchooserstate') == 0){
-            $('.blockdivon, .blockdivoff, .blockdivon2').attr('class','blockdivoff');
+            $('#productIndexDiv').removeClass('familyColumns').removeClass('catColumns')
         }else if(localStorage.getItem('columnchooserstate') == 1){
-            $('.blockdivon, .blockdivoff, .blockdivon2').attr('class','blockdivon');    
+            $('#productIndexDiv').addClass('catColumns').removeClass('familyColumns');
         }else if(localStorage.getItem('columnchooserstate') == 2){
-            $('.blockdivon, .blockdivoff, .blockdivon2').attr('class','blockdivon2');   
+            $('#productIndexDiv').addClass('familyColumns').removeClass('catColumns');
         }
-
-        // $('#columnchooser button').removeClass('myRedButton').addClass('clean-gray');
         $('#columnchooser button').removeClass('myRedButton');
         $(this).toggleClass('myRedButton');
     }).css('padding','3px 3px 3px 3px');
@@ -1956,7 +2387,7 @@ function formatDetailPage(){
         }
 
         $('td:contains("obsolete") p').css('background-color','#FF8080'); // changes the color of the obsolete callout
-
+        // $('#content').css({'position':'relative', 'top': '45px'});
 
         _log('formatDetailPage() End',DLOG);
     }
@@ -3206,6 +3637,33 @@ function addCategorySprites(){
     });
     _log('addCategorySprites() End',DLOG);
 }
+function addCategorySprites2(){
+    _log('addCategorySprites() Start',DLOG);
+    $('.sideIndexContent li').each(function(ind) {
+        $(this).prepend('<span style="display:none;" class="catSprite2 '+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
+                '" >'+
+                // '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
+                '</span>' 
+        );
+        //**************************************
+        // KEEP for testing, this is the code for category images without using the sprites
+        // $('#qpDivCont').append('<a href="#' + 
+        //  $(this).text().replace(/[\s\(\)\\\/\,]/g, '') + 
+        //  '"><img align=center style="margin:2px; border:1px solid gray; border-radius:5px;" src="https://dl.dropboxusercontent.com/u/26263360/img/caticons/'+
+        //  $(this).text().replace(/[\s\(\)\\\/\,]/g, '')+'.png">' + 
+        //  $(this).text() + '</a><br>'
+        // );                   
+        //**************************************
+    });
+    $('.catTitle').each(function(){
+        $(this).prepend('<span class="catSprite2 '+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
+                '" >'+
+                // '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
+                '</span>' 
+        );
+    })
+    _log('addCategorySprites() End',DLOG);
+}
 
 function addJumpToCategory(){
     _log('addJumpToCategory() Start',DLOG);
@@ -3473,6 +3931,33 @@ function indexInstantFilter2(){
             if($(this).val() == ''){
                 $('.catfilterlink').parent().show();
                 $('.catfilterlink').parent().parent().prev('.catfiltertopitem').show();
+            }
+        });
+    }
+}
+
+function indexInstantFilter3(){
+    if($('a.catfilterlink').size()>0){
+        $('#headKeySearch').keyup(function(){
+            var keywords = $(this).val().trim();
+            var keywordarray = keywords.split(' ');
+            var attrfilters = '';
+            keywordarray.forEach(function(word){
+                attrfilters += '[href*='+word+']';
+            });
+            _log('keyword array length ' + attrfilters);
+            // $('#productIndexDiv').hide();
+            $('.famItemContainer').addClass('hideme');
+            // $('.famItemContainer').closest('.catContainer').hide();
+            $('.catContainer').hide();
+            $('.famItemContainer a'+attrfilters).closest('.famItemContainer').removeClass('hideme');
+            // console.log($('.famItemContainer a'+attrfilters).closest('.famItemContainer'));
+             // $('#productIndexDiv').show();
+            $('.famItemContainer').not('.hideme').closest('.catContainer').show();
+            // console.log($('.famItemContainer:visible'));
+            if($(this).val() == ''){
+                $('.famItemContainer').show();
+                $('.famItemContainer').closest('.catContainer').show();
             }
         });
     }
