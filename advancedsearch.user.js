@@ -8,8 +8,6 @@
 // @include     http://search.digikey.*/*
 // @include     http://www.digikey.*/product-detail/en/*
 // @include     http://www.digikey.*/product-detail/*/*
-// @include     http://ordering.digikey.*/Ordering/AddPart.aspx*
-// @include     http*digikey.*/classic/Ordering/AddPart*
 // @include     http*digikey.*/classic/Ordering/FastAdd*
 // @include     http*digikey.*/short/*
 // @exclude     http://www.digikey.com
@@ -17,9 +15,7 @@
 // @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/Highcharts-4.0.4/js/highcharts.js
 // @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.localScroll.js
-// @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.scrollTo.js
 // @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.hoverIntent.js
-// @require     https://dl.dropbox.com/u/26263360/script/lib/jquery.dragtable.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.spellchecker.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/quantities.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
@@ -41,7 +37,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.3
+// @version     3.4
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -181,6 +177,7 @@
 //3.1.1     Fixed indexpicpreview
 //3.2       Added Visual Picker, finished header redesign, fixed search focus, added link to category.
 //3.3       Added images to families, removed explore mode, improved pick with pictures feature.
+//3.4       No longer runs in cart, fixed CSS issues, removed some unused javascript libs
 
 //TODO add hover detail page image to get full sized.
 //TODO add a messages/update
@@ -204,7 +201,7 @@
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var version = GM_info.script.version;
-var lastUpdate = '5/12/15';
+var lastUpdate = '5/14/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -420,7 +417,6 @@ function addControlWidget() {
                 '<input type=checkbox id=pricehoverControl class="saveState css-checkbox " value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
                 '<input type=checkbox id=queryHighlight class="saveState css-checkbox " value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
                 '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
-                //'<label><input type=checkbox id=dragTables> Turn on Draggable Tables</label><br>' +
                 '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
                 '<label><input type=checkbox id=picPrevControl class="saveState css-checkbox " value="1"> <label class="css-label" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
                 '<label><input type=checkbox id=qfControl class="saveState css-checkbox " value="1"> <label class="css-label" for="qfControl">Turn on Quick Pick Box</label><br>' +
@@ -656,10 +652,7 @@ function formatFilterResultsPage(){
         if(localStorage.getItem('combinePN') == 1) {
             setTimeout(function(){combinePN();}, 1);
         }
-        if(localStorage.getItem('dragTables') == 1) {
-            $('#productTable').addClass('draggable');
-            dragtable.init();
-        }
+
         setTimeout(function(){addPartCompare();}, 150);
         if(localStorage.getItem('pricehoverControl') == 1) {
             setTimeout(function(){addPriceHover();}, 3000);
