@@ -1035,8 +1035,8 @@ option:hover{
 	display: none;
 }
 
-.plContainerized:hover{
-	cursor:pointer;
+.plContainerized .famItemContainer:hover{
+	/*cursor:pointer;*/
 }
 
 .plContainerized .familyimages>a img {
