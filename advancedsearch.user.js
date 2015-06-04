@@ -1,4 +1,4 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name        advancedsearch
 // @namespace   advancedsearch
 // @description an advanced search
@@ -37,7 +37,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.5
+// @version     3.5.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -180,8 +180,8 @@
 //3.4       No longer runs in cart, fixed CSS issues, removed some unused javascript libs
 //3.4.1     Fixed index image problems going to the wrong url.
 //3.5       refactored for speed improvements. index pictures, header, control widget.
+//3.5.1     fixed checkbox bug
 
-//TODO add hover detail page image to get full sized.
 //TODO add a messages/update
 //TODO offer no reload, infinite scroll? at end of product index page.
 //TODO replace special case * and - with descriptive names [none found], n/a, [info not filled in yet], something better?
@@ -204,7 +204,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '5/15/15';
+var lastUpdate = '6/4/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -283,7 +283,7 @@ function formatPagesPostReady() {
     // tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
     tc(formatFilterResultsPage, 'formatFilterResultsPage');
     tc(formatDetailPage, 'formatDetailPage');
-    tc(formatOrderingPage,'formatOrderingPage');
+    // tc(formatOrderingPage,'formatOrderingPage');
     tc(formatFastAddPage,'formatFastAddPage');
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
@@ -395,8 +395,7 @@ function addCustomHeader(){
     // $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
     // $('#content p.matching-records').show();
     // $('.content-keywordSearch-form').closest('form').detach();
-    // $('.content-keywordSearch-form').detach();
-    _log('addCustomHeader() Log',DLOG);
+    $('.content-keywordSearch-form').detach();
 
     //TODO flag for removal?
     // $('.matching-records:contains("Results")').delegate(function(){
@@ -415,7 +414,7 @@ function addControlWidget() {
     _log('addControlWidget() Start',DLOG);
     // setTimeout(function(){
 
-    $('#content').after('<div id="controlDiv" class="gray-grad" title="settings for advancedsearch v'+version+'">'+
+    $('#content').after('<div id="controlDiv" class="gray-grad firstopen" style="display:none;" title="settings for advancedsearch v'+version+'">'+
             '<a href="'+downloadLink+'" class="button-small pure-button" style="float:right;"> click to manually update</a> ' +
             // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
             '<div class="settingscontainer" >'+
@@ -813,10 +812,10 @@ function openVisualPicker(){
         var $options = $(this).parent().find('select option');
 
 
-        p.data('optioncount', $options.length)
+        p.data('optioncount', $options.length);
         p.data('optionsvisible', 0);
-        p.data('currentfilter', filtername)
-        p.data('theoptions', $options)
+        p.data('currentfilter', filtername);
+        p.data('theoptions', $options);
 
         $( "#visualpickerdiv" ).dialog('open');
         $('.addmoreoptions').show();
@@ -1234,7 +1233,7 @@ function sortStuff(){
         else{
             if(direction == "asc"){
                 return aval.compareTo(bval);
-            }else{ return (-1 * aval.compareTo(bval))}
+            }else{ return (-1 * aval.compareTo(bval));}
         }
     });    
     $('#productTable>tbody').append(rows);
@@ -1245,7 +1244,7 @@ function highlightKeywords(){
 
 function addGraphInterface(){
     _log('addGraphInterface() Start', DLOG);
-    $('body').append('<div id=graphDialog></div>')
+    $('body').append('<div id=graphDialog></div>');
     setTimeout(function(){
         $('#graphDialog').dialog({
             'autoOpen':false,
@@ -1269,7 +1268,7 @@ function addGraphInterface(){
         '</form>'
     );
 
-    $('#graphDialog').append('<div class="featureNotice">This is a test feature.  All data shown in chart is only from table below on the current page. To view maximum number of points change the number of Results per Page to 500 </div>')
+    $('#graphDialog').append('<div class="featureNotice">This is a test feature.  All data shown in chart is only from table below on the current page. To view maximum number of points change the number of Results per Page to 500 </div>');
     $('#drawGraphButton').on('click', function(e){
         e.preventDefault();
         console.log('graphcol1', $('#xGraphColumn').val(), 'graphcol2', $('#yGraphColumn').val());
@@ -1282,7 +1281,7 @@ function addGraphInterface(){
         e.preventDefault();
     });
 
-    $('#graphDialog').append('<div class="graphErrorNotice"></div>')
+    $('#graphDialog').append('<div class="graphErrorNotice"></div>');
     _log('addGraphInterface() End', DLOG);
 }
     
@@ -1779,7 +1778,7 @@ function wrapFilterTable(){
     $('.filters-group').append(
         '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">'+
         
-        '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none; position:relative; top:-2px;"> - see less filters - </span>'+
+        '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none; position:relative; top:-2px;"> - see fewer filters - </span>'+
         '</div>'+
         '<div style="float:right;">'+
             '<input style="float:right" type="checkbox" class="css-checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand">'+
@@ -2171,7 +2170,7 @@ function buildFamilyItemHTML(fam, catSelector, exampleFamilyImages){
                 // console.log(root, item);
                 // famitem.find('.familyimages').append('<img class=lazyimg data-original="http://media.digikey.com'+item+'">');
                 imagestring = imagestring + '<img class=lazyimg data-src="http://media.digikey.com'+item+'">';
-            })
+            });
         }
 
         
@@ -2214,7 +2213,7 @@ function addProductIndexThumbs(){
     // setTimeout(addIndexLazyLoad, 1);
     addIndexLazyLoad();
 
-    $('.catTitle').append('<div class="piThumbIcons"><i class="piText fa fa-list fa-2x"></i><i class="piThumbs fa fa-th fa-2x"></i></div>');
+    $('.catTitle').append('<div class="piThumbIcons"><i title="text only" class="piText fa fa-list fa-2x"></i><i title="turn on images" class="piThumbs fa fa-th fa-2x"></i></div>');
     
 
     $('#productIndexDiv').on('click', '.piText', function(){
@@ -2230,9 +2229,9 @@ function addProductIndexThumbs(){
 
     $('#fullResultsTitle').append('<div class="piThumbIconsAll">'+
         '<input id="indexThumbsState" type="hidden" class="saveState" value=0>'+
-        '<button id="piTextAllButton" class="pure-button" value=0>'+
+        '<button id="piTextAllButton" title="text only" class="pure-button" value=0>'+
         '<i class="piTextAll fa fa-list fa-lg"></i></button>'+
-        '<button id="piThumbsAllButton" class="pure-button" value=1><i class="piThumbsAll fa fa-th fa-lg"></i></button>'+
+        '<button id="piThumbsAllButton" title="turn on images" class="pure-button" value=1><i class="piThumbsAll fa fa-th fa-lg"></i></button>'+
         ' Images</div>'
         );
 
@@ -2497,7 +2496,7 @@ function formatDetailPage(){
         // $('#content').css({'position':'relative', 'top': '45px'});
 
 
-        addFootprintSearch()
+        // addFootprintSearch()
         _log('formatDetailPage() End',DLOG);
     }
 }
@@ -3873,7 +3872,7 @@ function addStickyFilters(){
 }
 
 function addApplyFiltersButtonHighlight(){
-	_log('addApplyFiltersButtonHighlight() Start',DLOG);
+    _log('addApplyFiltersButtonHighlight() Start',DLOG);
     $('#mainform').on('mouseup','option,input[type=reset],input[value=Reset]', function(e){
         buttonHighlightAction();
     });
@@ -4087,13 +4086,14 @@ function addPriceHover(){
         delay: 350,
         // contentCloning: true,
         position: 'right',
-        // interactive: true,
+        interactive: true,
         // positionTracker: true,
         offsetX: -30,
         onlyOne: true,
         // iconTouch: true,
         theme: 'tooltipster-shadow',
-        functionReady: loadPrices
+        functionReady: loadPrices,
+        debug: true,
     })
 
     _log('addPriceHover() End',DLOG);
