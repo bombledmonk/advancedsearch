@@ -37,7 +37,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.5.1
+// @version     3.5.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -181,6 +181,7 @@
 //3.4.1     Fixed index image problems going to the wrong url.
 //3.5       refactored for speed improvements. index pictures, header, control widget.
 //3.5.1     fixed checkbox bug
+//3.5.2     delayed the init of settings box for speed, fixed table width issues.
 
 //TODO add a messages/update
 //TODO offer no reload, infinite scroll? at end of product index page.
@@ -206,7 +207,7 @@ var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '6/4/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = true; //control detailed logging.
+var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -393,7 +394,7 @@ function addCustomHeader(){
     // $('#pbfree').prop('checked', pbfreeval);
     // $('#rohs').prop('checked', rohsval);
     // $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
-    // $('#content p.matching-records').show();
+    $('#content p.matching-records').show();
     // $('.content-keywordSearch-form').closest('form').detach();
     $('.content-keywordSearch-form').detach();
 
@@ -445,6 +446,12 @@ function addControlWidget() {
 
     $('#content').after('<div id="controlSpan" class="pure-button"><i class="fa fa-cog"></i> settings v' + version + '</div>');
     _log('control dialog tick start ', DLOG);
+
+    _log('control dialog tick end ', DLOG);
+
+    $('#controlSpan').click(function(){
+        if($('#controlDiv').hasClass('firstopen')){
+            $('#controlDiv').removeClass('firstopen');
             $('#controlDiv').dialog({
                 autoOpen: false,
                 resizable: false,
@@ -463,10 +470,11 @@ function addControlWidget() {
                     }
                 }
             });
-    _log('control dialog tick end ', DLOG);
+            $('#controlDiv').dialog('open');
 
-    $('#controlSpan').click(function(){
-        $('#controlDiv').dialog('open');
+        }else{
+            $('#controlDiv').dialog('open');
+        }    
         hoveringHelpHighlighter();
 
     });
@@ -678,7 +686,7 @@ function formatFilterResultsPage(){
         wrapFilterTable(); //dependent on floatapplyfilters()
 
         addtrueFilterReset(); // dependent on wrapFilterTable() being in place
-        displayAdv();
+        addParamWizzards();
         
         if(localStorage.getItem('squishedFilters') == 1){
             squishedFilters();
@@ -1714,6 +1722,7 @@ function wrapFilterTable(){
     _log('wrapFilterTable() Start',DLOG);
     //button code
     $('#mainform').wrap('<div id=mainformdiv />');
+
     var thehtml = '<div id="wrapfilterschooser" class="tabbedbutton" style="display:inline-block;" title="Instead of scrolling horizontally the filters will wrap to the next line"><div>'+
         '<input id="wrapFilters" value="0" class="saveState" type="hidden">' +
         '<button id=wrapfilteron value=0 class="pure-button">Off</button>'+
@@ -2552,6 +2561,35 @@ function preFormatDetailPage(){
     }
 }
 
+
+function addDetailPageInfoCopy($pageobject){
+    var info = {}
+    info.image = $pageobject.find('img[itemprop=image],img[src*=nophoto]').css({'width': '48px', 'height': '48px'});
+    info.getMPN = $pageobject.find('h1[itemprop=model]').text();
+    info.getManufacturer = $pageobject.find('h2[itemprop=manufacturer]').text(); //could also do contents()
+    info.getDescription = $pageobject.find('td[itemprop=description]').text();
+    info.getPackaging = $pageobject.find('.attributes-table-main a[href*="Standard%20Packaging%20Help"]').last().closest('tr').find('td').text();
+    info.getUnitPrice = $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(1)').contents();
+    info.getQuantityAvailable = $pageobject.find('#quantityavailable').html().split('<br>')[0];
+    info.getMinQuantity = $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(0)').text();
+    return info;
+}
+
+function getdetailPageInfo($pageobject){
+
+}
+      
+         
+         
+         
+         
+         
+         
+    
+
+
+
+//TODO finish
 function addFootprintSearch(){
     var manufacturer = detailPageInfo.getManufacturer($('#content'));
     var manPN = detailPageInfo.getMPN($('#content'));
@@ -3090,7 +3128,7 @@ function addImageBar() {
         $('#mainform').after('<div id="accDiv" class="collapsed"><div id="accContent">loading...</div></div>');
         $('#accDiv').css({
             // 'width': ($(window).width() - 100),
-            'wdith': '100%',
+            'width': '97vw',
             'height': '66px',
             'border': '1px solid lightgrey',
             'box-shadow': '1px 1px 2px #aaa',
@@ -3175,8 +3213,8 @@ function addChooserButtonAction(somespan, clickfunc){
 }
 
 
-function displayAdv(){
-    _log('displayAdv() Start',DLOG);
+function addParamWizzards(){
+    _log('addParamWizzards() Start',DLOG);
     var filterfunctions = [ //['Series',                function(name, e){getAttributeExampleImgs(name, e);}, 'Ex Pics'],
                             //['Connector Type',        function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
                             //['Connector Style',       function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
@@ -3206,7 +3244,7 @@ function displayAdv(){
         filterfunctions[i][2]( filterfunctions[i][1], $('select[name="'+filterfunctions[i][0]+'"]'));
     });
 
-    _log('displayAdv() End',DLOG);
+    _log('addParamWizzards() End',DLOG);
 }
 
 function createHelperBox(name,$selectElem, boxheight, boxwidth){
@@ -4086,14 +4124,13 @@ function addPriceHover(){
         delay: 350,
         // contentCloning: true,
         position: 'right',
-        interactive: true,
+        // interactive: true,
         // positionTracker: true,
         offsetX: -30,
         onlyOne: true,
         // iconTouch: true,
         theme: 'tooltipster-shadow',
-        functionReady: loadPrices,
-        debug: true,
+        functionReady: loadPrices
     })
 
     _log('addPriceHover() End',DLOG);
@@ -4169,16 +4206,18 @@ function picsToAccel() {
         e.preventDefault();
         var thishref = $(this).attr('data-pop');
         var pos = $(thishref).position().top;
-        $('html').animate({scrollTop:pos-200},{
+        $(jQuery.browser.webkit ? "body": "html").animate({scrollTop:pos-200},{
             duration: 500,
             easing: 'swing', 
             complete: function(){
-                        $(thishref).parent().parent().css('background-color', '');
-                        $(thishref).parent().parent().animate({
-                            'backgroundColor': 'pink'
-                        }, 500).animate({
-                            'backgroundColor': 'lightcyan'
-                        }, 1500);
+            			if($(thishref).parent().parent().css('background-color') != 'lightcyan'){
+	                        $(thishref).parent().parent().css('background-color', '');
+	                        $(thishref).parent().parent().animate({
+	                            'backgroundColor': 'pink'
+	                        }, 500).animate({
+	                            'backgroundColor': 'lightcyan'
+	                        }, 1500);
+            			}
             }
         });
     });  
