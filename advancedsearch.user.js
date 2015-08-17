@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        advancedsearch
 // @namespace   advancedsearch
 // @description an advanced search
@@ -23,6 +23,7 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/js/jquery.tooltipster.min.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.lazyloadxt.js
+// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.dragtable.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
 // @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base.css
@@ -182,14 +183,17 @@
 //3.5       refactored for speed improvements. index pictures, header, control widget.
 //3.5.1     fixed checkbox bug
 //3.5.2     delayed the init of settings box for speed, fixed table width issues.
+//3.6		fixed upper case issues with instant search, fixed compare z-level, replaced * and - text with name and title text
 
+//TODO add links to eewiki.net capacitor page
+//TODO easy info copy finish
+//TODO add copy info button on detail page, possibly filter results page
+//TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//TODO fix the breadcrumb hover from being placed above
 //TODO add a messages/update
 //TODO offer no reload, infinite scroll? at end of product index page.
-//TODO replace special case * and - with descriptive names [none found], n/a, [info not filled in yet], something better?
-//TODO add links to eewiki.net capacitor page
 //TODO display percentage of parameter on page, possibly graph  
 //TODO think about logging lib, global vars
-//TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //TODO Make graphs into filter inputs. look in drawChart function
 //TODO Add graphs to the show pricing curve, call all packaging types and plot in different colors.
 //TODO split family names on "\s-\s" and stick into subcats
@@ -198,16 +202,16 @@
 //TODO add feature to re-search on "no results found" when in stock checkboxes are checked.
 //TODO check out IndexedDB for caching
 //TODO add footprints and symbols
-//TODO add copy info button on detail page, possibly filter results page
+//TODO add a most recently visited/ most visited families feature to top of page (chris)
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '6/4/15';
+var lastUpdate = '8/6/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = false; //control detailed logging.
+var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -228,7 +232,7 @@ function preloadFormat(){
     $('#header').detach();
     $('#footer').before('<div style="height:10px;"></div>');
     // $('#footer').remove();
-    formatPagesPreReady();
+    // formatPagesPreReady();
     _log('preloadFormat() End',DLOG);
 }
 
@@ -277,12 +281,14 @@ function tc(thefunc, name){ // tc = try catch
 
 function formatPagesPostReady() {
     _log('formatPagesPostReady() Start',DLOG);
-
+	formatPagesPreReady();
     tc(replaceQuestionMark, 'replaceQuestionMark');
     // tc(updateCache, 'updateCache');
     // tc(addCustomHeader, 'addCustomHeader');
     // tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
+    tc(preFormatDetailPage, 'preformatDetailPage');
     tc(formatFilterResultsPage, 'formatFilterResultsPage');
+
     tc(formatDetailPage, 'formatDetailPage');
     // tc(formatOrderingPage,'formatOrderingPage');
     tc(formatFastAddPage,'formatFastAddPage');
@@ -302,7 +308,7 @@ function formatPagesPreReady() {
         tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
         tc(addCartHover, 'addCartHover');
 
-        tc(preFormatDetailPage, 'preformatDetailPage');
+        // tc(preFormatDetailPage, 'preformatDetailPage');
 
     _log('formatPagesPreReady() End',DLOG);
 } 
@@ -359,24 +365,25 @@ function updateCache(){
 }
 
 function addCustomHeader(){
-    _log('addCustomHeader() Start',DLOG);
+	try{
+	_log('addCustomHeader() Start',DLOG);
     //TODO style the form with purecss
+    var mydklink2 = 'https://www.digikey.com/classic/RegisteredUser/Login.aspx';
+    gIndexLink = 'http://www.digikey.com/product-search/en';
+    theTLD = 'com';
+
     var customform = '<div id="cHeader" style="display:block; background:black; color:white;"><a href="http://digikey.'+theTLD+'">'+
-        // '<img align=left top="50px" height=50 src="http://dkc1.digikey.com/us/en/mkt/DKinfo/DKCorp_oval.gif"></a>'+
         '<img align=left top="50px" height=50 src="http://www.digikey.com/Web%20Export/hp/common/logo_black.jpg"></a>'+
         '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">'+
         '<a href="http://dkc1.digikey.com/us/en/help/help10.html">'+
         '<b>Keywords:</b></a> <input type="search" value="" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
-        // '<label class="css-label"><input type="checkbox" value="1" name="pbfree" id="pbfree" class="css-checkbox"><b>Lead free</b></label>'+
-        // '<label class="css-label"><input type="checkbox" value="1" name="rohs" id="hrohs" class="css-checkbox"><b>RoHS Compliant </b></label> '+
         '<input align=right type="submit" value="New Search" id="searchbutton">'+
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
-        // '<input type="hidden" class="colsort" disabled="disabled" name="ColumnSort" value=1000011>'+
-        // '<input type="hidden" class="engquan" disabled="disabled" name=quantity></form>'+
+        ' <input type="checkbox" style="padding-left:5px;" value="1" name="newproducts" id="newproducts" class="css-checkbox"><label style="margin-left:8px;" for="newproducts" class="css-label" title="Added in the last 90 days.">New</label>'+
         '<span id="resnum"></span>'+
         '<span id=quicklinks><a href="'+gIndexLink+'">Product Index</a> | '+
-        '<a href="'+mydklink+'">My Digi-Key</a> | '+
+        '<a href="'+mydklink2+'">My Digi-Key</a> | '+
         '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
         // '<a href="'+sitemaplink+'">Site Map</a></span>'+
         '<div class="dropShadow" />'+
@@ -391,24 +398,25 @@ function addCustomHeader(){
     // $('.dkdirchanger2').val(keywordval).focus();
     $('.dkdirchanger2').val(keywordval);
     $('#stock').prop('checked', stockval);
-    // $('#pbfree').prop('checked', pbfreeval);
-    // $('#rohs').prop('checked', rohsval);
-    // $('.matching-records').appendTo('#resnum').attr("id", "recmatch");
+
     $('#content p.matching-records').show();
-    // $('.content-keywordSearch-form').closest('form').detach();
     $('.content-keywordSearch-form').detach();
 
-    //TODO flag for removal?
-    // $('.matching-records:contains("Results")').delegate(function(){
-    //     $(this).text($(this).text().replace('Results', 'awesome'));
-    // });
 
-    $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"/>');
+
+    // console.log('>>>>>>>>>>>>>>>>>tld', theTLD, ' gIndexLink ', gIndexLink, ' mydklink2 ', mydklink2);
+    // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
+    $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>')
+    $('.mainFlexWrapper').append($('#content'));
     $('.dk-url-shortener').css({position:'fixed', right: '130px', top:'28px','z-index':'30'}); //move url shortener
 
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
     _log('addCustomHeader() End',DLOG);
+	}catch(e){
+		console.log('iiiiiiiiiiiiiiiiiiiiiiiiiiii',e);
+		alert(e);
+	}
 }
 
 function addControlWidget() {
@@ -446,12 +454,6 @@ function addControlWidget() {
 
     $('#content').after('<div id="controlSpan" class="pure-button"><i class="fa fa-cog"></i> settings v' + version + '</div>');
     _log('control dialog tick start ', DLOG);
-
-    _log('control dialog tick end ', DLOG);
-
-    $('#controlSpan').click(function(){
-        if($('#controlDiv').hasClass('firstopen')){
-            $('#controlDiv').removeClass('firstopen');
             $('#controlDiv').dialog({
                 autoOpen: false,
                 resizable: false,
@@ -470,11 +472,10 @@ function addControlWidget() {
                     }
                 }
             });
-            $('#controlDiv').dialog('open');
+    _log('control dialog tick end ', DLOG);
 
-        }else{
-            $('#controlDiv').dialog('open');
-        }    
+    $('#controlSpan').click(function(){
+        $('#controlDiv').dialog('open');
         hoveringHelpHighlighter();
 
     });
@@ -658,7 +659,7 @@ function formatFilterResultsPage(){
         $('#preProductTable').append($('.download-table:first').css({'float':'','margin-left':'15px'}));
 
         //$('img[src="http://dkc3.digikey.com/us/images/datasheet.gif"]').attr('src','http://goo.gl/8S0j5');// adds transparent background to gif anonymous stats for this image are located here http://goo.gl/#analytics/goo.gl/8S0j5/all_time
-        addMatchingRecordsToApply()
+        addMatchingRecordsToApply();
         // addExploreMode();
         addToTopButton();
         addImageBar();
@@ -726,9 +727,25 @@ function formatFilterResultsPage(){
         styleCheckboxes();
         // $('.ps-sortButtons').css('sortFocus');
         addVisualPicker();
-
+        replaceStarDash();
         _log('formatFilterResultsPage() End',DLOG);
     }
+}
+
+function replaceStarDash(){
+	$('select').each(function(){
+		var thisSelect = $(this);
+		$(this).find('option:lt(2)').each(function(){
+			if($(this).text().trim() == '-'){
+				$(this).text('- (N/A)');
+				$(this).attr('title', 'Parameter not found in datasheet')
+				thisSelect.append($(this));
+			}
+			thisSelect.append($(this).filter('[value=0]').text('*(TBD)').attr('title', 'Parameter To Be Completed Soon'));
+
+		})
+	})
+
 }
 
 
@@ -770,13 +787,13 @@ function addVisualPicker(){
         width: ($(window).width() * 0.8),
         close: function(){
             $('.moreadder').prependTo($('.pickerbuttondiv'));
-            $('.pickerbody').empty('')
+            $('.pickerbody').empty('');
         }, 
     } );
 
     $('.pickericon').on('click', openVisualPicker );
     
-    $('.addmoreoptions').on('click', addImagesToVisualPicker)
+    $('.addmoreoptions').on('click', addImagesToVisualPicker);
 
     $('#visualpickerdiv').on('click', '.pickerItem, .pickerItem input[type=checkbox]', pickerOptionClick);
 
@@ -785,7 +802,7 @@ function addVisualPicker(){
     });
     $('.submitPickerForm').on('click', function(){
         $('#mainform').submit();
-    })
+    });
     mediumImageHover();
     //add special case for manufacturer, pull logo?
     _log('addVisualPicker() End',DLOG);
@@ -804,7 +821,7 @@ function pickerOptionClick(){
             $pickerItem = $(this).closest('.pickerItem');
         }
         $pickerItem.toggleClass('pickerItemSelected pickerItemNotSelected');
-        var targetSelect = $('select[name="'+p.data('selectval')+'"]')
+        var targetSelect = $('select[name="'+p.data('selectval')+'"]');
         // console.log('targetselect', targetSelect)
         p.find('input[type=checkbox]').each(function(){
             // console.log($pickerItem.prop('checked'), $pickerItem.val());
@@ -816,7 +833,7 @@ function openVisualPicker(){
         // _log('clicked on .pickeritem', true);
         var p = $('.pickerbody');
         var filtername = $(this).closest('.selectboxdivclass').find('b').text();
-        p.data('selectval', $(this).parent().find('select').attr('name'))
+        p.data('selectval', $(this).parent().find('select').attr('name'));
         var $options = $(this).parent().find('select option');
 
 
@@ -855,7 +872,7 @@ function addImagesToVisualPicker(){
 function getSubsetOfOptionImages($options, filtername, first, last){
     $options.slice(first,last).each(function(){
         getSingleOptionImageSet($(this), filtername);
-    })
+    });
     $('.pickerbody').data('optionsvisible', last);
 }
 
@@ -870,7 +887,7 @@ function getSingleOptionImageSet($option, filtername){
         var selectname = $option.parent().attr('name');
         var optionval = $option.val();
         $option.parent().attr('disabled', true);
-        var serialform = $('#mainform').serialize()
+        var serialform = $('#mainform').serialize();
         $option.parent().attr('disabled', false);
 
         var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
@@ -914,7 +931,7 @@ function getSingleOptionImageSet($option, filtername){
                 }
 
                 dd.detach();
-                presetSelections(selectname)
+                presetSelections(selectname);
             });
         }
 }
@@ -922,8 +939,8 @@ function getSingleOptionImageSet($option, filtername){
 function presetSelections(selectname){
     //grabs he highlighted options from the main form and selects them in the visual picker body.
     $('select[name="'+selectname+'"] option:selected').each(function(){
-        $('.pickerbody').find('input[value='+$(this).val()+']').prop('checked',true)
-    })
+        $('.pickerbody').find('input[value='+$(this).val()+']').prop('checked',true);
+    });
     $('.pickerbody input:checked').closest('.pickerItem').addClass('pickerItemSelected').removeClass('pickerItemNotSelected');
 }
 
@@ -962,7 +979,7 @@ function mediumImageHover(){
 
             //check if src is from a from a detail page or from a results page
             var src = ($(this).filter('[itemprop]').length == 1)? this.src : $(this).attr('zoomimg');  
-            $('#mzoomie').attr('src', src)
+            $('#mzoomie').attr('src', src);
             $('#mzoomie').show().position({
                 'my': 'left top',
                 'at': 'left bottom',
@@ -993,7 +1010,7 @@ function addColumnMath(){
     setTimeout(addColumnMathDialog, 3000);
     $('#doMath').click(function(e){
         _log('ready to do math', true);
-        $('#colMathDialog').dialog("open")
+        $('#colMathDialog').dialog("open");
         e.preventDefault();
     });
     _log('addColumnMath() End',DLOG);
@@ -1110,7 +1127,7 @@ function addMathCol(){
                     if(operator == 'sub'){
                         finalNum = firstNum.sub(secondNum);
                     }
-                        finalNum = finalNum.toPrec(.000001);
+                        finalNum = finalNum.toPrec(0.000001);
                 }catch(err){
                     console.log(err, "not compatible with ", operator);
                     finalNum = 'NaN';
@@ -1118,7 +1135,7 @@ function addMathCol(){
                 $(this).find('td').eq(scol).after('<td class="mathcol">'+finalNum +'</td>');
             }
             else{
-                console.log(firstNum, secondNum, ' changing finalNum to NaN')
+                console.log(firstNum, secondNum, ' changing finalNum to NaN');
                 finalNum = 'NaN';
                 $(this).find('td').eq(scol).after('<td class="mathcol">'+'NaN'+'</td>');
             }
@@ -1140,7 +1157,7 @@ function preProcessForQty($elem){
 
         if($elem.hasClass('CLS 1')){
             //console.log('type = resistance');
-            parsableText = etext + 'Ohm'
+            parsableText = etext + 'Ohm';
         }else if ($elem.hasClass('unitprice') || $elem.hasClass('priceme')){
             //console.log('type = price')
             parsableText = etext.split('@')[0] + ' USD';
@@ -1820,9 +1837,38 @@ function wrapFilterTable(){
         //$('#selectboxdiv').removeClass('morefilters lessfilters');
     }
 
-    location.assign("javascript:setupAttForm();void(0)");
-
+    setupAttForm();
+    // setTimeout(function(){location.assign("javascript:setupAttForm();void(0)")},8000);
+    // location.assign("javascript: $('content').empty(); void(0);");
     _log('wrapFilterTable() End',DLOG);
+}
+
+function setupAttForm() {
+	//ripped right from digikey
+    var f = $('[name="attform"]');
+    var summaryUrl='/product-search/summary/en';
+    f.contextId = 0;
+    f.updateEnabled = true;
+    f.oldRecordCount = $('.matching-records').html();
+    f.resetRecordCount = function () { $('.matching-records').html(f.oldRecordCount); f.find(":submit").each(function () { this.disabled = false; }); }
+    f.updateRecordCount = function () {
+        if (this.updateEnabled) {
+            this.contextId++;
+            $.ajax({
+                type: 'POST',
+                url: summaryUrl,
+                data: $(this).serialize() + "&contextId=" + this.contextId,
+                timeout: 3000,
+                success: function (data, status) { if (data.contextId == f.contextId) $('.matching-records').html(data.msg); f.find(":submit").each(function(){this.disabled = !data.nMatches;}); },
+                error: function () { f.resetRecordCount(); f.updateEnabled = false; }
+            });
+        }
+    }
+    f.bind('reset', function () { f.resetRecordCount(); });
+    f.find('input:not(:reset)').click(function () { f.updateRecordCount(); });
+    //f.find('select').change(function () { f.updateRecordCount(); });
+    f.find('select').each(function () { this.onchange = function () { f.updateRecordCount(); } });
+    f.updateRecordCount();
 }
 
 function squishedFilters(){
@@ -1877,12 +1923,36 @@ function formatIndexResultsPage(){
         addCategorySprites2();
 
         addToTopButton();
+        addLearnMore();
         $('#content').css({'margin':'0px','padding':'0px 10px 10px 10px'});// for the sidebar separator
         // setTimeout(function(){$('#headKeySearch').focus();}, 50);  //for some reason it looks like this takes 100ms+ to execute .focus
 
         _log('formatIndexResultsPage() End',DLOG);
     }
 }
+
+function addLearnMore(){
+	var learnMoreCatList = [
+		{
+			'category': 'Capacitors',
+			'link': 'https://eewiki.net/display/Motley/Capacitors',
+			'text': 'Learn More About Capacitors'
+		}
+	];
+
+	var learnMoreFamList = [
+		{
+			"family": "Aluminum Capacitors",
+			"famid": "''"
+		}
+	];
+	learnMoreCatList.forEach(function(el, idx, arr){
+		$('#'+el.category).find('.piThumbIcons').before('<a style=" margin-right:20px; margin-left:auto; font-size:14px; color:red;" href="'+el.link+'">Learn More About '+el.category+'</a>');
+	})
+}
+
+
+
 
 function addSideIndex(productTree){
     _log('addSideIndex() Start',DLOG);
@@ -2044,7 +2114,8 @@ function storeProductIndexTree(){
             container.push({
                 'category': oneCategory.find('.catfiltertopitem').text(), 
                 'catlink': oneCategory.find('.catfiltertopitem a').attr('href'), 
-                'families': familyTree
+                'families': familyTree,
+                'new': parseInt(oneCategory.find('.newProductCategory').text().replace('-',''))
             })  ;
         });
         //console.log(container);
@@ -2156,16 +2227,31 @@ function buildCategoryItem(catItem, exampleFamilyImages){
     // _log('newprod1'+catItem.category)
     var fams = catItem.families;
     var htmltext = '';
+    var rettext = ';'
     for(var i in fams){
         htmltext += buildFamilyItemHTML(fams[i], catSelector, exampleFamilyImages);
     }
     // $('#cat-'+catSelector).append(htmltext);
     // _log('newprod2')
-        var x = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
-        '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a></div>'+
-        '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
-        '</div> ';
-    return x;
+
+    if(catItem.catlink == undefined){
+    	catItem.catlink = '';
+        rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
+	    '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a> </div>'+
+	    '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
+	    '</div> ';	
+    }else{
+	    var queryCheckedURL = (catItem.catlink.indexOf('?') != -1) ? 
+	                                            (catItem.catlink + '&newproducts=1') : 
+	                                            (catItem.catlink + '?newproducts=1');
+	    rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
+	    '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a> <a style="font-size: 14px; padding-left:50px;" href="'+queryCheckedURL+'"> ('+catItem.new+' New Products)</a></div>'+
+	    '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
+	    '</div> ';
+    	
+    }
+
+    return rettext;
 }
 
 function buildFamilyItemHTML(fam, catSelector, exampleFamilyImages){
@@ -2449,7 +2535,7 @@ function addIndexPicPrev(){
                                             ($(this).attr('href') + '?stock=1&pageSize=100&akamai-feo=off');
                     var onlink = $(this);
                         
-                    $('.picPrevBody').html('** loading pictures**<br><div class=loader />')
+                    $('.picPrevBody').html('** loading pictures**<br><div class=loader />');
 
                     if(sessionStorage.getItem(queryCheckedURL) == undefined){
                         $('.picPrevBody').load(queryCheckedURL + ' img.pszoomer', function() {
@@ -2477,7 +2563,7 @@ function addIndexPicPrev(){
                 }
             });
             // _log('tooltipster',DLOG);
-        },1000)
+        },1000);
     }
     _log('addIndexPicPrev() End',DLOG);
 }
@@ -2485,13 +2571,17 @@ function addIndexPicPrev(){
 function formatDetailPage(){
     if($('#reportpartnumber').length){
         _log('formatDetailPage() Start',DLOG);
-        var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
+        // var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
+        var dataTable = $('.attributes-table-main').find('table:first');
         //addAssProdLinkToFilters();
         ap.addAssociatedProductViewer();
         addReverseFiltering(dataTable);
         addToTopButton();
 
         addPriceBreakHelper();
+        
+        addDetailPageEasyInfoCopy($('#content'));
+
 
         addDataSheetLoader();
         // addDashNDHover();
@@ -2562,32 +2652,190 @@ function preFormatDetailPage(){
 }
 
 
-function addDetailPageInfoCopy($pageobject){
-    var info = {}
-    info.image = $pageobject.find('img[itemprop=image],img[src*=nophoto]').css({'width': '48px', 'height': '48px'});
-    info.getMPN = $pageobject.find('h1[itemprop=model]').text();
-    info.getManufacturer = $pageobject.find('h2[itemprop=manufacturer]').text(); //could also do contents()
-    info.getDescription = $pageobject.find('td[itemprop=description]').text();
-    info.getPackaging = $pageobject.find('.attributes-table-main a[href*="Standard%20Packaging%20Help"]').last().closest('tr').find('td').text();
-    info.getUnitPrice = $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(1)').contents();
-    info.getQuantityAvailable = $pageobject.find('#quantityavailable').html().split('<br>')[0];
-    info.getMinQuantity = $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(0)').text();
+function addDetailPageEasyInfoCopy($pageobject){
+	$('.attributes-table-main form:last').after('<button class="easyCopy pure-button">Easy Info Copy</button>');
+	$('#content').after('<div id="easyCopyDialog" class="firstopen" style="display:none;">'+
+		'<div class="copytablediv">Click and drag headers to choose order.<br><table id="copytable" class="gray"><thead><tr></tr></thead><tbody><tr></tr></tbody></table></div>'+
+		'<textarea style="width:100%; height:150px;  overflow:scroll;" class="copytext"></textarea> <div style="float:right;">Ctrl+C to copy, then paste into spreadsheet</div>'+
+		'<div class="includeInfo" style="margin-top:5px;">Desired Columns<br></div>'+
+		'</div>');
+
+	$('.easyCopy').on('click', function(){		
+		if($('#easyCopyDialog').hasClass('firstopen')){  // only make the dialog as needed.
+			//init and open dialog
+			$('#easyCopyDialog').removeClass('firstopen');
+			$('#easyCopyDialog').dialog({
+                autoOpen: true,
+                resizable: false,
+                // draggable: false,
+                height:600,
+                width:'80%',
+                modal: true,
+                buttons: {
+                    "Close": function() {
+                        $(this).css('color', 'lightgrey');
+                        $( this ).dialog( "close" );
+                    },
+                }
+            });
+
+			buildEazyCopyCheckboxes()
+			$('.copytext').select();
+		}else{
+			//just open dialog
+			$('#easyCopyDialog').dialog('open');
+		}
+	});
+
+}
+
+function buildEazyCopyCheckboxes(){
+
+	var info = getDetailPageInfo($('#content'));
+	var keys = Object.keys(info);
+	console.log('local')
+	var storedKeys = [];
+	var local = localStorage.getItem('copycheckboxes')
+	if(local == undefined || local == ''){
+		storedKeys = keys;
+		localStorage.setItem('copycheckboxes', JSON.stringify(keys));
+		console.log('storedKeys und', storedKeys);
+	}else{
+		storedKeys = JSON.parse(local);
+		console.log('storedKeys else', storedKeys);
+	}
+	//create checkboxes
+	keys.forEach(function(el,idx,array){
+		$('.includeInfo').append('<input id="c_'+el+'" class="css-checkbox copycheckboxes" style="z-index:2005; margin-right:10px;" type="checkbox"><label class="css-label" for="c_'+el+'">'+el+'</label><br>');
+	});
+	//populate checks
+	storedKeys.forEach(function(el,idx,array){
+		$('#c_'+el).prop('checked',true);
+	});
+
+	buildCopyTable(storedKeys);
+
+	//event
+	$('.copycheckboxes').change(function() {
+		var fullinfo = getDetailPageInfo($('#content'));
+		var limitedKeys = [];
+		var localKeys = JSON.parse(localStorage.getItem('copycheckboxes'));
+		var sortedKeys = [];
+		$('.copycheckboxes:checked').each(function(){
+			limitedKeys.push(this.id.replace('c_',''));
+		});
+
+		localKeys.forEach(function(el,idx,arr){
+			if(limitedKeys.indexOf(el) !== -1){
+				sortedKeys.push(el);
+			}
+		});
+
+		limitedKeys.forEach(function(el,idx,arr){
+			if(sortedKeys.indexOf(el) == -1){
+				sortedKeys.push(el);
+			}
+		});
+
+		localStorage.setItem('copycheckboxes', JSON.stringify(sortedKeys));
+		buildCopyTable(sortedKeys);
+	});
+
+}
+
+function buildCopyTable(desiredkeys){
+	$('#copytable tr').empty();
+	var info = getDetailPageInfo($('#content'));
+	var keys = Object.keys(info);
+
+	// console.log('desiredkeys', );
+	if(desiredkeys == undefined || desiredkeys == []){
+		desiredkeys = Object.keys(info);
+	}
+	
+	desiredkeys.forEach(function(el,idx,array){
+			$('#copytable thead tr:first').append('<th class="i_'+el+'">'+el+'</th>');
+			$('#copytable tbody tr:first').append('<td>'+info[el]+'</td>');
+	});
+
+	buildCopyText(getDetailPageInfoFromTable());
+
+	$('#copytable').dragtable({stop:function(){
+		var neworder = getDetailPageInfoFromTable();
+		var fullinfo = getDetailPageInfo($('#content'));
+		localStorage.setItem('copycheckboxes', JSON.stringify(neworder));
+		buildCopyText(neworder);
+	}});
+	//$('#copytable').change();
+}
+
+function buildCopyText(oKeys){
+	var info = getDetailPageInfo($('#content'));
+	$('.copytext').text('');
+	if (oKeys==undefined){
+		oKeys = Object.keys(info);  //order is not guaranteed! don't care for now.
+	}
+
+	//KEEP needed to add headings for spreadsheet
+    // oKeys.forEach(function(el, idx, array){
+    // 	$('.copytext').text($('.copytext').text()+el+'\t');
+    // });
+    // $('.copytext').text($('.copytext').text()+'\n');
+
+    oKeys.forEach(function(el, idx, array){
+    	$('.copytext').text($('.copytext').text()+info[el]+'\t');
+
+    });
+  	$('.copytext').text($('.copytext').text()+'\n');
+
+	$('.copytext').select();
+
+}
+
+function getDetailPageInfoFromTable(){
+	var keyorder = [];
+	$('#copytable th').each(function(){
+		keyorder.push($(this).attr('class').replace('i_',''));
+	})
+	console.log(keyorder);
+	return keyorder;
+}
+
+function getDetailPageInfo($pageobject){
+
+    var info = {};
+    info.MPN = $pageobject.find('h1[itemprop=model]').text();
+    info.DKPN = $pageobject.find('#reportpartnumber').text();
+    info.Manufacturer = $pageobject.find('h2[itemprop=manufacturer]').text(); //could also do contents()
+    info.Description = $pageobject.find('td[itemprop=description]').text();
+    info.Packaging = $pageobject.find('.attributes-table-main a[href*="Standard%20Packaging%20Help"]').last().closest('tr').find('td').text();
+    info.UnitPrice = $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(1)').text();
+    info.PriceBreak = $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(0)').text();
+    // info.PriceBreakTable = getPricingTable($('#pricing'));
+    info.DatasheetLink = $pageobject.find('.lnkDatasheet:first').attr('href');
+    info.Image = $pageobject.find('img[itemprop=image],img[src*=nophoto]').attr('src');
+    info.QuantityAvailable = $pageobject.find('#quantityavailable').text().split('<br>')[0];
+    info.MinQuantity = $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(0)').text();
+    info.ROHS = $pageobject.find('.product-details tr:last').text();
     return info;
 }
-
-function getdetailPageInfo($pageobject){
-
-}
       
+function getPricingTable($priceTable){
+	var priceData = [];
+	// console.log($priceTable);
+	if($priceTable.filter(':contains(Call)').length === 0){
+		$priceTable.find('tr:gt(0)').each(function(){
+			// console.log($(this).text());
+			// console.log($(this).find('td:eq(0)').text(), $(this).find('td:eq(1)').text());
+			priceData.push([$(this).find('td:eq(0)').text(), $(this).find('td:eq(1)').text()]);
+		});
+		return priceData;
+	}else{
+		return priceData;
+	}
+}         
          
          
-         
-         
-         
-         
-    
-
-
 
 //TODO finish
 function addFootprintSearch(){
@@ -2596,12 +2844,14 @@ function addFootprintSearch(){
     // var url = 'http://www.snapeda.com/api/v1/parts/search?q=NCP2820MUTBG&manufacturers=ON%20Semiconductor&include=cad';
     // var url = 'http://www.snapeda.com/api/v1/parts/search?q='+encodeURIComponent(manPN)+'&manufacturers='+encodeURIComponent(manufacturer)+'&include=cad');
     var url = 'http://www.snapeda.com/api/v1/parts/search?q='+encodeURIComponent(manPN)+'&manufacturers='+encodeURIComponent(manufacturer)+'&include=cad';
+
+
     $('#content').append('<div id="sometestdiv" style="display:none;"/>');
     $('#sometestdiv').gmload(url, function(data){
         var results = JSON.parse(data.response);
-        console.log(results, results.results[0].manufacturer);
+        console.log('snapeda', results, results.results[0].manufacturer);
         if (results.error == null){
-            console.log(results.results[0].has_footprint, results.results[0].has_symbol, results.results[0].manufacturer)
+            console.log(results.results[0].has_footprint, results.results[0].has_symbol, results.results[0].manufacturer);
         }
     });
 
@@ -2622,7 +2872,7 @@ function addDetailHoverMainImage(){
         // iconTouch: true,
         theme: 'tooltipster-shadow',
         functionReady: function(origin){ $('.detailHoverBody').html('<img src="'+$(this).parent().attr('href')+'">'); origin.tooltipster('reposition');}
-    })
+    });
 }
 
 function add3dCad(){
@@ -2813,7 +3063,7 @@ function addPriceBreakHelper(){
                 }
             });
     }
-    _log('addPriceBreakHelper() Start',DLOG);
+    _log('addPriceBreakHelper() End',DLOG);
 }
 
 function simpleInternationalParse(text, isEuro){
@@ -2868,9 +3118,8 @@ function dataSheetButtonAction(){
 function addReverseFiltering($tableToFilter){
     _log('addReverseFiltering() Start',DLOG);
     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
-    var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("OtherNames")').eq(0);
+    var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("Other Names")').not('tr:contains("Application Note")').eq(0);
     var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());  //get the valid rows on which to add check boxes
-    
     formRowsTD.each(function(ind){
         if (ind==0){
             $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
@@ -2982,6 +3231,8 @@ function addStickyHeader () {
     $("#productTable thead").css('background-color', 'white');
     $('#productTable thead>tr:eq(1)').css('background-color','#e8e8e8');
     $('.stickyThead>tr:eq(1)').css('background-color','#e8e8e8');
+    $('.stickyThead').parent().css({'table-layout':'fixed'});
+
 }
 
 function CreateFloatingHeader() {
@@ -3179,7 +3430,7 @@ function addToTopButton(){
             easing: 'swing'
         }
         );  
-    })
+    });
 }
 
 function addChooserButtonAction(somespan, clickfunc){
@@ -3860,7 +4111,7 @@ function indexInstantFilter3(){
 
     if($('body.indexPage').length>0){
         $('#headKeySearch').keyup(function(){
-            var keywords = $(this).val().trim();
+            var keywords = $(this).val().trim().toLowerCase();
             var keywordarray = keywords.split(' ');
             var attrfilters = '';
             keywordarray.forEach(function(word){
@@ -4104,6 +4355,7 @@ function addBottomCompare(){
         //'background': 'white',
         'border-top': '3px solid red',
         'box-shadow': '0px -1px 2px 2px #888',
+        'z-index': '10'
     }).hide();
 
     $('#bottomCompare .close').click(function(){
@@ -4210,14 +4462,12 @@ function picsToAccel() {
             duration: 500,
             easing: 'swing', 
             complete: function(){
-            			if($(thishref).parent().parent().css('background-color') != 'lightcyan'){
-	                        $(thishref).parent().parent().css('background-color', '');
-	                        $(thishref).parent().parent().animate({
-	                            'backgroundColor': 'pink'
-	                        }, 500).animate({
-	                            'backgroundColor': 'lightcyan'
-	                        }, 1500);
-            			}
+                        $(thishref).parent().parent().css('background-color', '');
+                        $(thishref).parent().parent().animate({
+                            'backgroundColor': 'pink'
+                        }, 500).animate({
+                            'backgroundColor': 'lightcyan'
+                        }, 1500);
             }
         });
     });  
