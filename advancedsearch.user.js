@@ -38,7 +38,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.5.2
+// @version     3.6.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -184,10 +184,10 @@
 //3.5.1     fixed checkbox bug
 //3.5.2     delayed the init of settings box for speed, fixed table width issues.
 //3.6		fixed upper case issues with instant search, fixed compare z-level, replaced * and - text with name and title text
+// 			added learn more about capacitors link, fixed matching-records bug, added "new products" link
+//3.6.1		added image hover over supplier portal links, fixed the associated product view all links.
 
-//TODO add links to eewiki.net capacitor page
-//TODO easy info copy finish
-//TODO add copy info button on detail page, possibly filter results page
+//TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //TODO fix the breadcrumb hover from being placed above
 //TODO add a messages/update
@@ -198,11 +198,12 @@
 //TODO Add graphs to the show pricing curve, call all packaging types and plot in different colors.
 //TODO split family names on "\s-\s" and stick into subcats
 //TODO Toggle Hide filter block
-//TODO fix associated products hover 'add to cart' button
 //TODO add feature to re-search on "no results found" when in stock checkboxes are checked.
 //TODO check out IndexedDB for caching
 //TODO add footprints and symbols
 //TODO add a most recently visited/ most visited families feature to top of page (chris)
+//TODO add obsolete product direct subs to top of page PCC101CQCT-ND
+//TODO fuzzy similar to, start in opamps
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -406,7 +407,7 @@ function addCustomHeader(){
 
     // console.log('>>>>>>>>>>>>>>>>>tld', theTLD, ' gIndexLink ', gIndexLink, ' mydklink2 ', mydklink2);
     // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
-    $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>')
+    $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
     $('.mainFlexWrapper').append($('#content'));
     $('.dk-url-shortener').css({position:'fixed', right: '130px', top:'28px','z-index':'30'}); //move url shortener
 
@@ -634,7 +635,7 @@ function styleCheckboxes(){
 
     $('.filters-group label[for]').not('.css-label').each(function(){
         $(this).html($(this).text());
-    })
+    });
     $('.filters-group label[for]').not('.css-label').addClass('css-label');
 
     $('.filters-group').css({'padding-top':'3px'});
@@ -654,7 +655,7 @@ function formatFilterResultsPage(){
         $('a.altpkglink').hide();
         $('input[type=reset]').attr('value', 'Clear All').css('margin-left','10px');
 
-        $('#productTable').before('<div id="preProductTable"></div>')
+        $('#productTable').before('<div id="preProductTable"></div>');
         $('#preProductTable').append($('.results-per-page:first, .paging:first'));
         $('#preProductTable').append($('.download-table:first').css({'float':'','margin-left':'15px'}));
 
@@ -678,7 +679,7 @@ function formatFilterResultsPage(){
             setTimeout(function(){addPriceHover();}, 3000);
         }
 
-        setTimeout(function(){addStickyHeader()}, 2500);  // wait for the page native javascript to load then reapply modified code
+        setTimeout(function(){addStickyHeader();}, 2500);  // wait for the page native javascript to load then reapply modified code
 
         formatQtyBox();
         addColumnHider();
@@ -728,8 +729,16 @@ function formatFilterResultsPage(){
         // $('.ps-sortButtons').css('sortFocus');
         addVisualPicker();
         replaceStarDash();
+        addMorePartsToTable();
         _log('formatFilterResultsPage() End',DLOG);
     }
+}
+
+function addMorePartsToTable(){
+	$('.paging:last').append('<button id="addmoreparts">Show More Parts In Table</button>');
+	$('#addmoreparts').on('click', function(){
+		$();
+	});
 }
 
 function replaceStarDash(){
@@ -738,13 +747,13 @@ function replaceStarDash(){
 		$(this).find('option:lt(2)').each(function(){
 			if($(this).text().trim() == '-'){
 				$(this).text('- (N/A)');
-				$(this).attr('title', 'Parameter not found in datasheet')
+				$(this).attr('title', 'Parameter not found in datasheet');
 				thisSelect.append($(this));
 			}
 			thisSelect.append($(this).filter('[value=0]').text('*(TBD)').attr('title', 'Parameter To Be Completed Soon'));
 
-		})
-	})
+		});
+	});
 
 }
 
@@ -768,7 +777,7 @@ function addVisualPicker(){
                 '<button class="pure-button submitPickerForm" style="float:right; margin-right:20px;">Apply</button>'+
                 '<span class="pickerhelp2" style="float:right; margin-right:10px;"><i style="cursor:pointer;" class="fa fa-info-circle fa-lg"></i></span>'+
             '</div>'+
-        '</div>')
+        '</div>');
     var p = $('.pickerbody');
     $('.pickerhelp1').tooltipster({
         content: $('<span> The Add More Lines button is exists to limit the number of calls to the server at one time in this experimental feature.</span>'),
@@ -894,7 +903,7 @@ function getSingleOptionImageSet($option, filtername){
         // console.log(mylink)
         // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
         var ddclass = 'store-'+optionval;
-        if ($('.'+ddclass).length == 0){
+        if ($('.'+ddclass).length === 0){
             $('#content').after('<div  class="'+ddclass+'" />');
             var dd = $('.'+ddclass);
 
@@ -1226,7 +1235,7 @@ function getNormalization(colNum){
 
 function mode(array){
     //stack overflow
-    if(array.length == 0)
+    if(array.length === 0)
         return null;
     var modeMap = {};
     var maxEl = array[0], maxCount = 1;
@@ -1850,7 +1859,7 @@ function setupAttForm() {
     f.contextId = 0;
     f.updateEnabled = true;
     f.oldRecordCount = $('.matching-records').html();
-    f.resetRecordCount = function () { $('.matching-records').html(f.oldRecordCount); f.find(":submit").each(function () { this.disabled = false; }); }
+    f.resetRecordCount = function () { $('.matching-records').html(f.oldRecordCount); f.find(":submit").each(function () { this.disabled = false; }); };
     f.updateRecordCount = function () {
         if (this.updateEnabled) {
             this.contextId++;
@@ -1863,11 +1872,11 @@ function setupAttForm() {
                 error: function () { f.resetRecordCount(); f.updateEnabled = false; }
             });
         }
-    }
+    };
     f.bind('reset', function () { f.resetRecordCount(); });
     f.find('input:not(:reset)').click(function () { f.updateRecordCount(); });
     //f.find('select').change(function () { f.updateRecordCount(); });
-    f.find('select').each(function () { this.onchange = function () { f.updateRecordCount(); } });
+    f.find('select').each(function () { this.onchange = function () { f.updateRecordCount(); }; });
     f.updateRecordCount();
 }
 
@@ -1934,10 +1943,15 @@ function formatIndexResultsPage(){
 function addLearnMore(){
 	var learnMoreCatList = [
 		{
-			'category': 'Capacitors',
-			'link': 'https://eewiki.net/display/Motley/Capacitors',
-			'text': 'Learn More About Capacitors'
-		}
+            'category': 'Capacitors',
+            'link': 'https://eewiki.net/display/Motley/Capacitors',
+            'text': 'Learn More About Capacitors'
+        },
+        {
+			'category': 'Programmers, Development Systems',
+			'link': 'http://www.digikey.com/en/resources/development-tools',
+			'text': 'Development Tools Selector Guide'
+		},
 	];
 
 	var learnMoreFamList = [
@@ -1947,12 +1961,9 @@ function addLearnMore(){
 		}
 	];
 	learnMoreCatList.forEach(function(el, idx, arr){
-		$('#'+el.category).find('.piThumbIcons').before('<a style=" margin-right:20px; margin-left:auto; font-size:14px; color:red;" href="'+el.link+'">Learn More About '+el.category+'</a>');
-	})
+		$('#'+selectorEscape(el.category)).find('.piThumbIcons').before('<a style=" margin-right:20px; margin-left:auto; font-size:14px; color:red;" target="_blank" href="'+el.link+'">'+el.text+'</a>');
+	});
 }
-
-
-
 
 function addSideIndex(productTree){
     _log('addSideIndex() Start',DLOG);
@@ -2067,7 +2078,6 @@ function handleTopResults3(trdata){
     _log('handleTopResults3() End',DLOG);
 }
 
-
 function getTopResultsData(){
     _log('getTopResultsData() Start',DLOG);
     var trdata =[];
@@ -2115,7 +2125,7 @@ function storeProductIndexTree(){
                 'category': oneCategory.find('.catfiltertopitem').text(), 
                 'catlink': oneCategory.find('.catfiltertopitem a').attr('href'), 
                 'families': familyTree,
-                'new': parseInt(oneCategory.find('.newProductCategory').text().replace('-',''))
+                'new': parseInt(oneCategory.find('.newProductCategory').text().replace('-','')) || 0
             })  ;
         });
         //console.log(container);
@@ -2144,7 +2154,6 @@ function getFamilyItemFromListElem(item, quantitytest){
         'famId':  famID
     };
 }
-
 
 function augmentHref(catfilterlinkhref, akamai, quantity){
     var queryCheckedURL = catfilterlinkhref;
@@ -2179,10 +2188,7 @@ function newProductIndexDiv(productTree){
     $('#productIndexDiv').append(ht);
 
     _log('newProductIndexDiv() End',DLOG);
-
 }
-
-
 
 function addIndexLazyLoad(){
     _log('addIndexLazyLoad() Start',DLOG);
@@ -2227,7 +2233,7 @@ function buildCategoryItem(catItem, exampleFamilyImages){
     // _log('newprod1'+catItem.category)
     var fams = catItem.families;
     var htmltext = '';
-    var rettext = ';'
+    var rettext = ';';
     for(var i in fams){
         htmltext += buildFamilyItemHTML(fams[i], catSelector, exampleFamilyImages);
     }
@@ -2245,8 +2251,11 @@ function buildCategoryItem(catItem, exampleFamilyImages){
 	                                            (catItem.catlink + '&newproducts=1') : 
 	                                            (catItem.catlink + '?newproducts=1');
 	    rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
-	    '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a> <a style="font-size: 14px; padding-left:50px;" href="'+queryCheckedURL+'"> ('+catItem.new+' New Products)</a></div>'+
-	    '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
+		    '<div class="catTitle">'+
+		    	'<a href="'+catItem.catlink+'">'+catItem.category+'</a> '+
+		    (catItem.new	? '<a style="font-size: 14px; padding-left:50px;" href="'+queryCheckedURL+'"> ('+catItem.new+' New Products)</a>' : '')+
+		    '</div>'+
+		    '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
 	    '</div> ';
     	
     }
@@ -2575,6 +2584,7 @@ function formatDetailPage(){
         var dataTable = $('.attributes-table-main').find('table:first');
         //addAssProdLinkToFilters();
         ap.addAssociatedProductViewer();
+        apOld.addAssociatedProductViewer();
         addReverseFiltering(dataTable);
         addToTopButton();
 
@@ -2593,7 +2603,9 @@ function formatDetailPage(){
 
         $('td:contains("obsolete") p').css('background-color','#FF8080'); // changes the color of the obsolete callout
         // $('#content').css({'position':'relative', 'top': '45px'});
+        detailPageManufacturerHover();
 
+        // newAssociatedProducts();
 
         // addFootprintSearch()
         _log('formatDetailPage() End',DLOG);
@@ -2651,6 +2663,23 @@ function preFormatDetailPage(){
     }
 }
 
+function detailPageManufacturerHover(){
+	$('h2[itemprop=manufacturer] a').tooltipster({
+        content: $('<div class=logoHover> <div class=logoHoverContent> </div><div class=logoHoverTitle></div></div>'),
+        trigger: 'hover',
+        delay: 350,
+        // contentCloning: true,
+        position: 'bottom',
+        interactive: true,
+        // positionTracker: true,
+        offsetX: -30,
+        onlyOne: true,
+        // minWidth: '90%',
+        // iconTouch: true,
+        theme: 'tooltipster-shadow',
+        functionReady: function(someitem){$('.logoHoverContent').gmload($(someitem).attr('href')+ ' #logo');}
+    });
+}
 
 function addDetailPageEasyInfoCopy($pageobject){
 	$('.attributes-table-main form:last').after('<button class="easyCopy pure-button">Easy Info Copy</button>');
@@ -2679,7 +2708,7 @@ function addDetailPageEasyInfoCopy($pageobject){
                 }
             });
 
-			buildEazyCopyCheckboxes()
+			buildEazyCopyCheckboxes();
 			$('.copytext').select();
 		}else{
 			//just open dialog
@@ -2693,16 +2722,16 @@ function buildEazyCopyCheckboxes(){
 
 	var info = getDetailPageInfo($('#content'));
 	var keys = Object.keys(info);
-	console.log('local')
+	// console.log('local');
 	var storedKeys = [];
 	var local = localStorage.getItem('copycheckboxes')
 	if(local == undefined || local == ''){
 		storedKeys = keys;
 		localStorage.setItem('copycheckboxes', JSON.stringify(keys));
-		console.log('storedKeys und', storedKeys);
+		// console.log('storedKeys und', storedKeys);
 	}else{
 		storedKeys = JSON.parse(local);
-		console.log('storedKeys else', storedKeys);
+		// console.log('storedKeys else', storedKeys);
 	}
 	//create checkboxes
 	keys.forEach(function(el,idx,array){
@@ -2796,7 +2825,7 @@ function getDetailPageInfoFromTable(){
 	var keyorder = [];
 	$('#copytable th').each(function(){
 		keyorder.push($(this).attr('class').replace('i_',''));
-	})
+	});
 	console.log(keyorder);
 	return keyorder;
 }
@@ -3114,7 +3143,8 @@ function dataSheetButtonAction(){
     }
 }
 
-
+//TODO fuzzy reverse filtering /similar to  Start with Opamps
+// find numeric values
 function addReverseFiltering($tableToFilter){
     _log('addReverseFiltering() Start',DLOG);
     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
@@ -3207,11 +3237,10 @@ function appendURLParam(href, param, value){
     _log('appendURLParam() End',DLOG);
 }
 
-
 function getFamilyLink(){
     _log('getFamilyLink() Start',DLOG);
     var myhref = $('.seohtagbold').find('a:last').attr('href');
-    var mainform = $('#mainform')
+    var mainform = $('#mainform');
     var modifiers = mainform.find('input[type=checkbox], input[name=quantity], input[name=ColumnSort]').serialize()+'&akamai-feo=off';
 
     _log('getFamilyLink() End',DLOG);
@@ -3472,6 +3501,7 @@ function addParamWizzards(){
                             //['Number of Positions',   function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
                             //['Contact Type',      function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
                             ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
@@ -3672,13 +3702,13 @@ function isInRange(userinput, teststring){
     if(secondval > firstval) {
         if(firstval <= userinput && userinput <= secondval) {
             // optElem.prop('selected', true);
-            return true
-        }else {return false}
+            return true;
+        }else {return false;}
     } else {
         if(secondval <= userinput && userinput <= firstval) {
             // optElem.prop('selected', true);
-            return true
-        }else {return false}
+            return true;
+        }else {return false;}
     }
 }
 
@@ -3740,7 +3770,7 @@ function checkboxHelper(name, $selectElem){
         //_log(masterarray);
     });
 
-    masterarray = $.map(masterarray, function(e){return e.trim()});
+    masterarray = $.map(masterarray, function(e){return e.trim();});
 
     masterarray = uniqueArray(masterarray);
 
@@ -3901,7 +3931,7 @@ function addCategorySprites2(){
         //**************************************
     // });
     $('.catTitle').each(function(){
-        $(this).prepend('<span class="catSprite2 '+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
+        $(this).prepend('<span class="catSprite2 '+$(this).find('a:first').text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
                 '" >'+
                 // '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
                 '</span>' 
@@ -4128,7 +4158,7 @@ function indexInstantFilter3(){
                 $('.famItemContainer').removeClass('hideme');
                 $('.famItemContainer').closest('.catContainer').show();
             }
-            console.log('hi keywords here')
+            console.log('hi keywords here');
         });
     }
     _log('indexInstantFilter3() End',DLOG);
@@ -4295,7 +4325,7 @@ function hideIdenticalColumns(){
             $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
             $('#showCols').addClass('myRedButton');   
         }
-    })
+    });
 }
 
 function addPartCompare(){
@@ -4383,7 +4413,7 @@ function addPriceHover(){
         // iconTouch: true,
         theme: 'tooltipster-shadow',
         functionReady: loadPrices
-    })
+    });
 
     _log('addPriceHover() End',DLOG);
 }
@@ -4406,7 +4436,9 @@ function combinePN(){
     var mfpnIndex = productTable.find('th').index($('th.mfg-partnumber')) + 1;
 
     productTable.find('td:nth-child(' + mfpnIndex + ')').each(function() {
-        $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().text());
+        // $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().text());
+        $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().html());
+        $(this).find('a:last').css({'color':'black'}).attr('title','Manufacturer Landing Page');
         //$(this).css('white-space', 'nowrap');
         
     });
@@ -4427,8 +4459,32 @@ function combinePN(){
 
     // $('.quantity-form').css({'position':'relative', 'left': ($('.qtyAvailable:first').position().left-19)+'px'});// hack to fix position
 
+    // Take care of NEW and Rohs icons
+    $('.product-indicator-collection').css({'opacity':'.25', 'float':'right'});
+
     // console.log(productTable);
+    addHoverLogo();
     _log('combinePN() End',DLOG);
+}
+
+function addHoverLogo(){
+	// $('[itemprop="url]')
+// $('span[itemprop="name"]').hide()
+	$('#productTable a[href*="Suppliers"]').tooltipster({
+        content: $('<div class=logoHover> <div class=logoHoverContent> </div><div class=logoHoverTitle></div></div>'),
+        trigger: 'hover',
+        delay: 350,
+        // contentCloning: true,
+        position: 'bottom',
+        interactive: true,
+        // positionTracker: true,
+        offsetX: -30,
+        onlyOne: true,
+        // minWidth: '90%',
+        // iconTouch: true,
+        theme: 'tooltipster-shadow',
+        functionReady: function(someitem){$('.logoHoverContent').gmload($(someitem).attr('href')+ ' #logo');}
+    });
 }
 
 function picsToAccel() {
@@ -4565,7 +4621,7 @@ function addBreadcrumbHover(){
         // iconTouch: true,
         theme: 'tooltipster-shadow',
         functionReady: loadBreadcrumbHover
-    })
+    });
 
     _log('addBreadcrumbHover() End',DLOG);
 }
@@ -4604,8 +4660,24 @@ var detailPageInfo = (function(){
     };
 })();
 
+var detailPageInfo2 = (function(){
+    return{  
+        getImage : function(pageobject){return '<img width="48px" height="48px" src="'+pageobject.imageLink+'">';},
+        getMPN : function(pageobject){return pageobject.manufacturerPartNumber;},
+        getManufacturer : function(pageobject){return pageobject.manufacturer;}, //could also do contents()
+        getDescription : function(pageobject){return pageobject.description;},
+        getPackaging : function(pageobject){return pageobject.packageType;},
+        getUnitPrice : function(pageobject){return pageobject.unitPrice;},
+        getQuantityAvailable : function(pageobject){return pageobject.quantityAvailable;},
+        getMinQuantity : function(pageobject){return pageobject.minimumOrderQuantity;},
+        getDetailLink : function(pageobject){return pageobject.detailLink;},
+        getDkpn : function(pageobject){return pageobject.reportPartNumber;},
+        getNonStock : function(pageobject){return pageobject.nonStock;}
+    };
+})();
+
 // associated parts function.
-var ap = (function(){
+var apOld = (function(){
     var columnList = [
         {'name':'Image', 'f': detailPageInfo.getImage,},
         {'name':'Manufacturer Part Number', 'f':detailPageInfo.getMPN},
@@ -4632,7 +4704,7 @@ var ap = (function(){
         var itemSel = selectorEscape(item.title)
         
         $('.attributes-optional-table').append(
-            '<div id="asd-id-'+itemSel+'" class="asd-container panel panel-default">'+
+            '<div id="asd-id-'+itemSel+'" class="asd-containerOld panel panel-default">'+
                 '<div class="asd-title panel-heading">'+item.title+' ('+ item.list.length +')</div>'+
                 '<div class="asd-content panel-body">'+
                 '<table id="table-'+itemSel+'" class="asd-table tstripe"> '+
@@ -4745,7 +4817,7 @@ var ap = (function(){
 
        $('body').append('<img border="0/" src="" style="display: none; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
 
-        $('.asd-container').hoverIntent({
+        $('.asd-containerOld').hoverIntent({
             over: function () {
                 $('#pszoomie2').attr('src','');
                 $('#pszoomie2')
@@ -4770,13 +4842,13 @@ var ap = (function(){
 
     addAssociatedProductViewer = function (){
         var boxDataArray = [];
-        $('.expander-div-10').each(function(){
-            boxDataArray.push({
-                'title': $(this).closest('tr').find('th').text(), 
-                'list':getAssociationListFromElem($(this))
-            });
-            $(this).closest('tr').hide()
-        });
+        // $('.expander-div-10').each(function(){
+        //     boxDataArray.push({
+        //         'title': $(this).closest('tr').find('th').text(), 
+        //         'list':getAssociationListFromElem($(this))
+        //     });
+        //     $(this).closest('tr').hide()
+        // });
 
         $('.expander-div-5').each(function(){
             if($(this).find('.product-details-also-evaluated').length < 1){
@@ -4796,7 +4868,285 @@ var ap = (function(){
     return {'addAssociatedProductViewer': addAssociatedProductViewer};
 })();
 
+var ap= (function(){
+    var columnList = [
+        {'name':'Image', 'f': detailPageInfo2.getImage,},
+        {'name':'Manufacturer Part Number', 'f':detailPageInfo2.getMPN},
+        {'name':'Manufacturer', 'f':detailPageInfo2.getManufacturer},
+        {'name':'Description', 'f':detailPageInfo2.getDescription},
+        // {'name':'Packaging', 'f':detailPageInfo2.getPackaging},
+        {'name':'Unit Price', 'f':detailPageInfo2.getUnitPrice},
+        {'name':'Quantity Available', 'f':detailPageInfo2.getQuantityAvailable},
+        // {'name':'Min Quantity', 'f':detailPageInfo2.getMinQuantity}
+    ];
+    var assTypes = [
+        "MatingProducts",
+        "AssociatedProduct"
+    ];
 
+    // reference: description, detailLink, imageLink, manufacturer, manufacturerPartNumber, minimumOrderQuantity, 
+    // nonStock, packageType, quantityAvailable, reportPartNumber, unitPrice
+    var cLen = columnList.length;
+    var perPage = 5;
+
+
+
+    var buildProductViewerBox = function(associationSet){
+        var firstRowHTML = '';
+        for (var z=0; z<columnList.length; z++){
+            firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
+        }
+        var allRows = '';
+        for(var z=0; z<associationSet.list.length; z++){
+            allRows = allRows + buildRowHTML(associationSet.list[z]);
+        }
+        var escTitle = selectorEscape(associationSet.title);
+        
+        $('.attributes-optional-table').append(
+            '<div id="asd-id-'+escTitle+'" class="asd-container panel panel-default">'+
+                '<div class="asd-title panel-heading">'+associationSet.title+' ('+ associationSet.list.length +')</div>'+
+                '<div class="asd-content panel-body">'+
+                '<table id="table-'+escTitle+'" class="asd-table tstripe"> '+
+                    '<thead><tr>'+firstRowHTML+'</tr></thead>'+
+                    '<tbody>'+allRows+'</tbody>'+
+                '</table>'+
+                '</div>'+
+            '</div>'
+        );
+        
+        $('#asd-id-'+escTitle).data('associationSetlist', associationSet.list);
+        
+        $('#table-'+escTitle).find('tbody tr').each(function(ind){
+            $(this).data('linkobj',associationSet.list[ind]);
+            $(this).data('boxSel', $('#asd-id-'+escTitle));
+        });
+        
+        $('#table-'+ escTitle).find('tbody>tr').slice(perPage).hide();
+        if (associationSet.list.length > perPage){
+            addPageination(escTitle, associationSet.list.length);
+        }
+        addFilterAllForm($('#asd-id-'+escTitle), associationSet.viewAllLink, associationSet.list.length); //addback
+
+        var listlength = (associationSet.list.length >= perPage) ? perPage :associationSet.list.length;
+        for(var z=0; z<listlength; z++){
+            var associationSetData = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('linkobj');
+            var $boxSel = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('boxSel');
+            fillRow(associationSetData , $boxSel);
+        }
+
+    },
+
+    fillRow = function (itemData, $boxSel){
+        var rowSel = selectorEscape(itemData.manufacturerPartNumber);
+        var row = $('.'+rowSel);
+
+        for (var x=0; x<cLen; x++){
+            row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f(itemData));
+            if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+itemData.detailLink+'" />') ; }
+        }
+        row.addClass('filled');
+    },
+
+    addPageination = function (itemSel, listLen) {
+        $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
+                '<a href="#" class="first" data-action="first">&laquo;</a>'+
+                '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
+                '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
+                '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
+                '<a href="#" class="last" data-action="last">&raquo;</a>'+
+            '</div>');
+
+            $('.page-'+itemSel).jqPagination({
+                paged: function(page) {
+                    var $rows = $('#table-'+itemSel+' tbody > tr');
+                    $rows.hide()// do something with the page variable
+                    var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
+                    $showing.not('.filled').each(function(){
+                        var itemData = $(this).data('linkobj');
+                        var $boxSel = $(this).data('boxSel');
+                        fillRow(itemData, $boxSel)
+                        // getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
+                    })
+                }
+            });
+    },
+
+
+
+    buildRowHTML = function(item){
+        var row = "";
+        for (var i = 0; i < columnList.length; i++) {
+            row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
+        };
+        row = '<tr class="'+selectorEscape(item.manufacturerPartNumber)+'">' + row + '</tr>'
+        return row;
+    },
+
+
+    getAssociationListFromElem = function (parentElem){
+        var pnlinkarray = []
+        parentElem.find('.more-expander-item').each(function(){
+            pnlinkarray.push({
+                'href': $(this).find('a:first').attr('href'),
+                'pn': $(this).find('a:first').text()
+            });
+        });
+        console.log('>>>>>>>>>>>',pnlinkarray);
+        return pnlinkarray;
+    },
+
+    addFilterAllForm = function($boxSel,viewAllLink,listlength){
+        var pnlist = '';
+        // var itemlist = $boxSel.data('itemlist');
+        // itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
+        // console.log(pnlist);
+        var formHTML = '<div style="float:right;" id="'+$boxSel.attr('id')+'-link""><div style="clear:both; margin:0px 15px 1px 0px;">'+
+        '<a id="'+$boxSel.attr('id')+'-link"" href="'+viewAllLink+'">View All <span>'+listlength+'</span> </a>'+ '<input id="'+$boxSel.attr('id')+'-stock" type="checkbox" class="css-checkbox"><label class="css-label" for="'+$boxSel.attr('id')+'-stock">In Stock</label>'+
+            
+        '</div></div><div style="clear:both;"></div>';
+
+        $boxSel.find('.asd-content').append(formHTML);
+
+        $('#'+$boxSel.attr('id')+'-stock').data('allstocklink', viewAllLink)
+
+        $('#'+$boxSel.attr('id')+'-stock').click(function(){
+            if($(this).prop('checked') == true ){
+                console.log('ischecked')
+                $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink')+'&stock=1')
+            }else{
+                console.log('is not checked')
+                $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink'))
+            }
+            $(this).parent().parent().find('span').load($('#'+$boxSel.attr('id')+'-link a').attr('href')+' .matching-records:first', function(){
+                $(this).text($('.matching-records').text().split(':')[1])
+            })
+        });
+    },
+
+    addAssociatedImageHover = function(){
+        _log('associatedImageHover() Start',DLOG);
+
+       $('body').append('<img border="0/" src="" style="display: none; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
+
+        $('.asd-container').hoverIntent({
+            over: function () {
+                $('#pszoomie2').attr('src','');
+                $('#pszoomie2')
+                .attr('src', $(this).attr('src').replace('_tmb', '_sml'))
+                .show('fade', 200)
+                .position({
+                    my : 'right middle',
+                    at : 'left middle',
+                    of: $(this), 
+                    offset : '-10 0',
+                    collision : 'fit fit'
+                });
+            },
+            out: function () {
+                $('.pszoomie2').fadeOut(100);
+            },
+            'selector': '.col-Image img'
+        }
+        );
+        _log('associatedImageHover() End',DLOG);
+    },
+
+    addAssociatedProductViewer = function (){
+        var boxDataArray = [];
+        // $('.expander-div-10').each(function(){
+        //     boxDataArray.push({
+        //         'title': $(this).closest('tr').find('th').text(), 
+        //         'list':getAssociationListFromElem($(this))
+        //     });
+        //     $(this).closest('tr').hide()
+        // });
+
+        // $('.expander-div-5').each(function(){
+        //     if($(this).find('.product-details-also-evaluated').length < 1){
+        //         boxDataArray.push({
+        //             'title': $(this).parent().find('.beablocktitle').text().split('\n')[0], 
+        //             'list':getAssociationListFromElem($(this))
+        //         });
+        //     }
+        // });
+        // $('.attributes-optional-table .rd-extra-option').hide();
+
+
+
+        boxDataArray = getAllAssociations();
+        for (var i=0; i<boxDataArray.length; i++){
+            buildProductViewerBox(boxDataArray[i]);
+        }
+        addAssociatedImageHover();
+        $('.product-details-also-evaluated').closest('.beablock').detach();
+        // handleExpanderDiv5();
+    };
+
+    return {'addAssociatedProductViewer': addAssociatedProductViewer};
+})();
+
+function handleExpanderDiv5(){ //alternate package, direct subs, etc
+    $('.expander-div-5').each(function(){
+        // $(this).closest('.beablock').hide();
+        getInfoFromExpanderDiv5($(this).closest('.beablock'))
+    });
+}
+function getInfoFromExpanderDiv5($beablock){
+    var retval = {};
+
+    retval['title'] = $beablock.find('.beablocktitle').text().split('|')[0].trim();
+    $beablock.find('table.more-expander tbody>tr').gt(0).each(function(){
+        retval['data'].push()
+    });
+    console.log('expander5 retval', retval)
+}
+function getInfoFromRow($tr){
+    var rowInfo = {
+        'Digi-Key Part Number': $tr.eq(0).text(),
+        'link': $tr.eq(0).find('a').attr('href'),
+        'Manufacturer': $tr.eq(1).text(),
+        'Packaging': $tr.eq(1).text(),
+        'packaging': $tr.eq(1).text(),
+        'quantityavailable': $tr.eq(1).text(),
+        'mpn': $tr.eq(1).text(),
+    };
+    $tr.each(function(){
+
+    });
+}
+function getAssociationNames(){
+    var names = [];
+    $('.expander-div-10').each(function(){
+        names.push($(this).closest('tr').find('th').text()); 
+        $(this).closest('tr').hide();
+    });
+    $('.expander-div-5').each(function(){
+        if($(this).parent('.beablock:contains("Direct Substitute")').length == 1){
+            names.push('Direct Subs')
+            $(this).parent('.beablock').detach();
+        }
+    })
+    return names;
+}
+function getAssociationDataFromPageByType(assType){
+    var escaped = selectorEscape(assType);
+    return (window.eval(escaped));
+}
+function getAllAssociations(){
+    var assocationData = [];
+    var names = getAssociationNames();
+    names.forEach(function(el,idx,arr){
+        var escaped = selectorEscape(el);
+        var alldata = window.eval(escaped);
+        // console.log(window.eval(escaped).slice(1));
+        assocationData.push({
+            'title': el,
+            'list': alldata.slice(1),
+            'viewAllLink': alldata[0].showAllLink
+        }) ;
+    });
+    return assocationData;
+}
 
 
 //*************************** TODO fix collision events 
