@@ -862,6 +862,13 @@ option:hover{
 
 
 /*  */
+
+.pickericon{
+	color:#566;
+}
+.selectboxdivclass:hover .pickericon{
+	color:red;
+}
 .pickerItem{
 	margin:10px; 
 	padding:10px; 
