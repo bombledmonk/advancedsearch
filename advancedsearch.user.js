@@ -38,7 +38,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.6.2
+// @version     3.6.3
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -187,6 +187,7 @@
 // 			added learn more about capacitors link, fixed matching-records bug, added "new products" link
 //3.6.1     added image hover over supplier portal links, fixed the associated product view all links.
 //3.6.2		added https in product search, added view more button at bottom of product table
+//3.6.3     added search help
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -206,6 +207,7 @@
 //TODO add obsolete product direct subs to top of page PCC101CQCT-ND
 //TODO fuzzy similar to, start in opamps
 //TODO finish "show more parts in table feature"
+//TODO add a google like "advanced search" to the header
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -214,7 +216,7 @@ var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '8/6/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = true; //control detailed logging.
+var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -227,12 +229,13 @@ var cacheflag = false;
 //loads before document status is ready
 function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
-
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
     GM_addStyle("#header {display: none;} #content hr {display:none;} #footer{position:relative; top:45px;} #content>form:first-child {display:none} #content>p {display:none;} .content-keywordSearch-form{display:none;}");
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
     addResourceCSS();
+    // _log('testing123333333', true)
     $('#header').detach();
+    // _log('testing123333333', true)
     $('#footer').before('<div style="height:10px;"></div>');
     // $('#footer').remove();
     // formatPagesPreReady();
@@ -264,9 +267,11 @@ function addResourceCSS(){
         "tooltipster-shadowCSS"
     ];
     for ( var x in cssNames){
+        _log('style tick end'+ cssNames[x], DLOG);
+        var thetext = GM_getResourceText(cssNames[x]);
+        // _log('style tick 1'+ cssNames[x], DLOG);
+        GM_addStyle(thetext);
         // _log('style tick start '+cssNames[x], DLOG);
-        GM_addStyle(GM_getResourceText(cssNames[x]));
-        // _log('style tick start'+ cssNames[x], DLOG);
     }
 }
 
@@ -382,7 +387,8 @@ function addCustomHeader(){
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="newproducts" id="newproducts" class="css-checkbox"><label style="margin-left:8px;" for="newproducts" class="css-label" title="Added in the last 90 days.">New</label>'+
-        '<span id="resnum"></span>'+
+        // '<span id="resnum"></span>'+
+        '<a id="advancedsearchlink" style="margin-left:20px; cursor:pointer;">search help</a>'+
         '<span id=quicklinks><a href="'+gIndexLink+'">Product Index</a> | '+
         '<a href="'+mydklink2+'">My Digi-Key</a> | '+
         '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
@@ -413,11 +419,84 @@ function addCustomHeader(){
 
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
+
+    keywordSearchWizard()
     _log('addCustomHeader() End',DLOG);
 	}catch(e){
 		console.log('iiiiiiiiiiiiiiiiiiiiiiiiiiii',e);
 		alert(e);
 	}
+}
+
+function keywordSearchWizard(){
+    var searchForm = '<div id="advancedsearchdiv" style="display:none; ">'+
+        '<div>'+
+            '<table class="advancedsearchtable">'+
+                '<tbody>'+
+                    '<tr>'+
+                        '<td>Function</td>'+
+                        '<td>Operator</td>'+
+                        '<td>Usage</td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>NOT</td>'+
+                        '<td><span style="font-weight:bold; font-size:1.2em;">~</span> or <span style="font-weight:bold;">.not.</span> </td>'+
+                        '<td> <span style="font-weight:bold;">mcu ~dip</span> (removes all instances of dip from results) <br> <span style="font-weight:bold;">mcu .not. dip</span></td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>AND</td>'+
+                        '<td><span style="font-weight:bold;">&lt;space&gt;</span> or <span style="font-weight:bold;">.and.</span> </td>'+
+                        '<td> <span style="font-weight:bold;">mcu 32bit</span><br> <span style="font-weight:bold;">mcu .and. 32bit</span></td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>OR</td>'+
+                        '<td><span style="font-weight:bold;">|</span> or <span style="font-weight:bold;">.or.</span> </td>'+
+                        '<td> <span style="font-weight:bold;">mcu atmel | mcu microchip</span><br> <span style="font-weight:bold;">mcu atmel .or. mcu microchip</span></td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>"exact phrase"</td>'+
+                        '<td><span style="font-weight:bold;">&quot; &quot;</span>'+
+                        '<td> <span style="font-weight:bold;">&quot;DC DC&quot;</span></td>'+
+                    '</tr>'+
+                '</tbody>'+
+            '</table>'+            
+            '<table class="advancedsearchtable" style="margin-top:20px;">'+
+                '<tbody>'+
+                    '<tr>'+
+                        '<td>Search Tips</td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>All keywords are case insensitive and treated as substring matches (also known as wildcards).  '+
+                        'The keyword <b style="color:red;">LED</b> will match control<b style="color:red;">led</b>,'+' O<b style="color:red;">LED</b> and LTC3458<b style="color:red;">LED</b>E#PBF </td>'+
+                    '</tr>'+
+                    '<tr>'+
+                        '<td>It&#39s best to treat keyword searches as a guide to help find where product is hiding rather than expect ALL results to be spoonfed.'+
+                        '  It&#39s often better to find the families of interest and then filter and browse the full contents of that family unless you are sure'+
+                        ' there there is an exact keyword found in product listing pages. Using keywords with too much specificity may artificially limit results.</td>'+
+                    '</tr>'+
+                '</tbody>'+
+            '</table>'+
+        '</div>'+
+    '</div>';
+    $('#content').append(searchForm);
+
+    $('#advancedsearchlink').click(function(){
+        _log('advanced wizard opening', DLOG)
+        $('#advancedsearchdiv').dialog({
+                autoOpen: true,
+                resizable: true,
+                // draggable: false,
+                height:600,
+                width:800,
+                modal: false,
+                buttons: {
+                    "Close": function() {
+                        // $(this).css('color', 'lightgrey');
+                        $( this ).dialog( "close" );
+                    },
+                }
+            });
+    })
 }
 
 function addControlWidget() {
@@ -688,7 +767,7 @@ function formatFilterResultsPage(){
         wrapFilterTable(); //dependent on floatapplyfilters()
 
         addtrueFilterReset(); // dependent on wrapFilterTable() being in place
-        addParamWizzards();
+        addParamWizards();
         
         if(localStorage.getItem('squishedFilters') == 1){
             squishedFilters();
@@ -3595,8 +3674,8 @@ function addChooserButtonAction(somespan, clickfunc){
 }
 
 
-function addParamWizzards(){
-    _log('addParamWizzards() Start',DLOG);
+function addParamWizards(){
+    _log('addParamWizards() Start',DLOG);
     var filterfunctions = [ //['Series',                function(name, e){getAttributeExampleImgs(name, e);}, 'Ex Pics'],
                             //['Connector Type',        function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
                             //['Connector Style',       function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
@@ -3627,7 +3706,7 @@ function addParamWizzards(){
         filterfunctions[i][2]( filterfunctions[i][1], $('select[name="'+filterfunctions[i][0]+'"]'));
     });
 
-    _log('addParamWizzards() End',DLOG);
+    _log('addParamWizards() End',DLOG);
 }
 
 function createHelperBox(name,$selectElem, boxheight, boxwidth){
@@ -5409,10 +5488,10 @@ function getImageLinks(){
 
 
 // Loging function
-function _log(somestring, detailed_logging){
+function _log(somestring, detailed_logging, textcolor, bgcolor){
     if (detailed_logging == null) detailed_logging=true;
     try{
-        if(detailed_logging == true){unsafeWindow.console.log((Date.now()-starttimestamp)+'ms '+(Date.now()-sincelast)+'[as] '+somestring);}
+        if(detailed_logging == true){console.log('%c'+(Date.now()-starttimestamp)+'ms '+(Date.now()-sincelast)+'[as] '+somestring, 'background: '+bgcolor+'; color:'+textcolor+';');}
         sincelast = Date.now();
     }
     catch(err){}
