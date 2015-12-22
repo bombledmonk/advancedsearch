@@ -38,7 +38,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.6.3
+// @version     3.6.4
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -206,7 +206,6 @@
 //TODO add a most recently visited/ most visited families feature to top of page (chris)
 //TODO add obsolete product direct subs to top of page PCC101CQCT-ND
 //TODO fuzzy similar to, start in opamps
-//TODO finish "show more parts in table feature"
 //TODO add a google like "advanced search" to the header
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
@@ -745,7 +744,7 @@ function formatFilterResultsPage(){
         addImageBar();
         // highightSortArrow();
         floatApplyFilters();
-        fixAssociatedPartInFilterForm();
+        // fixAssociatedPartInFilterForm();
         //TODO fix dependencies of if statements below
         
         picsToAccel(); //add the thumnails to picture accelerator block
@@ -825,7 +824,7 @@ function addMorePartsToTable(){
         if($('.Next:first').attr('href').indexOf('gotoPage') !== -1){ //if gotoPage is found
             
             var pageNumber = parseInt($('.Next:first').attr('href').split('(')[1]);
-            console.log('page pageNumber is', pageNumber);
+            _log('page pageNumber is '+ pageNumber, DLOG);
             $('#productTable:first').data('pagetoloadnext', pageNumber);
 
             $('#addmoreparts').on('click', function(){
@@ -846,7 +845,7 @@ function addMorePartsToTable(){
                         $(html).find('#productTable tbody>tr').insertAfter($('#productTable:first tr:last'));
                     }
                     if($(html).find('a.Next').length !== 0){
-                        console.log('a.next is ', $(html).find('a.Next').length , $(html).find('a.Next:first').attr('href'));
+                        // console.log('a.next is ', $(html).find('a.Next').length , $(html).find('a.Next:first').attr('href'));
                         $('#productTable:first').data('pagetoloadnext', parseInt($(html).find('.Next:first').attr('href').split('(')[1]));
                         $('.showingparts').text($('#productTable tbody>tr').length);
                         
@@ -871,14 +870,14 @@ function addMorePartsToTable(){
 
                     if($('#combinePN').prop('checked')){
                         pTable = combinePNAfterLoad($(html).find('#productTable'));
-                        console.log(pTable.find('tbody>tr').html());
+                        // console.log(pTable.find('tbody>tr').html());
                         pTable.find('tbody>tr').insertAfter($('#productTable:first tr:last')); 
                     }else{
                         $(html).find('#productTable tbody>tr').insertAfter($('#productTable:first tr:last'));
                     }
                     // check for a.Next link on html page, set next page if exists otherwise hide button.
                     if($(html).find('a.Next').length !== 0){
-                        console.log('a.next is ', $(html).find('a.Next').length , $(html).find('a.Next:first').attr('href'));
+                        // console.log('a.next is ', $(html).find('a.Next').length , $(html).find('a.Next:first').attr('href'));
                         $('#productTable:first').data('pagetoloadnext', ($(html).find('a.Next:first').attr('href')));
                         $('.showingparts').text($('#productTable tbody>tr').length);
                     }else{
@@ -1682,69 +1681,69 @@ function fixImageHover(){
     _log('fixImageHover() End',DLOG);
 }
 
-function fixAssociatedPartsForIndexResultsPage(){
-    _log('fixAssociatedPartsForIndexResultsPage() Start',DLOG);
-    if($('.catfilterlink:first').attr('href').indexOf('part=') != -1){
-        $('.catfilterlink').each(function(){
-            var fullhref = $(this).attr('href');
-            var queryarray = fullhref.split('?')[1].split('&');
-            var baseurl = fullhref.split('?')[0].split('/');
-            var catfamnumber = baseurl.pop();
-            var currentitem = $(this);
+// function fixAssociatedPartsForIndexResultsPage(){
+//     _log('fixAssociatedPartsForIndexResultsPage() Start',DLOG);
+//     if($('.catfilterlink:first').attr('href').indexOf('part=') != -1){
+//         $('.catfilterlink').each(function(){
+//             var fullhref = $(this).attr('href');
+//             var queryarray = fullhref.split('?')[1].split('&');
+//             var baseurl = fullhref.split('?')[0].split('/');
+//             var catfamnumber = baseurl.pop();
+//             var currentitem = $(this);
 
-            currentitem.wrap('<form action="/scripts/dksearch/dksus.dll" method="post" />');
-            currentitem.after('<input type=hidden value="'+catfamnumber+'" name="cat" >');
+//             currentitem.wrap('<form action="/scripts/dksearch/dksus.dll" method="post" />');
+//             currentitem.after('<input type=hidden value="'+catfamnumber+'" name="cat" >');
 
-            queryarray.forEach(function(attr){
-                if (attr.indexOf('=') != -1){
-                    currentitem.after('<input type=hidden value="'+attr.split('=')[1]+'" name="'+attr.split('=')[0]+'" >');
-                    currentitem.attr('href',"#");
-                    currentitem.click(function(){$(this).closest('form').submit();});
-                }                
-            });
-        });
-    }
-    _log('fixAssociatedPartsForIndexResultsPage() End',DLOG);
-}
+//             queryarray.forEach(function(attr){
+//                 if (attr.indexOf('=') != -1){
+//                     currentitem.after('<input type=hidden value="'+attr.split('=')[1]+'" name="'+attr.split('=')[0]+'" >');
+//                     currentitem.attr('href',"#");
+//                     currentitem.click(function(){$(this).closest('form').submit();});
+//                 }                
+//             });
+//         });
+//     }
+//     _log('fixAssociatedPartsForIndexResultsPage() End',DLOG);
+// }
 
-function fixAssociatedPartInFilterForm(){
-    _log('fixAssociatedPartInFilterForm() End',DLOG);
-    var fullquerystring = window.location.search;
-    if(fullquerystring.indexOf('&') != -1){
-        var queryarray = fullquerystring.split('&');
-        var parts = queryarray.filter(function(part){
-             if(part.indexOf('part=') != -1){
-                return true;
-             }else{return false;}
-        });
-        if (parts.length > 0){
-            parts = parts.map(function(part){
-                return part.split('=')[1];
-            }); 
-            parts.forEach(function(part){
-                $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
-            });
-        }
-        // _log('fullquerystring is ' + fullquerystring , true);
-    }
-    else if($('#earlPH').length){
-        var parts = $('#earlPH').val().split('&').filter(function(part){
-             if(part.indexOf('part=') != -1){
-                return true;
-             }else{return false;}
-        });
-        if (parts.length > 0){
-            parts = parts.map(function(part){
-                return part.split('=')[1];
-            }); 
-            parts.forEach(function(part){
-                $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
-                $('#mainform').attr('action', "/scripts/dksearch/dksus.dll");
-            });
-        }
-    }
-    _log('fixAssociatedPartInFilterForm() End',DLOG);
-}
+// function fixAssociatedPartInFilterForm(){
+//     _log('fixAssociatedPartInFilterForm() End',DLOG);
+//     var fullquerystring = window.location.search;
+//     if(fullquerystring.indexOf('&') != -1){
+//         var queryarray = fullquerystring.split('&');
+//         var parts = queryarray.filter(function(part){
+//              if(part.indexOf('part=') != -1){
+//                 return true;
+//              }else{return false;}
+//         });
+//         if (parts.length > 0){
+//             parts = parts.map(function(part){
+//                 return part.split('=')[1];
+//             }); 
+//             parts.forEach(function(part){
+//                 $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
+//             });
+//         }
+//         // _log('fullquerystring is ' + fullquerystring , true);
+//     }
+//     else if($('#earlPH').length){
+//         var parts = $('#earlPH').val().split('&').filter(function(part){
+//              if(part.indexOf('part=') != -1){
+//                 return true;
+//              }else{return false;}
+//         });
+//         if (parts.length > 0){
+//             parts = parts.map(function(part){
+//                 return part.split('=')[1];
+//             }); 
+//             parts.forEach(function(part){
+//                 $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
+//                 $('#mainform').attr('action', "/scripts/dksearch/dksus.dll");
+//             });
+//         }
+//     }
+//     _log('fixAssociatedPartInFilterForm() End',DLOG);
+// }
 
 function floatApplyFilters(){
     $('.filters-buttons').wrapAll('<div id=floatApply>');
@@ -2066,7 +2065,7 @@ function formatIndexResultsPage(){
         }
 
         
-        fixAssociatedPartsForIndexResultsPage();
+        // fixAssociatedPartsForIndexResultsPage();
 
         var productTree = storeProductIndexTree();
         var topResultsData = getTopResultsData();
@@ -4177,6 +4176,8 @@ function getQFAlts(searchterm) {
     return '';
 }
 
+
+//TODO remove not sure if used or needed.
 function checkCategoryQF(keywordArray) {
     for(var x = 0; x < keywordArray.length; x++) {
         $('h1:contains("' + keywordArray[x] + '")').each(function() {
