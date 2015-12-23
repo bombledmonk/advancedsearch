@@ -218,6 +218,11 @@ input[type="search"].focus {
 	font-size: 16px;
 	font-weight: bolder;
 }
+
+#qpLinkList {
+	margin: 10px 15px;
+}
+
 #qpDiv {
 	background: linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%);
 	box-shadow: inset 3px 0px 10px #ddd;
@@ -1021,7 +1026,7 @@ option:hover{
 .sideIndex{
 	background: #FFF;
 }
-.sideIndexContent li:hover span{
+.sideIndexContent p:hover span{
 	display: inline;
 }
 

@@ -188,6 +188,7 @@
 //3.6.1     added image hover over supplier portal links, fixed the associated product view all links.
 //3.6.2		added https in product search, added view more button at bottom of product table
 //3.6.3     added search help
+//4.0       Major overhaul needed because of digikey website update
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -215,7 +216,7 @@ var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '8/6/15';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = false; //control detailed logging.
+var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -2050,6 +2051,8 @@ function squishedFilters(){
 // }
 
 function formatIndexResultsPage(){
+
+    //TODO fix results margin and placement.
     if($('.catfilterlink').length){
         _log('formatIndexResultsPage() Start',DLOG);
         $('body').addClass('indexPage');
@@ -2068,10 +2071,16 @@ function formatIndexResultsPage(){
         // fixAssociatedPartsForIndexResultsPage();
 
         var productTree = storeProductIndexTree();
-        var topResultsData = getTopResultsData();
+        // var topResultsData = getTopResultsData();
+        // console.log('!!!!!!!!!!!!!!!!', productTree, topResultsData);
         newProductIndexDiv(productTree);
-        addSideIndex(productTree);
-        handleTopResults3(topResultsData);
+        // addSideIndex(productTree);
+        $('.jumpToCats a').click(smoothScrollToCat);
+
+        //handleTopResults3(topResultsData);
+        handleTopResults4();
+        $('#keywordSearchForm').hide();
+        formatJumpTo();
         addFullResultsTitle();
         addProductIndexThumbs();//dependent on fullresults title and newproductindexdiv
 
@@ -2087,7 +2096,13 @@ function formatIndexResultsPage(){
     }
 }
 
+function formatJumpTo(){
+    $('.jumpToCats');
+    $('.jumpToCats').parent().css({'border':'0px', 'background':'white'}).addClass('box effect1');
+}
+
 function addLearnMore(){
+    //TODO add catid to this
 	var learnMoreCatList = [
 		{
             'category': 'Capacitors',
@@ -2117,31 +2132,32 @@ function addLearnMore(){
 	});
 }
 
-function addSideIndex(productTree){
-    _log('addSideIndex() Start',DLOG);
-    // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:70px;"/>');
-    $('.mainFlexWrapper').prepend('<div class="sideIndex"><div class="sideIndexContent"><div class="sideIndexTitle"><a href="'+gIndexLink+'">Index</a> <a href="#content" style="margin-left:auto; margin-right: 4px;">top</a></div></div></div>');
-    var sidetext = '';
-    productTree.forEach(function(item){
-        //$('.sideIndexContent').append(
-            sidetext = sidetext + '<li style="display:flex; align-items:center;"><a href="#'+selectorEscape(item.category)+'">'+item.category+'</a></li>';
-        //);
-    });
-    $('.sideIndexContent').append(sidetext);
-    // $('.sideIndex').css('width',($('.sideIndexContent').width()+50)+'px'); //needs to be there for chrome when using display:flex
-    $('.sideIndex').css('width',(300)+'px'); //needs to be there for chrome when using display:flex
-    // alert($('.sideIndexContent').width());
-    $('.sideIndexContent').addClass('fixedsticky').css('top','55px').fixedsticky();
-    // $('.sideIndexContent').addClass('fixedsticky').css('top','50px');
-    // $('#footer').addClass('fixedsticky').fixedsticky();
+// function addSideIndex(productTree){
+//     _log('addSideIndex() Start',DLOG);
+//     // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:70px;"/>');
+//     $('.mainFlexWrapper').prepend('<div class="sideIndex"><div class="sideIndexContent"><div class="sideIndexTitle"><a href="'+gIndexLink+'">Index</a> <a href="#content" style="margin-left:auto; margin-right: 4px;">top</a></div></div></div>');
+//     var sidetext = '';
+//     productTree.forEach(function(item){
+//         //$('.sideIndexContent').append(
+//             sidetext = sidetext + '<li style="display:flex; align-items:center;"><a href="#'+selectorEscape(item.category)+'">'+item.category+'</a></li>';
+//         //);
+//     });
+//     $('.sideIndexContent').append(sidetext);
+//     // $('.sideIndex').css('width',($('.sideIndexContent').width()+50)+'px'); //needs to be there for chrome when using display:flex
+//     $('.sideIndex').css('width',(300)+'px'); //needs to be there for chrome when using display:flex
+//     // alert($('.sideIndexContent').width());
+//     $('.sideIndexContent').addClass('fixedsticky').css('top','55px').fixedsticky();
+//     // $('.sideIndexContent').addClass('fixedsticky').css('top','50px');
+//     // $('#footer').addClass('fixedsticky').fixedsticky();
 
-    //addCategorySprites2();
+//     //addCategorySprites2();
 
-    $('.sideIndexContent a').click(smoothScrollToCat);
-    _log('addSideIndex() End',DLOG);
-}
+//     $('.sideIndexContent a').click(smoothScrollToCat);
+//     _log('addSideIndex() End',DLOG);
+// }
 
 function smoothScrollToCat(e){
+    //TODO add color highlighting for each click... highlight category box?
     e.preventDefault();
     var destinationHref = $(this).attr('href');
     var dpos = $(destinationHref).position().top;
@@ -2149,7 +2165,7 @@ function smoothScrollToCat(e){
     // clickedon.remove();
     // $('.catfilteritem').not($(destinationHref).closest('.catfilteritem')).fadeTo('fast', .5);
     $('.sideIndexContent a').css({'background': ''});
-    setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
+    // setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
     $('html,body').animate(
         {scrollTop: dpos-0},
         {       
@@ -2159,7 +2175,7 @@ function smoothScrollToCat(e){
             //hack to get around the complete function firing early and getting stomped on by the scroll event
             // $(destinationHref).closest('.catfilteritem').fadeTo(0,1);
             // $('.catfilteritem').not($(destinationHref).closest('.catfilteritem')).fadeTo('slow', 1)
-            clickedon.css({'background':'#ddd'});
+            // clickedon.css({'background':'#ddd'});
             // setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
         }   
     });
@@ -2196,69 +2212,77 @@ function addFullResultsTitle(){
 
 }
 
-function handleTopResults3(trdata){
-    _log('handleTopResults3() Start',DLOG);
-    var keyword = $("#headKeySearch").val();
-    if(keyword !="" && $('#quickPicksDisplay').length > 0){
-        var resultList = $('#quickPicksDisplay li');
-        // console.log(resultList);
-        $('#quickPicksDisplay').remove();
+function handleTopResults4(){
+    //TODO add category jumpto links with smoothscroll
+    $('#quickPicksDisplay').addClass('box effect1').css({border:'none', 'padding-bottom': '5px'});
+    $('#qpLinkList').css({border:'none', 'margin-bottom':'10px'});
+    $('#qpTitle').css({'background':'white'})
+    $('#qpTitle').append('for '+ $('#headKeySearch').val())
+}
 
-        var topResultsHTML = '<div id="topResultsContainer" class="box effect1">'+
-            '<div class="topResultsTitle"><i class="fa fa-arrow"></i>Top Families for <span style="font-size:15px; font-style:italic;">&nbsp'+keyword+'</span></div>'+
-            '<div class="topResultsBody" ></div>'+
-        '</div>';
+// function handleTopResults3(trdata){
+//     _log('handleTopResults3() Start',DLOG);
+//     var keyword = $("#headKeySearch").val();
+//     if(keyword !="" && $('#quickPicksDisplay').length > 0){
+//         var resultList = $('#quickPicksDisplay li');
+//         // console.log(resultList);
+//         $('#quickPicksDisplay').remove();
 
-        $('#content').prepend(topResultsHTML);
+//         var topResultsHTML = '<div id="topResultsContainer" class="box effect1">'+
+//             '<div class="topResultsTitle"><i class="fa fa-arrow"></i>Top Families for <span style="font-size:15px; font-style:italic;">&nbsp'+keyword+'</span></div>'+
+//             '<div class="topResultsBody" ></div>'+
+//         '</div>';
+
+//         $('#content').prepend(topResultsHTML);
         
-        $('.topResultsBody').append( '<table id="topResultsTable"><tbody><tr style="font-weight:bold;"><td>Family</td><td>Category</td></tr></tbody></table>');
-        var rows = '';
-        var trt = $('#topResultsTable tbody');
-        var regExp = /\(([^)]+)\)/;
-        trdata.forEach(function(elem){
-            trt.append('<tr><td></td><td></td></tr>');
-            trt.find('tr:last td:first').append(elem.famLink);
-            trt.find('tr:last td:first').append( ' ('+ elem.count + ') ');
-            trt.find('tr:last td:last').append('<a class="catjumpto" href="#'+selectorEscape(elem.cat)+'">'+elem.cat+'</a>');
-        });
+//         $('.topResultsBody').append( '<table id="topResultsTable"><tbody><tr style="font-weight:bold;"><td>Family</td><td>Category</td></tr></tbody></table>');
+//         var rows = '';
+//         var trt = $('#topResultsTable tbody');
+//         var regExp = /\(([^)]+)\)/;
+//         trdata.forEach(function(elem){
+//             trt.append('<tr><td></td><td></td></tr>');
+//             trt.find('tr:last td:first').append(elem.famLink);
+//             trt.find('tr:last td:first').append( ' ('+ elem.count + ') ');
+//             trt.find('tr:last td:last').append('<a class="catjumpto" href="#'+selectorEscape(elem.cat)+'">'+elem.cat+'</a>');
+//         });
 
-        $('.catjumpto').click(smoothScrollToCat);
-        // $('head').append('<style></style>');
+//         $('.catjumpto').click(smoothScrollToCat);
+//         // $('head').append('<style></style>');
 
-        $('#topResultsContainer a').css("textDecoration", "none");
-    }
-    _log('handleTopResults3() End',DLOG);
-}
+//         $('#topResultsContainer a').css("textDecoration", "none");
+//     }
+//     _log('handleTopResults3() End',DLOG);
+// }
 
-function getTopResultsData(){
-    _log('getTopResultsData() Start',DLOG);
-    var trdata =[];
-    var resultList = $('#quickPicksDisplay li');
-    var itemsRE = /\(\d+\sitems\)/;
-    var itemsREnot = /^(\(\d+\sitems\)).+/;
-    resultList.each(function() {
-        var famLink = $(this).find('a');
-        var cat = $(this).contents().filter(function() {return this.nodeType == 3;}).text().replace(itemsRE, '').trim();
-        var count = itemsRE.exec($(this).contents().text()).toString().replace(/\(|\)|\sitems/g, '');
+// function getTopResultsData(){
+//     _log('getTopResultsData() Start',DLOG);
+//     var trdata =[];
+//     var resultList = $('#quickPicksDisplay li');
+//     var itemsRE = /\(\d+\sitems\)/;
+//     var itemsREnot = /^(\(\d+\sitems\)).+/;
+//     resultList.each(function() {
+//         var famLink = $(this).find('a');
+//         var cat = $(this).contents().filter(function() {return this.nodeType == 3;}).text().replace(itemsRE, '').trim();
+//         var count = itemsRE.exec($(this).contents().text()).toString().replace(/\(|\)|\sitems/g, '');
 
-        trdata.push ({
-            'famLink':famLink,
-            'cat': cat,
-            'count': count
-        });
-    });
-    _log('getTopResultsData() end',DLOG);
-    return trdata;
-}
+//         trdata.push ({
+//             'famLink':famLink,
+//             'cat': cat,
+//             'count': count
+//         });
+//     });
+//     _log('getTopResultsData() end',DLOG);
+//     return trdata;
+// }
 
-function getTopResultsCategories(trdata){
-    //collects all the categories represented in the Top Results box
-    var array = [];
-    trdata.forEach( function(item) {
-        array.push(selectorEscape(item.cat));
-    });
-    return uniqueArray(array).reverse();
-}
+// function getTopResultsCategories(trdata){
+//     //collects all the categories represented in the Top Results box
+//     var array = [];
+//     trdata.forEach( function(item) {
+//         array.push(selectorEscape(item.cat));
+//     });
+//     return uniqueArray(array).reverse();
+// }
 
 function storeProductIndexTree(){
     _log('storeProductIndexTree() Start',DLOG);
@@ -2266,34 +2290,71 @@ function storeProductIndexTree(){
     var container = [];
     var quantitytest = (localStorage.getItem('qtydefault') == 1)? 1 : 0;
  
-        $('#productIndexList>li').each(function(){
+        $('#productIndexList>.catfiltertopitem').each(function(){
             var oneCategory = $(this);
+            //if the next element is a span that means it is the newProductCategory span and there is a number located inside.
+            //if it isn't a span that means it should be the ul element and we assume the number is of new products is 0
+            var oneCategoryNew = ($(this).next().is('.newProductCategory')) ? parseInt($(this).next().text().replace('-','')) : 0;
+            // if the span exists, we store the next element after the span which should be the ul, if the span doesn't exist
+            // we assume the ul is the next element
+            var oneCategoryFamilies = ($(this).next().is('.catfiltersub')) ? $(this).next() : $(this).next().next();
+
+            // console.log('oneCategoryFamilies', oneCategoryFamilies.text());
+
             var familyTree = [];
-            oneCategory.find('.catfiltersub>li').each(function(){
+            oneCategoryFamilies.find('li').each(function(){
                 familyTree.push(getFamilyItemFromListElem(this, quantitytest)); 
             });
-            // console.log('familyTree');
+            console.log('familyTree');
             container.push({
-                'category': oneCategory.find('.catfiltertopitem').text(), 
-                'catlink': oneCategory.find('.catfiltertopitem a').attr('href'), 
+                'category': oneCategory.text(),
+                'catanchor':oneCategory.attr('id'), 
+                'catlink': oneCategory.find('a').attr('href'), 
                 'families': familyTree,
-                'new': parseInt(oneCategory.find('.newProductCategory').text().replace('-','')) || 0
-            })  ;
+                'new': oneCategoryNew 
+            });
         });
-        //console.log(container);
+        console.log(container);
     _log('storeProductIndexTree() End',DLOG);
     return container;
 }
+
+// function storeProductIndexTree(){
+//     _log('storeProductIndexTree() Start',DLOG);
+
+//     var container = [];
+//     var quantitytest = (localStorage.getItem('qtydefault') == 1)? 1 : 0;
+ 
+//         $('#productIndexList>li').each(function(){
+//             var oneCategory = $(this);
+//             var familyTree = [];
+//             oneCategory.find('.catfiltersub>li').each(function(){
+//                 familyTree.push(getFamilyItemFromListElem(this, quantitytest)); 
+//             });
+//             console.log('familyTree');
+//             container.push({
+//                 'category': oneCategory.find('.catfiltertopitem').text(), 
+//                 'catlink': oneCategory.find('.catfiltertopitem a').attr('href'), 
+//                 'families': familyTree,
+//                 'new': parseInt(oneCategory.find('.newProductCategory').text().replace('-','')) || 0
+//             })  ;
+//         });
+//         //console.log(container);
+//     _log('storeProductIndexTree() End',DLOG);
+//     return container;
+// }
 
 function getFamilyItemFromListElem(item, quantitytest){
     // var itemsRE = /\(\d+\sitems\)/;
     // var count = itemsRE.exec($(item).contents().text()).toString().replace(/\(|\)|\sitems/g, '');
     // count = parseInt(count);
+    // console.log( '>>>>>>>>>>>>>>>>>>>>>getFamilyItemFromListElem')
     var resultCount = $(item).contents().filter(function(){return this.nodeType ===3;}).text().replace('(','');
     var count = parseInt(resultCount);
 
     // console.log('getFamilyItemFromListElem');
     var akamai = 1;
+    // console.log('getFamilyItemFromListElem', resultCount, count)
 
     var name = $(item).find('a').text();
     var link = augmentHref($(item).find('a').attr('href'), akamai, quantitytest);
@@ -2394,7 +2455,8 @@ function buildCategoryItem(catItem, exampleFamilyImages){
 
     if(catItem.catlink == undefined){
     	catItem.catlink = '';
-        rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
+        // rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
+        rettext = '<div id="'+selectorEscape(catItem.catanchor)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
 	    '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a> </div>'+
 	    '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
 	    '</div> ';	
@@ -2402,7 +2464,8 @@ function buildCategoryItem(catItem, exampleFamilyImages){
 	    var queryCheckedURL = (catItem.catlink.indexOf('?') != -1) ? 
 	                                            (catItem.catlink + '&newproducts=1') : 
 	                                            (catItem.catlink + '?newproducts=1');
-	    rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
+        // rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
+	    rettext = '<div id="'+selectorEscape(catItem.catanchor)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
 		    '<div class="catTitle">'+
 		    	'<a href="'+catItem.catlink+'">'+catItem.category+'</a> '+
 		    (catItem.new	? '<a style="font-size: 14px; padding-left:50px;" href="'+queryCheckedURL+'"> ('+catItem.new+' New Products)</a>' : '')+
