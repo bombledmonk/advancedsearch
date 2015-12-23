@@ -38,7 +38,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.6.4
+// @version     4.0
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
