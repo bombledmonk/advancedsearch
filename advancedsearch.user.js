@@ -267,10 +267,10 @@ function addResourceCSS(){
         "tooltipster-shadowCSS"
     ];
     for ( var x in cssNames){
-        _log('style tick end'+ cssNames[x], DLOG);
         var thetext = GM_getResourceText(cssNames[x]);
-        // _log('style tick 1'+ cssNames[x], DLOG);
+        _log('style tick 1'+ cssNames[x], DLOG);
         GM_addStyle(thetext);
+        _log('style tick end'+ cssNames[x], DLOG);
         // _log('style tick start '+cssNames[x], DLOG);
     }
 }
@@ -302,7 +302,7 @@ function formatPagesPostReady() {
     tc(formatFastAddPage,'formatFastAddPage');
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
-    tc(addBreadCrumbLink, 'addBreadCrumbLink');
+    tc(addBreadcrumbHover, 'addBreadcrumbHover');
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
     
@@ -725,91 +725,80 @@ function styleCheckboxes(){
 function formatFilterResultsPage(){
     if ( $('#productTable').length){
         _log('formatFilterResultsPage() Start',DLOG);
-        _log('[ready] number of results '+ parseInt($('.matching-records').text().split(':')[1].replace(/,/g,''),10),DLOG);
-        //$('form').find('br').remove(); // remove <br> in forms to improve verticle space utilization.
-        $('.quantity-form br').add('#mainform br').remove();
-        $('p:contains("To get the most from")').remove();
-        $('p:contains("Click RoHS icon next to part")').remove();
-        $('p:contains("Your parts have been sorted")').remove();
+        // $('.quantity-form br').add('#mainform br').remove();
+
         $('a.altpkglink').hide();
-        $('input[type=reset]').attr('value', 'Clear All').css('margin-left','10px');
+        $('.dload-btn').css({'text-align':'left'});
+        $('.page-slector').css({'width': '1%'});
+        $('.qty-form').css({'width': '1%'});
+        $('.breadcrumbs').css({'margin': '0', 'padding': ''});
 
-        $('#productTable').before('<div id="preProductTable"></div>');
-        $('#preProductTable').append($('.results-per-page:first, .paging:first'));
-        $('#preProductTable').append($('.download-table:first').css({'float':'','margin-left':'15px'}));
 
-        //$('img[src="http://dkc3.digikey.com/us/images/datasheet.gif"]').attr('src','http://goo.gl/8S0j5');// adds transparent background to gif anonymous stats for this image are located here http://goo.gl/#analytics/goo.gl/8S0j5/all_time
-        addMatchingRecordsToApply();
-        // addExploreMode();
+        // $('#search-within-results').css({'display':'inline'}).insertAfter($('.filters-group-chkbxs'))
+        // $('#search-within-results input').css({'margin-bottom': 0});
+        $('#deapplied-filters').css({'padding': '10px 0', 'display': 'inline'}).insertAfter($('#search-within-results').css({'display':'inline-block'}));
+        $('.deapply-filter-selection').addClass('button-small pure-button primary');
         addToTopButton();
-        addImageBar();
-        // highightSortArrow();
-        floatApplyFilters();
-        // fixAssociatedPartInFilterForm();
+        // addImageBar();
+        floatApplyFilters();// redo or add back
         //TODO fix dependencies of if statements below
         
-        picsToAccel(); //add the thumnails to picture accelerator block
-        if(localStorage.getItem('combinePN') == 1) {
-            setTimeout(function(){combinePN();}, 1);
-        }
+        // picsToAccel(); //add the thumnails to picture accelerator block
+        // if(localStorage.getItem('combinePN') == 1) {
+        //     setTimeout(function(){combinePN();}, 1);
+        // }
 
-        setTimeout(function(){addPartCompare();}, 150);
+        // setTimeout(function(){addPartCompare();}, 150);
         if(localStorage.getItem('pricehoverControl') == 1) {
             setTimeout(function(){addPriceHover();}, 3000);
         }
 
-        setTimeout(function(){addStickyHeader();}, 2500);  // wait for the page native javascript to load then reapply modified code
+        // setTimeout(function(){addStickyHeader();}, 2500);  // wait for the page native javascript to load then reapply modified code
+        // alert('hi')
 
-        formatQtyBox();
-        addColumnHider();
-        updateTableHeaders();
-        addApplyFiltersButtonHighlight();
-        wrapFilterTable(); //dependent on floatapplyfilters()
+        // formatQtyBox();  //TODO addback?
+        // addColumnHider();
+        // updateTableHeaders();
+        // addApplyFiltersButtonHighlight();
+        // wrapFilterTable(); //dependent on floatapplyfilters()
 
-        addtrueFilterReset(); // dependent on wrapFilterTable() being in place
-        addParamWizards();
+        // addtrueFilterReset(); // dependent on wrapFilterTable() being in place //remove
+        // addParamWizards(); // TODO addback
         
-        if(localStorage.getItem('squishedFilters') == 1){
-            squishedFilters();
-        }
-        if(localStorage.getItem('stickyfilters') == 1){
-            addStickyFilters();
-        }
+        // if(localStorage.getItem('squishedFilters') == 1){
+        //     squishedFilters();
+        // }
+        // if(localStorage.getItem('stickyfilters') == 1){
+        //     addStickyFilters();
+        // }
 
         fixImageHover();
 
-        akamaiLazyLoadFixForFilterResults();
+        // akamaiLazyLoadFixForFilterResults();
 
-        $('input[value=Reset]').addClass('button-small pure-button').click(function(){
-        // $('input[value=Reset]').addClass('minimal').css({'height':'18px', 'padding':'1px', 'margin':'0px'}).click(function(){
-            // getRecordsMatching();
-            addApplyFiltersButtonHighlight();
-        });
-        //setTimeout(function(){addDocRetrieve()}, 2500);
-        $('#productTable').addClass('gray');
+        // $('input[value=Reset]').addClass('button-small pure-button').click(function(){
 
-        $('input[value*="Download Table"]').addClass('button-small pure-button');//.css({'margin':'1px', 'padding':'2px'});
-        $('input[name*="quantity"]').attr('size','9').attr('placeholder','set qty');
-        
-        // doHighlight($('#productTable').text(), $('input[name=k]:last').text());
-        // var hlword = $('input[name=k]:last').val()
-        // _log('!!!!!!11 '+ $('#headKeySearch').val().toString(), true);
-        // wrapText(document.getElementById('productTable'), $('#headKeySearch').val().toString());
-        
-        if(localStorage.getItem('queryHighlight') == 1){
-            if($('#headKeySearch').val().toString().trim() != ''){
-                wrapText($('#productTable')[0], $('#headKeySearch').val().toString());  
-            }
-        } 
+        //     addApplyFiltersButtonHighlight();
+        // });
+        // $('#productTable').addClass('gray');
 
-        addColumnMath();
-        addGraphInterface();
-        styleCheckboxes();
-        // $('.ps-sortButtons').css('sortFocus');
-        addVisualPicker();
-        replaceStarDash();
-        addMorePartsToTable();
+        // $('input[value*="Download Table"]').addClass('button-small pure-button');//.css({'margin':'1px', 'padding':'2px'});
+
+
+        // if(localStorage.getItem('queryHighlight') == 1){
+        //     if($('#headKeySearch').val().toString().trim() != ''){
+        //         wrapText($('#productTable')[0], $('#headKeySearch').val().toString());  
+        //     }
+        // } 
+
+        // addColumnMath();
+        // addGraphInterface();
+        // styleCheckboxes();
+        // addVisualPicker();
+        // replaceStarDash();
+        // addMorePartsToTable();
         //addOpAmpWiz();
+        //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
 
         _log('formatFilterResultsPage() End',DLOG);
     }
@@ -1066,7 +1055,7 @@ function getSingleOptionImageSet($option, filtername){
                 ' </div>'
             );
 
-            dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],.matching-records,#reportpartnumber', function(){
+            dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],.matching-records,#reportPartNumber', function(){
                 var matching = (dd.find('.matching-records').length > 0 ) ? dd.find('.matching-records').text().split(':')[1].trim() : '1';
                 var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
 
@@ -1163,7 +1152,7 @@ function addMatchingRecordsToApply(){
 
 function addColumnMath(){
     _log('addColumnMath() Start',DLOG);
-    $('#preProductTable').append('<button id="doMath" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-calculator"></i> Column Math</button>');
+    $('.page-slector').after('<button id="doMath" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-calculator"></i> Column Math</button>');
     setTimeout(addColumnMathDialog, 3000);
     $('#doMath').click(function(e){
         _log('ready to do math', true);
@@ -1623,32 +1612,15 @@ function drawChart(xcol, ycol){
 function formatQtyBox(){
     _log('formatQtyBox() Start',DLOG);
     var $srform = $('.quantity-form');
-    $srform.find('label,input').appendTo($srform);
-    $srform.wrap('<div id=srformdiv style="display:inline-block"/>');
-    // $srform.wrap('<div id=srformdiv style="display:inline-block"/>');
-    // $('.quantity-form').addClass('pure-form');
-    // $srform.find('[name=quantity]').after('<input name="quantity" type="search" maxlength=9>').detach();
-    $srform.find('[type=submit]:first').val('See Price @ qty');
-    $srform.find('[type=submit]:last').val('x');
-    $srform.find('.quantity-title').hide();
-    // // $srform.css({'position':'relative', 'left': ($('.qtyAvailable:first').position().left-50)+'px'});
-    // $('.quantity-form').css({
-    //     'padding-left':'3px',
-    //     'position':'relative', 
-    //     'left': ($('.qtyAvailable:first').position().left-19)+'px',
-    //     'top': '5px'
-    //     });// hack to fix position
-    // $('th.qtyAvailable, th.unitprice, th.minQty').css({'background':'#ddd'});
+    // $srform.find('[type=submit]:first').val('See Price @ qty');
+    // $srform.find('[type=submit]:last').val('x');
 
-    // $srform.css({'margin-right': '10px', 'background':'#ddd'});
-
-    //$srform.children().addBack().css({'display':'inline'});
-    $srform.attr('title', $srform.find('p').text());
-    $('#productTable').before($('#srformdiv'));
-    $srform.find('p').detach();    // hide descriptive paragraph
+    // $srform.attr('title', $srform.find('p').text());
     // _log('formatQtyBox() tick1',DLOG);
-    $('p:contains("To see real-time pricing")').detach();   //hide the "To see reel-time pricing" paragraph
-    $('#preProductTable').append($srform);
+    // $('.paging').after($srform);
+    // $srform.css({'margin':'0px 15px'});
+    $('input[name*="quantity"]').attr('size','9').attr('placeholder','set qty');
+
     _log('formatQtyBox() End',DLOG);
 }
 
@@ -1747,19 +1719,19 @@ function fixImageHover(){
 // }
 
 function floatApplyFilters(){
-    $('.filters-buttons').wrapAll('<div id=floatApply>');
+    // $('.filters-buttons').wrapAll('<div id=floatApply>');
     
+    $('#filters-buttons, #record-count-container').children().css('position', 'relative');
     $(window).scroll(function(){
-        $('.filters-buttons').children().css('left', $(window).scrollLeft() );
+        $('#filters-buttons, #record-count-container').children().css('left', $(window).scrollLeft() );
     });
-    addSearchWithin();
-    $('.filters-buttons').children().css('position', 'relative');
+    // addSearchWithin();
 }
 
 function addSearchWithin(){
     // dependancy on floatApplyFilters #floatApply div
-    $('.filters-group').prepend('<label>Keyword Filters: <input type="text" name="k" style="margin-right:20px; padding-left:5px;" class="searchWithin" title="Provides a way to change your Keyword search while applying"></label>');
-    $('.filters-group').css({padding:'0 0 3px 4px'});
+    $('.filters-group:eq(1)').prepend('<label>Keyword Filters: <input type="text" name="k" style="margin-right:20px; padding-left:5px;" class="searchWithin" title="Provides a way to change your Keyword search while applying"></label>');
+    $('.filters-group:eq(1)').css({padding:'0 0 3px 4px'});
     $('.searchWithin').val($('.dkdirchanger2').val());
 }
 
@@ -2207,14 +2179,16 @@ function addFullResultsTitle(){
             '</div>'
         );
     }
-        $('#fullResultsTitle').append($('.matching-records').css({'margin':'auto auto',}));
+        // $('#fullResultsTitle').append($('.matching-records').css({'margin':'auto auto',}));
+        $('#fullResultsTitle').append($('.initial-record-count').css({'margin':'auto auto'}));
+        $('.initial-record-count').children().css({'font-size':'16px'})
     _log('addFullResultsTitle() End',DLOG);
 
 }
 
 function handleTopResults4(){
     //TODO add category jumpto links with smoothscroll
-    $('#quickPicksDisplay').addClass('box effect1').css({border:'none', 'padding-bottom': '5px'});
+    $('#quickPicksDisplay').addClass('box effect1').css({border:'none', 'padding-bottom': '5px', 'margin-top':0});
     $('#qpLinkList').css({border:'none', 'margin-bottom':'10px'});
     $('#qpTitle').css({'background':'white'})
     $('#qpTitle').append('for '+ $('#headKeySearch').val())
@@ -2793,9 +2767,11 @@ function addIndexPicPrev(){
 }
 
 function formatDetailPage(){
-    if($('#reportpartnumber').length){
+    console.log (500000)
+    if($('#reportPartNumber').length){
         _log('formatDetailPage() Start',DLOG);
         // var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
+        addPriceBreakHelper();
         var dataTable = $('.attributes-table-main').find('table:first');
         //addAssProdLinkToFilters();
         ap.addAssociatedProductViewer();
@@ -2803,7 +2779,6 @@ function formatDetailPage(){
         addReverseFiltering(dataTable);
         addToTopButton();
 
-        addPriceBreakHelper();
         
         addDetailPageEasyInfoCopy($('#content'));
 
@@ -2827,7 +2802,7 @@ function formatDetailPage(){
     }
 }
 function preFormatDetailPage(){
-    if($('#reportpartnumber').length){
+    if($('#reportPartNumber').length){
         _log('preformatDetailPage() Start',DLOG);
         var tablegeneralcss = {
             'border-radius': '5px',
@@ -2840,7 +2815,7 @@ function preFormatDetailPage(){
         makeImageHolder();
         addDetailHoverMainImage();
 
-        var priceTable = $('#reportpartnumber').parent().parent().parent();
+        var priceTable = $('#reportPartNumber').parent().parent().parent();
         var discPriceTable = priceTable.parent().find('table:contains("Discount Pricing")');
         var digireelTable = $('.product-details-reel-pricing');
         $('.request-quote-description').hide();
@@ -3049,7 +3024,7 @@ function getDetailPageInfo($pageobject){
 
     var info = {};
     info.MPN = $pageobject.find('h1[itemprop=model]').text();
-    info.DKPN = $pageobject.find('#reportpartnumber').text();
+    info.DKPN = $pageobject.find('#reportPartNumber').text();
     info.Manufacturer = $pageobject.find('h2[itemprop=manufacturer]').text(); //could also do contents()
     info.Description = $pageobject.find('td[itemprop=description]').text();
     info.Packaging = $pageobject.find('.attributes-table-main a[href*="Standard%20Packaging%20Help"]').last().closest('tr').find('td').text();
@@ -3285,7 +3260,7 @@ function hoverHighlightDetailWizParams(paramtext, $hoverObject){
 
 function addPriceBreakHelper(){
     _log('addPriceBreakHelper() Start',DLOG);
-    var ptable = $('#pricing');
+    var ptable = $('.catalog-pricing table:first');
     // var eurocheckRE = /(?.*,\d\d)/; 
     // check if part is not orderable
     if(ptable.filter(':contains(call)').size() == 0){
@@ -3303,6 +3278,7 @@ function addPriceBreakHelper(){
                     var breakeven = Math.ceil(nextextendedprice/unitprice);
 
                     if ( breakeven >= pricebreak && firstpb == 1){
+                        // console.log(pricebreak,unitprice,nextextendedprice,breakeven)
                         ptable.find('tr:first').eq(index).append('<th style=" border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">Break-Even Qty</th>');
                         pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">'+breakeven +' </td>');
                     }               
@@ -3360,6 +3336,8 @@ function dataSheetButtonAction(){
     }
 }
 
+
+// TODO impliment similar to opamp wiz
 function addOpAmpWiz(){
     getAllFilters($('.filters-panel'));
 }
@@ -3443,15 +3421,16 @@ function getReverseFilterLink(formRowsTD){
     return reverseFilterLink;
 }
 
-function addBreadCrumbLink(){
-    _log('addBreadCrumbLink() Start',DLOG);
-    if ($('#productTable').size() > 0) {
-        appendURLParam($('.seohtagbold a:last'), 'akamai-feo', 'off');
-    }
-    addBreadcrumbHover();
-    _log('addBreadCrumbLink() End',DLOG);
-}
+// function addBreadCrumbLink(){
+//     _log('addBreadCrumbLink() Start',DLOG);
+//     if ($('#productTable').size() > 0) {
+//         // appendURLParam($('.seohtagbold a:last'), 'akamai-feo', 'off');
+//     }
+//     addBreadcrumbHover();
+//     _log('addBreadCrumbLink() End',DLOG);
+// }
 
+//TODO keep and maybe use other places
 function appendURLParam(href, param, value){
     _log('appendURLParam() Start',DLOG);
     
@@ -3504,7 +3483,9 @@ function addStickyHeader () {
     $('#productTable thead>tr:eq(1)').css('background-color','#e8e8e8');
     $('.stickyThead>tr:eq(1)').css('background-color','#e8e8e8');
     $('.stickyThead').parent().css({'table-layout':'fixed'});
-
+    
+    //TOODO fix buttons
+    //$('.sortButtonWrapper').css({'filter':'invert(1)'});
 }
 
 function CreateFloatingHeader() {
@@ -3590,34 +3571,34 @@ function UpdateFloatingHeader() {
 
 //adds floating table header in the productTable search results
 //TODO see if needed.... might be unused
-function addPersistHeader() {
-    _log('addPersistHeader() Start',DLOG);
-    GM_addStyle(".floatingHeader {position: fixed; top: 0;visibility: hidden; display:inline-block;}");
-    var floatingHeader;
-    $('#productTable').addClass('persist-area');
-    $('#productTable>thead').find('tr:first').addClass('persist-header');
-    $(".persist-area").each(function() {
-        floatingHeader = $(".persist-header", this);
+// function addPersistHeader() {
+//     _log('addPersistHeader() Start',DLOG);
+//     GM_addStyle(".floatingHeader {position: fixed; top: 0;visibility: hidden; display:inline-block;}");
+//     var floatingHeader;
+//     $('#productTable').addClass('persist-area');
+//     $('#productTable>thead').find('tr:first').addClass('persist-header');
+//     $(".persist-area").each(function() {
+//         floatingHeader = $(".persist-header", this);
         
-        floatingHeader.before(floatingHeader.clone().attr('id','realheader'));
+//         floatingHeader.before(floatingHeader.clone().attr('id','realheader'));
     
-        floatingHeader.children().css("width", function(i, val){
-            return $(floatingHeader).children().eq(i).css("width", val);
-        });
+//         floatingHeader.children().css("width", function(i, val){
+//             return $(floatingHeader).children().eq(i).css("width", val);
+//         });
         
-        floatingHeader.addClass("floatingHeader");
-        floatingHeader.css('width', $('.persist-area').width());
-    });
+//         floatingHeader.addClass("floatingHeader");
+//         floatingHeader.css('width', $('.persist-area').width());
+//     });
 
-    floatingHeader.find('th').width(function(i, val) {
-            if(i==2){return 64;}// for the image column so the alt text doesn't mess with the column width of images.
-            else{return $('#realheader').find('tr:first>th').eq(i).width();}
+//     floatingHeader.find('th').width(function(i, val) {
+//             if(i==2){return 64;}// for the image column so the alt text doesn't mess with the column width of images.
+//             else{return $('#realheader').find('tr:first>th').eq(i).width();}
 
-    });
-
-    $(window).scroll(updateTableHeaders).trigger("scroll");
-    _log('addPersistHeader() End',DLOG);
-}
+//     });
+//     $('.ps-sortButtons').css({'filter':'invert(1)'});
+//     $(window).scroll(updateTableHeaders).trigger("scroll");
+//     _log('addPersistHeader() End',DLOG);
+// }
 
 function updateTableHeaders() {
     $(".persist-area").each(function() {
@@ -3689,7 +3670,7 @@ function addImageBar() {
 
 function addToTopButton(){
     //css in stylesheet
-    $('#content').after('<div class="totop" href="#content"><a href="#content" style="text-decoration:none"><span>^^^<br/>Top<br/>^^^</span></a></div>');
+    $('#content').after('<div class="totop" href="#content"><a href="#content" style="text-decoration:none; color:gray;"><span style="font-size:36px; font-weight:bolder;">^</span></a></div>');
     // $('.totop').localScroll({
     //     duration: 500,
     //     offset: -600,
@@ -4646,7 +4627,7 @@ function addPriceHover(){
     _log('addPriceHover() Start',DLOG);
     //adds price hover over td.unitprice
 
-    $('td.unitprice').tooltipster({
+    $('td.tr-unitPrice').tooltipster({
         content: $('<div class=priceHover><div class=priceHoverTitle /> <div class=priceHoverBody> hit</div></div>'),
         trigger: 'hover',
         delay: 350,
@@ -4666,15 +4647,25 @@ function addPriceHover(){
 
 // function loadPrices($hoveredObj){
 function loadPrices(origin){
+    _log('loadPrices() Start',DLOG);
     $('.priceHoverBody').html('...loading <img style="margin-left:60px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
     // console.log($(this).closest('tr').find('.mfg-partnumber a:first').attr('href'));
     // console.log($(this).text());
-    $('.priceHoverBody').load($(this).closest('tr').find('.mfg-partnumber a:first').attr('href')+' #pricing', function(){
+    $('.priceHoverBody').load($(this).closest('tr').find('.tr-mfgPartNumber a:first').attr('href')+' .catalog-pricing', function(){
+        $('#product-dollars th').css({
+            'color': '#FFF',
+            'padding': '3px 5px',
+            'border': 'medium none !important',
+            'text-align': 'center',
+            'background-color': '#333',
+        });
         addPriceBreakHelper();
         origin.tooltipster('reposition');
     });
+    _log('loadPrices() End',DLOG);
 }
 
+//TODO fix for 4.0
 function combinePN(){
     _log('combinePN() Start',DLOG);
     // var productTable = $('#productTable').eq(0).detach();
@@ -4882,9 +4873,9 @@ function hideAccelTmb(e) {
 function addBreadcrumbHover(){
     //add hover over to the category link of the bread crumbs
     _log('addBreadcrumbHover() Start',DLOG);
-    $('h1.seohtagbold').find('a:eq(1)').append(' <i class="fa fa-caret-down fa-lg" style="color:red;"></i>');
+    $('h1.breadcrumbs').find('a:eq(1)').append(' <i class="fa fa-caret-down fa-lg" style="color:red;"></i>');
 
-    $('h1.seohtagbold').find('a:eq(1)').tooltipster({
+    $('h1.breadcrumbs').find('a:eq(1)').tooltipster({
         content: $('<div class=priceHover><div class=breadcrumbHoverTitle /> <div class=breadcrumbHoverContent> hit</div></div>'),
         trigger: 'hover',
         delay: 350,
@@ -4909,7 +4900,7 @@ function loadBreadcrumbHover(origin){
         //do nothing because it has already been loaded once
     } else{
         $('.breadcrumbHoverContent').html('Loading....');
-        $('.breadcrumbHoverContent').load( $hoveredObj.attr('href') + ' #content>ul', function(){
+        $('.breadcrumbHoverContent').load( $hoveredObj.attr('href') + ' .catfiltersub', function(){
             var linkcount = $(this).find('li').length;
             if(linkcount > 25){
                 $(this).addClass('columnized3');
