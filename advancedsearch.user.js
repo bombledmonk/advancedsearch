@@ -38,7 +38,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.6.4
+// @version     3.6.5
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -188,6 +188,8 @@
 //3.6.1     added image hover over supplier portal links, fixed the associated product view all links.
 //3.6.2		added https in product search, added view more button at bottom of product table
 //3.6.3     added search help
+//3.6.4     updated due to category name changes
+//3.6.5     moved the css bundle to the end as a trick to improve perceived load time
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -231,7 +233,7 @@ function preloadFormat(){
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
     GM_addStyle("#header {display: none;} #content hr {display:none;} #footer{position:relative; top:45px;} #content>form:first-child {display:none} #content>p {display:none;} .content-keywordSearch-form{display:none;}");
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
-    addResourceCSS();
+    // addResourceCSS();
     // _log('testing123333333', true)
     $('#header').detach();
     // _log('testing123333333', true)
@@ -304,7 +306,7 @@ function formatPagesPostReady() {
     tc(addBreadCrumbLink, 'addBreadCrumbLink');
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
-    
+    addResourceCSS();
     cleanup();
     _log('formatPagesPostReady() End',DLOG);
 }
