@@ -229,16 +229,31 @@ var cacheflag = false;
 //loads before document status is ready
 function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
+    $('#content').hide()
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
-    GM_addStyle("#header {display: none;} #content hr {display:none;} #footer{position:relative; top:45px;} #content>form:first-child {display:none} #content>p {display:none;} .content-keywordSearch-form{display:none;}");
+    $('.breadcrumbs').css({'margin': '0', 'padding': '0'});
+
+    GM_addStyle(`
+        #header {display: none;} 
+        #content hr {display:none;} 
+        #footer{position:relative; top:45px;} 
+        #content>form:first-child {display:none} 
+        #content>p {display:none;} 
+        .content-keywordSearch-form{display:none;}
+        `);
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
-    addResourceCSS();
+    
     // _log('testing123333333', true)
     $('#header').detach();
     // _log('testing123333333', true)
     $('#footer').before('<div style="height:10px;"></div>');
     // $('#footer').remove();
     // formatPagesPreReady();
+    // alert(`hello world
+    //     this is a multi
+    //     line
+    //     string`)
+
     _log('preloadFormat() End',DLOG);
 }
 
@@ -296,7 +311,7 @@ function formatPagesPostReady() {
     // tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
     tc(preFormatDetailPage, 'preformatDetailPage');
     tc(formatFilterResultsPage, 'formatFilterResultsPage');
-
+    $('#content').show();
     tc(formatDetailPage, 'formatDetailPage');
     // tc(formatOrderingPage,'formatOrderingPage');
     tc(formatFastAddPage,'formatFastAddPage');
@@ -305,7 +320,7 @@ function formatPagesPostReady() {
     tc(addBreadcrumbHover, 'addBreadcrumbHover');
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
-    
+    addResourceCSS();
     cleanup();
     _log('formatPagesPostReady() End',DLOG);
 }
@@ -731,7 +746,6 @@ function formatFilterResultsPage(){
         $('.dload-btn').css({'text-align':'left'});
         $('.page-slector').css({'width': '1%'});
         $('.qty-form').css({'width': '1%'});
-        $('.breadcrumbs').css({'margin': '0', 'padding': ''});
 
 
         // $('#search-within-results').css({'display':'inline'}).insertAfter($('.filters-group-chkbxs'))
@@ -744,9 +758,9 @@ function formatFilterResultsPage(){
         //TODO fix dependencies of if statements below
         
         // picsToAccel(); //add the thumnails to picture accelerator block
-        // if(localStorage.getItem('combinePN') == 1) {
-        //     setTimeout(function(){combinePN();}, 1);
-        // }
+        if(localStorage.getItem('combinePN') == 1) {
+            setTimeout(function(){combinePN();}, 1);
+        }
 
         // setTimeout(function(){addPartCompare();}, 150);
         if(localStorage.getItem('pricehoverControl') == 1) {
@@ -3670,11 +3684,8 @@ function addImageBar() {
 
 function addToTopButton(){
     //css in stylesheet
-    $('#content').after('<div class="totop" href="#content"><a href="#content" style="text-decoration:none; color:gray;"><span style="font-size:36px; font-weight:bolder;">^</span></a></div>');
-    // $('.totop').localScroll({
-    //     duration: 500,
-    //     offset: -600,
-    // });
+    $('#content').after('<div class="totop" href="#content"><a href="#content" style="text-decoration:none; color:gray;">'+
+        '<span style="font-size:48px; font-weight:bolder;">^</span></a></div>');
     $('.totop').on('click', function(){
       $('html,body').animate(
         {scrollTop: 0},
@@ -4670,7 +4681,7 @@ function combinePN(){
     _log('combinePN() Start',DLOG);
     // var productTable = $('#productTable').eq(0).detach();
     var productTable = $('#productTable').eq(0);
-    var mfpnIndex = productTable.find('th').index($('th.mfg-partnumber')) + 1;
+    var mfpnIndex = productTable.find('th').index($('th.th-mfgPartNumber')) + 1;
 
     productTable.find('td:nth-child(' + mfpnIndex + ')').each(function() {
         // $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().text());
@@ -4686,7 +4697,7 @@ function combinePN(){
     seccol.remove();
 
     $('a[href*=1000002]').parent().empty(); // remove
-    productTable.find('th:contains("Manufacturer Part Number")').each(function() {
+    productTable.find('th.th-mfgPartNumber').each(function() {
         $(this).text('Part# & Manu');
     });
     productTable.find('th:contains("Number")').each(function() {
@@ -4708,10 +4719,10 @@ function combinePNAfterLoad($targetProductTable){
     _log('combinePNAfterLoad() Start',DLOG);
     // var productTable = $('#productTable').eq(0).detach();
     var productTable = $targetProductTable.eq(0);
-    var mfpnIndex = productTable.find('tbody>tr:first>td').index('.mfg-partnumber') + 1;
+    var mfpnIndex = productTable.find('tbody>tr:first>td').index('.th-mfgPartNumber') + 1;
     mfpnIndex = 5;
     // alert('mfpnIndex')
-    console.log('mfpnIndex', mfpnIndex, productTable.find('tbody>tr:first>td').index('.mfg-partnumber'))
+    console.log('mfpnIndex', mfpnIndex, productTable.find('tbody>tr:first>td').index('.th-mfgPartNumber'))
     // console.log('right here',productTable.find('tbody>tr:first>td').html())
     // console.log( 'mfpnIndex', mfpnIndex, productTable.find('.rd-compare-parts').length, productTable, productTable.find('.mfg-partnumber:first'))
     productTable.find('td:nth-child(' + mfpnIndex + ')').each(function() {
