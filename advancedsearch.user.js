@@ -38,6 +38,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
+// @grant       GM_getResourceURL
 // @version     4.0
 // ==/UserScript==
 
@@ -229,18 +230,19 @@ var cacheflag = false;
 //loads before document status is ready
 function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
-    $('#content').hide()
+    $('#content').hide();
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
     $('.breadcrumbs').css({'margin': '0', 'padding': '0'});
 
-    GM_addStyle(`
-        #header {display: none;} 
+    GM_addStyle(
+        `#header {display: none;} 
         #content hr {display:none;} 
         #footer{position:relative; top:45px;} 
         #content>form:first-child {display:none} 
         #content>p {display:none;} 
         .content-keywordSearch-form{display:none;}
-        `);
+        `
+    );
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
     
     $('#header').detach();
@@ -273,10 +275,15 @@ function addResourceCSS(){
         "tooltipsterCSS",
         "tooltipster-shadowCSS"
     ];
+
+    console.log(GM_getResourceURL('buttonCSS'));
     for ( var x in cssNames){
-        var thetext = GM_getResourceText(cssNames[x]);
+        // var thetext = GM_getResourceText(cssNames[x]);
+        var thetext = GM_getResourceURL(cssNames[x]);
         _log('style tick 1'+ cssNames[x], DLOG);
-        GM_addStyle(thetext);
+        // GM_addStyle(thetext);
+        $('body').prepend('<link rel="stylesheet" href="'+thetext+'">');
+         // $('body').prepend('<link rel="stylesheet" href="data:text/css;base64,'+thetext+'">')
         _log('style tick end'+ cssNames[x], DLOG);
         // _log('style tick start '+cssNames[x], DLOG);
     }
@@ -297,6 +304,7 @@ function tc(thefunc, name){ // tc = try catch
 function formatPagesPostReady() {
     _log('formatPagesPostReady() Start',DLOG);
 	formatPagesPreReady();
+    addResourceCSS();
     tc(replaceQuestionMark, 'replaceQuestionMark');
     // tc(updateCache, 'updateCache');
     // tc(addCustomHeader, 'addCustomHeader');
@@ -312,7 +320,6 @@ function formatPagesPostReady() {
     tc(addBreadcrumbHover, 'addBreadcrumbHover');
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
-    addResourceCSS();
     cleanup();
     _log('formatPagesPostReady() End',DLOG);
 }
@@ -359,10 +366,14 @@ function cleanup () {
 
     askpermission(version);
 
-    $('input[type=submit],input[type=reset]').addClass('button-small pure-button').css({
+    $('input[type=submit],input[type=reset],input[type=button]').addClass('button-small pure-button')
+    .css({
         'margin': '2px',
+        'background-image': ''
     });
+    $('.button').css({'background-image': 'none', margin:'2px'});
     $('p:contains("No records match your")').show();
+    $('.alert').show();
     _log('cleanup() End',DLOG);
 }
 
@@ -422,7 +433,7 @@ function addCustomHeader(){
     // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
     $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
     $('.mainFlexWrapper').append($('#content'));
-    $('.dk-url-shortener').css({position:'fixed', right: '130px', top:'28px','z-index':'30'}); //move url shortener
+    $('.dk-url-shortener').css({position:'fixed', right: '130px', top:'22px','z-index':'30'}); //move url shortener
 
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
@@ -735,7 +746,7 @@ function formatFilterResultsPage(){
         // $('.quantity-form br').add('#mainform br').remove();
 
         $('a.altpkglink').hide();
-        $('.dload-btn').css({'text-align':'left'});
+        $('.dload-btn').css({'text-align':'left', 'width':'1%'});
         $('.page-slector').css({'width': '1%'});
         $('.qty-form').css({'width': '1%'});
 
@@ -744,6 +755,7 @@ function formatFilterResultsPage(){
         // $('#search-within-results input').css({'margin-bottom': 0});
         $('#deapplied-filters').css({'padding': '10px 0', 'display': 'inline'}).insertAfter($('#search-within-results').css({'display':'inline-block'}));
         $('.deapply-filter-selection').addClass('button-small pure-button primary');
+        // $('#filters-buttons').css({'background-image':'none'})
         addToTopButton();
         // addImageBar();
         floatApplyFilters();// redo or add back
@@ -763,12 +775,12 @@ function formatFilterResultsPage(){
         // alert('hi')
 
         // formatQtyBox();  //TODO addback?
-        // addColumnHider();
+        addColumnHider();
         // updateTableHeaders();
         // addApplyFiltersButtonHighlight();
         // wrapFilterTable(); //dependent on floatapplyfilters()
 
-        // addParamWizards(); // TODO addback
+        addParamWizards(); // TODO addback
         
         // if(localStorage.getItem('squishedFilters') == 1){
         //     squishedFilters();
@@ -787,7 +799,7 @@ function formatFilterResultsPage(){
         // });
         $('#productTable').addClass('gray');
 
-        // $('input[value*="Download Table"]').addClass('button-small pure-button');//.css({'margin':'1px', 'padding':'2px'});
+        $('input[value*="Download Table"]').addClass('button-small pure-button')//.css({'background-image':''});//.css({'margin':'1px', 'padding':'2px'});
 
 
         if(localStorage.getItem('queryHighlight') == 1){
@@ -797,11 +809,11 @@ function formatFilterResultsPage(){
         } 
 
         addColumnMath();
-        // addGraphInterface();
-        // styleCheckboxes();
-        // addVisualPicker();
-        // replaceStarDash();
-        // addMorePartsToTable();
+        addGraphInterface();
+        styleCheckboxes();
+        addVisualPicker();
+        replaceStarDash();
+        addMorePartsToTable();
         //addOpAmpWiz();
         //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
 
@@ -906,7 +918,8 @@ function addVisualPicker(){
     var dialogHeight = ($(window).height() * 0.8);
     var dialogWidth = ($(window).width() * 0.8);
 
-    $('.selectboxdivclass>b').after('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
+    // $('.selectboxdivclass>b').after('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
+    $('#appliedFilterHeaderRow th').append('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
     $('#content').after(
         '<div id="visualpickerdiv" style="display:none;">'+
             '<div class="pickerbody" style="overflow-y:scroll; height:'+(dialogHeight-90)+'px;"></div>'+
@@ -942,7 +955,8 @@ function addVisualPicker(){
         }, 
     } );
 
-    $('.pickericon').on('click', openVisualPicker );
+    // $('.pickericon').on('click', openVisualPicker );
+    $('.pickericon').on('click', openVisualPickerNoWrap );
     
     $('.addmoreoptions').on('click', addImagesToVisualPicker);
 
@@ -980,12 +994,35 @@ function pickerOptionClick(){
         });
 }
 
-function openVisualPicker(){
+// function openVisualPickerOLD(){
+//         // _log('clicked on .pickeritem', true);
+//         var p = $('.pickerbody');
+//         var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
+//         console.log(colIndex);
+//         p.data('selectval', $(this).parent().find('select').attr('name'));
+//         var $options = $(this).parent().find('select option');
+
+
+//         p.data('optioncount', $options.length);
+//         p.data('optionsvisible', 0);
+//         p.data('currentfilter', filtername);
+//         p.data('theoptions', $options);
+
+//         $( "#visualpickerdiv" ).dialog('open');
+//         $('.addmoreoptions').show();
+//         addImagesToVisualPicker();
+// }
+
+function openVisualPickerNoWrap(){
         // _log('clicked on .pickeritem', true);
         var p = $('.pickerbody');
-        var filtername = $(this).closest('.selectboxdivclass').find('b').text();
-        p.data('selectval', $(this).parent().find('select').attr('name'));
-        var $options = $(this).parent().find('select option');
+        // var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
+        var filtername = $(this).closest('th').text(); //for non wrapping function
+        var colIndex = $(this).closest('th').index()
+        p.data('selectval', $('#appliedFilterOptions').eq(colIndex).find('select').attr('name'));
+        // p.data('selectval', $(this).parent().find('select').attr('name'));
+        var $options = $('#appliedFilterOptions td').eq(colIndex).find('select option');
+        console.log($options);
 
 
         p.data('optioncount', $options.length);
@@ -1034,14 +1071,15 @@ function getSingleOptionImageSet($option, filtername){
     //add extra data on hover
     //give choice to see unrestricted examples of filters. 
     //add (no images available message)   
-
+http://digikeytest.digikey.com/product-search/en/battery-products/batteries-rechargeable-secondary/undefined&k=&FV=fff40006%2Cfff804e4&mnonly=0&newproducts=0&ColumnSort=100001&page=1&quantity=1&ptm=0&fid=0&pageSize=25&akamai-feo=off&s=28995
         var selectname = $option.parent().attr('name');
         var optionval = $option.val();
         $option.parent().attr('disabled', true);
         var serialform = $('#mainform').serialize();
         $option.parent().attr('disabled', false);
 
-        var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
+        // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
+        var mylink =  '?'+1serialform + '&' +$option.parent().attr('name')+'='+$option.val();
         // console.log(mylink)
         // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
         var ddclass = 'store-'+optionval;
@@ -1061,24 +1099,16 @@ function getSingleOptionImageSet($option, filtername){
             );
 
             dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],.matching-records,#reportPartNumber', function(){
-                var matching = (dd.find('.matching-records').length > 0 ) ? dd.find('.matching-records').text().split(':')[1].trim() : '1';
+                var matching = (dd.find('.matching-records-count').length > 0 ) ? dd.find('.matching-records-count').text().split(':')[1].trim() : '1';
                 var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
 
-                // $('#pickerid'+optionval).append(
-                //     '<div style="width:40px; display:flex; align-items:center;">'+
-                //     '<input type=checkbox value="'+optionval+'" class="css-checkbox" id="check'+optionval+'" style="z-index:2005;">'+
-                //     '<label class="css-label" for="check'+optionval+'"></label></div>'+
-                //     '<div class="imgholder'+optionval+'">'+
-                //         '<div style="font-weight:bold; font-size:1.2em;">'+$option.text()+' ('+matching+') </div>'+
-                //     ' </div>'
-                // );
                 $('#pickerid'+optionval).find('.matchnum').text(matching);
 
                  $images.css({'height':'50px', 'width':'50px'});
                 $('.imgholder'+optionval).append(deDuplicateCollection($images, 'src').slice(0,20));
 
-                if($(this).find('.beablock-image').length == 1){
-                    $(this).find('img').css({'height':'50px', 'width':'50px'}).appendTo($('.imgholder'+optionval)).addClass('pszoomervp');
+                if($(this).find('.product-photo-wrapper img').length == 1){
+                    $(this).find('.product-photo-wrapper img').css({'height':'50px', 'width':'50px'}).appendTo($('.imgholder'+optionval)).addClass('pszoomervp');
                 }
 
                 dd.detach();
@@ -1086,6 +1116,66 @@ function getSingleOptionImageSet($option, filtername){
             });
         }
 }
+
+// function getSingleOptionImageSetOLD($option, filtername){
+//     //special cases replace - and * with descriptive names
+//     //fix special case when it goes to detail page, should not need to worry about no search results found
+//     //add clear this filter button
+//     //add extra data on hover
+//     //give choice to see unrestricted examples of filters. 
+//     //add (no images available message)   
+
+//         var selectname = $option.parent().attr('name');
+//         var optionval = $option.val();
+//         $option.parent().attr('disabled', true);
+//         var serialform = $('#mainform').serialize();
+//         $option.parent().attr('disabled', false);
+
+//         var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
+//         // console.log(mylink)
+//         // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
+//         var ddclass = 'store-'+optionval;
+//         if ($('.'+ddclass).length === 0){
+//             $('#content').after('<div  class="'+ddclass+'" />');
+//             var dd = $('.'+ddclass);
+
+//             $('.pickerbody').append('<div id="pickerid'+optionval+'" class="pickerItem pickerItemNotSelected" />');
+//             $('#pickerid'+optionval).append(
+//                 '<div class="pickercheckboxholder" >'+
+//                     '<input type=checkbox value="'+optionval+'" class="css-checkbox" id="check'+optionval+'" style="z-index:2005;">'+
+//                     '<label class="css-label" for="check'+optionval+'"></label>'+
+//                 '</div>'+
+//                 '<div class="imageholder imgholder'+optionval+'">'+
+//                     '<div style="font-weight:bold; font-size:1.2em;">'+$option.text()+' (<span class="matchnum">loading</span>) </div>'+
+//                 ' </div>'
+//             );
+
+//             dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],.matching-records,#reportPartNumber', function(){
+//                 var matching = (dd.find('.matching-records').length > 0 ) ? dd.find('.matching-records').text().split(':')[1].trim() : '1';
+//                 var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
+
+//                 // $('#pickerid'+optionval).append(
+//                 //     '<div style="width:40px; display:flex; align-items:center;">'+
+//                 //     '<input type=checkbox value="'+optionval+'" class="css-checkbox" id="check'+optionval+'" style="z-index:2005;">'+
+//                 //     '<label class="css-label" for="check'+optionval+'"></label></div>'+
+//                 //     '<div class="imgholder'+optionval+'">'+
+//                 //         '<div style="font-weight:bold; font-size:1.2em;">'+$option.text()+' ('+matching+') </div>'+
+//                 //     ' </div>'
+//                 // );
+//                 $('#pickerid'+optionval).find('.matchnum').text(matching);
+
+//                  $images.css({'height':'50px', 'width':'50px'});
+//                 $('.imgholder'+optionval).append(deDuplicateCollection($images, 'src').slice(0,20));
+
+//                 if($(this).find('.beablock-image').length == 1){
+//                     $(this).find('img').css({'height':'50px', 'width':'50px'}).appendTo($('.imgholder'+optionval)).addClass('pszoomervp');
+//                 }
+
+//                 dd.detach();
+//                 presetSelections(selectname);
+//             });
+//         }
+// }
 
 function presetSelections(selectname){
     //grabs he highlighted options from the main form and selects them in the visual picker body.
@@ -1309,7 +1399,7 @@ function preProcessForQty($elem){
         if($elem.hasClass('CLS 1')){
             //console.log('type = resistance');
             parsableText = etext + 'Ohm';
-        }else if ($elem.hasClass('tr-unitprice') || $elem.hasClass('priceme')){
+        }else if ($elem.hasClass('tr-unitPrice') || $elem.hasClass('priceme')){
             //console.log('type = price')
             parsableText = etext.split('@')[0] + ' USD';
         }else if ($elem.hasClass('CLS 2')){
@@ -1328,7 +1418,7 @@ function preProcessForQty($elem){
         }else if (etext.indexOf('(') !== -1){
             parsableText = etext.split('(')[0];
             console.log('type with multiple units in ()');
-        }else if ($elem.hasClass('qtyAvailable')){
+        }else if ($elem.hasClass('tr-qtyAvailable')){
             // this will have problems with European notation '5,4' vs '5.4'
             parsableText = etext.split('-')[0].replace(/,/g, '');
         }
@@ -1434,7 +1524,7 @@ function addGraphInterface(){
     },3000);
 
     
-    $('#preProductTable').append('<button id="buildChart" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-line-chart"></i> Build Chart</button>');
+    $('.mid-wrapper').append('<button id="buildChart" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-line-chart"></i> Build Chart</button>');
     
     $('#graphDialog').append(
         '<form><select id="yGraphColumn"></select>'+
@@ -1659,69 +1749,6 @@ function fixImageHover(){
     _log('fixImageHover() End',DLOG);
 }
 
-// function fixAssociatedPartsForIndexResultsPage(){
-//     _log('fixAssociatedPartsForIndexResultsPage() Start',DLOG);
-//     if($('.catfilterlink:first').attr('href').indexOf('part=') != -1){
-//         $('.catfilterlink').each(function(){
-//             var fullhref = $(this).attr('href');
-//             var queryarray = fullhref.split('?')[1].split('&');
-//             var baseurl = fullhref.split('?')[0].split('/');
-//             var catfamnumber = baseurl.pop();
-//             var currentitem = $(this);
-
-//             currentitem.wrap('<form action="/scripts/dksearch/dksus.dll" method="post" />');
-//             currentitem.after('<input type=hidden value="'+catfamnumber+'" name="cat" >');
-
-//             queryarray.forEach(function(attr){
-//                 if (attr.indexOf('=') != -1){
-//                     currentitem.after('<input type=hidden value="'+attr.split('=')[1]+'" name="'+attr.split('=')[0]+'" >');
-//                     currentitem.attr('href',"#");
-//                     currentitem.click(function(){$(this).closest('form').submit();});
-//                 }                
-//             });
-//         });
-//     }
-//     _log('fixAssociatedPartsForIndexResultsPage() End',DLOG);
-// }
-
-// function fixAssociatedPartInFilterForm(){
-//     _log('fixAssociatedPartInFilterForm() End',DLOG);
-//     var fullquerystring = window.location.search;
-//     if(fullquerystring.indexOf('&') != -1){
-//         var queryarray = fullquerystring.split('&');
-//         var parts = queryarray.filter(function(part){
-//              if(part.indexOf('part=') != -1){
-//                 return true;
-//              }else{return false;}
-//         });
-//         if (parts.length > 0){
-//             parts = parts.map(function(part){
-//                 return part.split('=')[1];
-//             }); 
-//             parts.forEach(function(part){
-//                 $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
-//             });
-//         }
-//         // _log('fullquerystring is ' + fullquerystring , true);
-//     }
-//     else if($('#earlPH').length){
-//         var parts = $('#earlPH').val().split('&').filter(function(part){
-//              if(part.indexOf('part=') != -1){
-//                 return true;
-//              }else{return false;}
-//         });
-//         if (parts.length > 0){
-//             parts = parts.map(function(part){
-//                 return part.split('=')[1];
-//             }); 
-//             parts.forEach(function(part){
-//                 $('#mainform').append('<input type="hidden" name="part" value="'+part+'">');
-//                 $('#mainform').attr('action', "/scripts/dksearch/dksus.dll");
-//             });
-//         }
-//     }
-//     _log('fixAssociatedPartInFilterForm() End',DLOG);
-// }
 
 function floatApplyFilters(){
     // $('.filters-buttons').wrapAll('<div id=floatApply>');
@@ -1743,96 +1770,6 @@ function addSearchWithin(){
 function addFilterHider(){
 }
 
-// function addtrueFilterReset(){
-//     // s = 3FFB = 16379,    v= 3FFF = 16383
-//     _log('addtrueFilterReset() Start',DLOG);
-//         var fv = $('#mainform').find('input[name=FV]').length ? $('#mainform').find('input[name=FV]').val() : '0' ;
-//     if (fv.split(',').length > 2){  
-//         var famlink = getFamilyLink().split('?')[0];
-//         $('#mainform').prepend('<div id=filterResetDiv class=gray-grad2 style="padding:5px 5px; width:auto;">'+
-//                 '<span><b>Applied Filters: <b> </span>'+
-//                 '<div id="tempdiv" style="display:none; postion:fixed;"></div>'+
-//                 '<a id="startOverInFam" style="float:right" href='+famlink+'>Start Over in: '+$('.seohtagbold a:last').text()+'</a>'+
-//             '</div>');
-//         // _log('')
-//         setTimeout(function(){
-//             if (sessionStorage.getItem(famlink) == null){
-//                 $('#tempdiv').load(famlink+' form[name=attform]', function(){
-//                     sessionStorage.setItem(famlink, htmlEscape($('#tempdiv').html()));
-//                     trueFilterCallback();
-//                     $('#tempdiv').empty();
-//                     _log('addtrueFilterReset() tagsnew',1);
-//                 });
-//             }
-//             else {
-//                 $('#tempdiv').append(htmlUnescape(sessionStorage.getItem(famlink)));
-//                     trueFilterCallback();
-//                     //_log('addtrueFilterReset() tagstored ' + $('#tempdiv').text(),1);
-//                     $('#tempdiv').delay(3000).empty();
-//                     _log('addtrueFilterReset() tagstored',1);
-//             }
-//         },200); 
-//     }
-//     _log('addtrueFilterReset() End',DLOG);
-// }
-
-// function trueFilterCallback(){
-//     _log('trueFilterCallback() Start',DLOG);
-//     var FVarray = $('#mainform').find('input[name=FV]:last').val().split(',');
-//     var masterResetArray = []; // [[name, pv],[],...]
-//     var x,y,pvnum,shiftedFV;
-//     $('#tempdiv').find('select').each(function(ind){
-//         masterResetArray.push([$(this).closest('table').find('th').eq(ind).text(),$(this).attr('name')]);
-//     });
-    
-//     _log('masterResetArray ' + masterResetArray+'\n FVval ' +FVarray);
-//     for ( y=0; y < masterResetArray.length; y++){
-//         for(x=0; x < FVarray.length; x++){
-//             pvnum = parseInt(masterResetArray[y][1].replace('pv', '').replace('s','16379').replace('v','16383'), 10);
-//             shiftedFV = parseInt(FVarray[x],16)>>>18;
-//             // _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, DLOG);
-//             if(parseInt(FVarray[x],16)>>>18 == pvnum){
-//                 // _log(FVarray[x] +' parsint>>18 ' +shiftedFV +'  '+ pvnum, DLOG);
-//                 $('#filterResetDiv').append('<span class="trueReset trueResetButton" data-pvnum='+pvnum+' title="Click to Remove this Filter">'+ masterResetArray[y][0]+
-//                     ' <i class="fa fa-remove ired"></i></span>');
-//                 console.log('pvnum', pvnum);
-//                     //                 $('#filterResetDiv').append('<span class="trueReset">'+ masterResetArray[y][0]+
-//                     // ' </span><button class="trueResetButton minimal" style="margin-right:20px" value="'+
-//                     // pvnum+'"">x</button> ');
-//                 break;
-//             }
-//         }
-//     }
-
-//     $('.trueReset').click(function(){
-//         var x=0;
-//         var temparr=[];
-//         for(x=0; x< FVarray.length; x++){
-//             _log('datapvnum '+(parseInt(FVarray[x],16)>>>18) + ' '+ parseInt($(this).attr('data-pvnum'),10));
-//             if( (parseInt(FVarray[x],16)>>>18) != parseInt($(this).attr('data-pvnum'), 10) ){
-//                 temparr.push(FVarray[x]);
-//             }
-//         }
-//         _log($('#mainform input[name=FV]').val());
-//         $('#mainform input[name=FV]').val(temparr.join(','));
-//         _log($('#mainform input[name=FV]').val());
-//         $('#mainform').submit();        
-//         // var x=0;
-//         // var temparr=[];
-//         // for(x=0; x< FVarray.length; x++){
-//         //     _log((parseInt(FVarray[x],16)>>>18) + ' '+ parseInt($(this).val(), 10));
-//         //     if( (parseInt(FVarray[x],16)>>>18) != parseInt($(this).val(), 10) ){
-//         //         temparr.push(FVarray[x]);
-//         //     }
-//         // }
-//         // _log($('#mainform input[name=FV]').val());
-//         // $('#mainform input[name=FV]').val(temparr.join(','));
-//         // _log($('#mainform input[name=FV]').val());
-//         // $('#mainform').submit();
-
-//     });
-//     _log('trueFilterCallback() End',DLOG);
-// }
 
 
 function getParamList(){
@@ -2109,30 +2046,6 @@ function addLearnMore(){
 	});
 }
 
-// function addSideIndex(productTree){
-//     _log('addSideIndex() Start',DLOG);
-//     // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:70px;"/>');
-//     $('.mainFlexWrapper').prepend('<div class="sideIndex"><div class="sideIndexContent"><div class="sideIndexTitle"><a href="'+gIndexLink+'">Index</a> <a href="#content" style="margin-left:auto; margin-right: 4px;">top</a></div></div></div>');
-//     var sidetext = '';
-//     productTree.forEach(function(item){
-//         //$('.sideIndexContent').append(
-//             sidetext = sidetext + '<li style="display:flex; align-items:center;"><a href="#'+selectorEscape(item.category)+'">'+item.category+'</a></li>';
-//         //);
-//     });
-//     $('.sideIndexContent').append(sidetext);
-//     // $('.sideIndex').css('width',($('.sideIndexContent').width()+50)+'px'); //needs to be there for chrome when using display:flex
-//     $('.sideIndex').css('width',(300)+'px'); //needs to be there for chrome when using display:flex
-//     // alert($('.sideIndexContent').width());
-//     $('.sideIndexContent').addClass('fixedsticky').css('top','55px').fixedsticky();
-//     // $('.sideIndexContent').addClass('fixedsticky').css('top','50px');
-//     // $('#footer').addClass('fixedsticky').fixedsticky();
-
-//     //addCategorySprites2();
-
-//     $('.sideIndexContent a').click(smoothScrollToCat);
-//     _log('addSideIndex() End',DLOG);
-// }
-
 function smoothScrollToCat(e){
     //TODO add color highlighting for each click... highlight category box?
     e.preventDefault();
@@ -2199,69 +2112,6 @@ function handleTopResults4(){
     $('#qpTitle').append('for '+ $('#headKeySearch').val())
 }
 
-// function handleTopResults3(trdata){
-//     _log('handleTopResults3() Start',DLOG);
-//     var keyword = $("#headKeySearch").val();
-//     if(keyword !="" && $('#quickPicksDisplay').length > 0){
-//         var resultList = $('#quickPicksDisplay li');
-//         // console.log(resultList);
-//         $('#quickPicksDisplay').remove();
-
-//         var topResultsHTML = '<div id="topResultsContainer" class="box effect1">'+
-//             '<div class="topResultsTitle"><i class="fa fa-arrow"></i>Top Families for <span style="font-size:15px; font-style:italic;">&nbsp'+keyword+'</span></div>'+
-//             '<div class="topResultsBody" ></div>'+
-//         '</div>';
-
-//         $('#content').prepend(topResultsHTML);
-        
-//         $('.topResultsBody').append( '<table id="topResultsTable"><tbody><tr style="font-weight:bold;"><td>Family</td><td>Category</td></tr></tbody></table>');
-//         var rows = '';
-//         var trt = $('#topResultsTable tbody');
-//         var regExp = /\(([^)]+)\)/;
-//         trdata.forEach(function(elem){
-//             trt.append('<tr><td></td><td></td></tr>');
-//             trt.find('tr:last td:first').append(elem.famLink);
-//             trt.find('tr:last td:first').append( ' ('+ elem.count + ') ');
-//             trt.find('tr:last td:last').append('<a class="catjumpto" href="#'+selectorEscape(elem.cat)+'">'+elem.cat+'</a>');
-//         });
-
-//         $('.catjumpto').click(smoothScrollToCat);
-//         // $('head').append('<style></style>');
-
-//         $('#topResultsContainer a').css("textDecoration", "none");
-//     }
-//     _log('handleTopResults3() End',DLOG);
-// }
-
-// function getTopResultsData(){
-//     _log('getTopResultsData() Start',DLOG);
-//     var trdata =[];
-//     var resultList = $('#quickPicksDisplay li');
-//     var itemsRE = /\(\d+\sitems\)/;
-//     var itemsREnot = /^(\(\d+\sitems\)).+/;
-//     resultList.each(function() {
-//         var famLink = $(this).find('a');
-//         var cat = $(this).contents().filter(function() {return this.nodeType == 3;}).text().replace(itemsRE, '').trim();
-//         var count = itemsRE.exec($(this).contents().text()).toString().replace(/\(|\)|\sitems/g, '');
-
-//         trdata.push ({
-//             'famLink':famLink,
-//             'cat': cat,
-//             'count': count
-//         });
-//     });
-//     _log('getTopResultsData() end',DLOG);
-//     return trdata;
-// }
-
-// function getTopResultsCategories(trdata){
-//     //collects all the categories represented in the Top Results box
-//     var array = [];
-//     trdata.forEach( function(item) {
-//         array.push(selectorEscape(item.cat));
-//     });
-//     return uniqueArray(array).reverse();
-// }
 
 function storeProductIndexTree(){
     _log('storeProductIndexTree() Start',DLOG);
@@ -2293,35 +2143,11 @@ function storeProductIndexTree(){
                 'new': oneCategoryNew 
             });
         });
-        console.log(container);
+        // console.log(container);
     _log('storeProductIndexTree() End',DLOG);
     return container;
 }
 
-// function storeProductIndexTree(){
-//     _log('storeProductIndexTree() Start',DLOG);
-
-//     var container = [];
-//     var quantitytest = (localStorage.getItem('qtydefault') == 1)? 1 : 0;
- 
-//         $('#productIndexList>li').each(function(){
-//             var oneCategory = $(this);
-//             var familyTree = [];
-//             oneCategory.find('.catfiltersub>li').each(function(){
-//                 familyTree.push(getFamilyItemFromListElem(this, quantitytest)); 
-//             });
-//             console.log('familyTree');
-//             container.push({
-//                 'category': oneCategory.find('.catfiltertopitem').text(), 
-//                 'catlink': oneCategory.find('.catfiltertopitem a').attr('href'), 
-//                 'families': familyTree,
-//                 'new': parseInt(oneCategory.find('.newProductCategory').text().replace('-','')) || 0
-//             })  ;
-//         });
-//         //console.log(container);
-//     _log('storeProductIndexTree() End',DLOG);
-//     return container;
-// }
 
 function getFamilyItemFromListElem(item, quantitytest){
     // var itemsRE = /\(\d+\sitems\)/;
@@ -2627,96 +2453,7 @@ function addIndexColumnizerControls(){
     _log('addIndexColumnizerControls() End',DLOG);
 }
 
-//todo delete
-// function addQuickPicksDisplayControls(){
-//     //Adds the Off, |||, = columns and off, right, top controls to the top of the quick
-//     _log('addQuickPicksDisplayControls() Start', DLOG);
-//     var thehtml = '<span id="qpchooser" style="position:relative; top:70px; margin-left:20px; z-index:6;" >'+
-//         '<input type=hidden id=qfLocation class="saveState" value="2">' +
-//         '<button id=qpoff value=0 class="pure-button">Off</button>'+
-//         '<button id=qpside value=1 class="pure-button">Right</button>'+
-//         '<button id=qptop value=2 class="pure-button">Top</button>'+
-//         ' Jump To / Top Results Box'+
-//     '</span>';
-//     $('#content').before(thehtml);
-//     restoreInputState($('#qfLocation'));
-//     $('#qpchooser').val($('#qfLocation').val());
 
-//     if($('#qfLocation').val() == 0){
-//         _log('qpchooser off', DLOG);
-//         $('#qpDiv').hide();
-//         $('#qpoff').addClass('myRedButton');
-//         // $('#qpside').addClass('clean-gray');
-//         // $('#qptop').addClass('clean-gray');
-//     }else if($('#qfLocation').val() == 1){
-//         _log('qpchooser columns', DLOG);    
-    
-//         // $('#qpoff').addClass('clean-gray');
-//         $('#qpside').addClass('myRedButton');
-//         // $('#qptop').addClass('clean-gray');
-//     }else if($('#qfLocation').val() == 2){
-//         _log('qpchooser lines', DLOG);
-
-//         // $('#qpoff').addClass('clean-gray');
-//         // $('#qpside').addClass('clean-gray');
-//         $('#qptop').addClass('myRedButton');
-//     }
-
-//     $('#qpchooser button').on('click', function(){
-//         $('#qfLocation').val($(this).val());
-//         localStorage.setItem('qfLocation', $(this).val());
-//         _log($('#qfLocation').val() + ' qflocation val -- '+ $(this).val());
-//         if($('#qfLocation').val() == 0){
-//             $('#qpDiv').hide();
-//             _log('hiding qpdiv');
-//         }else if($('#qfLocation').val() == 1){
-//             $('#qpDiv').removeClass().addClass('rightside').show();
-//             $('#qpHandle').show();
-//             _log('rightside qpdiv');
-//         }else if($('#qfLocation').val() == 2){
-//             $('#qpDiv').removeClass().addClass('topside').show();
-//             _log('topside qpdiv');
-//             $('#qpHandle').hide();
-//         }
-
-//         $('#qpchooser button').removeClass('myRedButton');
-//         $(this).toggleClass('myRedButton');
-//     }).css('padding','3px 3px 3px 3px');
-
-//     _log('addQuickPicksDisplayControls() End', DLOG);
-// }
-
-//TODO delete
-// function fixAssProdFamilyLinks(){
-//     //trying to fix the problem of associated product being in multiple families and the links to those families not working.... 
-//     //not working for now
-//     _log('fixAssProdFamilyLinks() Start',DLOG);
-//     $('.catfilterlink[href*="part="]').each(function(){
-//         var myhref = $(this).attr('href').split('?')[1];
-//         var mypath = $(this).attr('href').split('?')[0];
-//         var qarray = myhref.split('&');
-//         var partarray =[];
-//         var otherparams =[];
-//         var partsHTML = '';
-//         $(this).wrap('<form method="post" action="/scripts/dksearch/dksus.dll" />');
-//         for(var x=0; x<qarray.length; x++){
-//             if (qarray[x].indexOf('part=')!= -1){
-//                 $(this).parent().append('<input type="hidden" name="part" value="'+qarray[x].replace(/part\=/i,'')+'">');
-//                 //partarray.push(qarray[x].replace(/part\=/i,''));
-//             }
-//             else{
-//                 otherparams.push(qarray[x]);
-//             }
-//         }
-        
-//         $(this).parent().append('<input type="hidden" cat=>');
-//         $(this).click(function(){
-//             $(this).parent().submit();
-//         });
-//         _log(partarray);
-//     });
-//     _log('fixAssProdFamilyLinks() End',DLOG);
-// }
 
 function addIndexPicPrev(){
     _log('addIndexPicPrev() Start',DLOG);
@@ -2776,18 +2513,19 @@ function formatDetailPage(){
     console.log (500000)
     if($('#reportPartNumber').length){
         _log('formatDetailPage() Start',DLOG);
+
+        $('#bottomhalf').css({'margin-top': '10px'});
         // var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
         addPriceBreakHelper();
-        var dataTable = $('.attributes-table-main').find('table:first');
+        var dataTable = $('.attributes-table-main');
         //addAssProdLinkToFilters();
+        console.log('pre addassociated')
         ap.addAssociatedProductViewer();
-        apOld.addAssociatedProductViewer();
+        // apOld.addAssociatedProductViewer();
         addReverseFiltering(dataTable);
         addToTopButton();
-
         
         addDetailPageEasyInfoCopy($('#content'));
-
 
         addDataSheetLoader();
         // addDashNDHover();
@@ -2829,10 +2567,10 @@ function preFormatDetailPage(){
         var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
         
         //$('.beablock').removeClass('beablock');
-        $('.beablock').css({
-        'border-radius': '5px',
-        'border': '1px solid #ccc'
-        });
+        // $('.beablock').css({
+        // 'border-radius': '5px',
+        // 'border': '1px solid #ccc'
+        // });
         
         priceTable.css(tablegeneralcss);
         priceTable.find('td,th').css(trtdcss);
@@ -2878,7 +2616,7 @@ function detailPageManufacturerHover(){
 }
 
 function addDetailPageEasyInfoCopy($pageobject){
-	$('.attributes-table-main form:last').after('<button class="easyCopy pure-button" style="margin-right:10px;">Easy Data Copy</button>');
+	$('.product-info-section form:last').after('<button class="easyCopy pure-button" style="margin:5px 10px 0px 0px;">Easy Data Copy</button>');
 	$('#content').after('<div id="easyCopyDialog" class="firstopen" style="display:none;">'+
 		'<div class="copytablediv">Click and drag headers to choose order.<br><table id="copytable" class="gray"><thead><tr></tr></thead><tbody><tr></tr></tbody></table></div>'+
 		'<textarea style="width:100%; height:150px;  overflow:scroll;" class="copytext"></textarea> <div style="float:right;">Ctrl+C to copy, then paste into spreadsheet</div>'+
@@ -3083,7 +2821,7 @@ function addFootprintSearch(){
 }
 
 function addDetailHoverMainImage(){
-    $('.beablock-image img:first').tooltipster({
+    $('#product-photo-wrapper img:first').tooltipster({
         content: $('<div class=detailHoverImage><div class=detailHoverTitle /> <div class=detailHoverBody> hit</div></div>'),
         trigger: 'hover',
         delay: 350,
@@ -3128,7 +2866,7 @@ function addCOBLEDWizard(){
     var param2Text = getParametricValueText(param2);
     var driverLink = '/product-search/en/power-supplies-external-internal-off-board/led-supplies/591038';
 
-    $('.attributes-optional-table').prepend('<div id="'+id+'" style="width:100%;" class="panel panel-default">'+
+    $('#additional-product-options-section').prepend('<div id="'+id+'" style="width:100%;" class="panel panel-default">'+
         '<div class="panel-heading">Compatible Driver Wizard</div>'+
             '<div class="panel-body" style="padding:10px; ">'+
                 '<div class="" style="line-height:2em; display:inline-block;">'+
@@ -3386,7 +3124,7 @@ function addReverseFiltering($tableToFilter){
         }
     });
 
-    $('.attributes-table-main form:first').after(
+    $('.product-info-section form:first').after(
         '<a class="similarPartLink" target="_blank">'+
         '<div style="float:right; cursor:pointer;" class="pure-button similarPartsButton">See <span></span> Similar Parts</div>'+
         '</a>'
@@ -3402,7 +3140,7 @@ function addReverseFiltering($tableToFilter){
         });
     });
 
-    $('.attributes-table-main form:first').css({float:'left'}).find('input').addClass('pure-button'); // move the Report an Error button to the left
+    $('.product-info-section form:first').css({float:'left', 'margin-top': '5px'}).find('input').addClass('pure-button'); // move the Report an Error button to the left
     _log('addReverseFiltering() End',DLOG);
 }
 
@@ -4060,7 +3798,7 @@ function getAttributeExampleImgs(name,$selectElem) {
         myURL = myURL.replace(myregex, '') + $(this).parent().attr('name') + '=' + $(this).val();
         //_log('regexed url '+ myURL);
         $('#accContent').append('<a id="imgprev' + index + '" href="' + myURL + '" title="' + $(this).text() + '"></a>');
-        $('#imgprev' + index).load(myURL + ' img[src*="tmb"]:first,div.beablock>a>img', function() {
+        $('#imgprev' + index).load(myURL + ' img[src*="tmb"]:first,.product-photo-wrapper img:first', function() {
             if($(this).find('img:not([src*=tmb])').size() > 0) {
                 var thumb = $(this).find('img:not([src*=tmb])').attr('src').replace('_sml', '').replace('.jpg', '_tmb.jpg');
                 $(this).find('img:not([src*=tmb])').attr('src', thumb).removeAttr('title').removeAttr('width');
@@ -4462,7 +4200,7 @@ function addEvents(){
 
 function addColumnHider(){
     _log('addColumnHider() Start',DLOG);
-    $('#preProductTable').append('<button id=showCols style="margin:2px 5px;"class="button-small pure-button">Show hidden Columns</button>');
+    $('.mid-wrapper').append('<button id=showCols style="margin:2px 5px;"class="button-small pure-button">Show hidden Columns</button>');
     $('#showCols').click(function(e){
         e.preventDefault();
         $('.hiddenCol').fadeIn(800);
@@ -4478,8 +4216,9 @@ function addColumnHider(){
         var colIndex = $(this).index()+1;
         _log($(this).text()+' acc expand click is sibling number ' + $(this).index() );
         _log('trying to hide col ' + colIndex);
-        $('.stickyHeader').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-        // $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
+        // $('.stickyHeader').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
+        // $('.stickyHeader').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
+        $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
         $('#showCols').addClass('myRedButton');   
     });
     addDashedColumnsHider();
@@ -4490,7 +4229,7 @@ function addColumnHider(){
 function addDashedColumnsHider(){
     //dev
     _log('addDashedColumnsHider() Start',DLOG);    
-    $('#preProductTable').append('<button id=identCols style="margin:2px 5px;"class="button-small pure-button">Hide Identical Columns</button>');
+    $('.mid-wrapper').append('<button id=identCols style="margin:2px 5px;"class="button-small pure-button">Hide Identical Columns</button>');
     $('#identCols').click(function(e){
         e.preventDefault();
         hideIdenticalColumns();
@@ -4936,7 +4675,7 @@ var apOld = (function(){
         }
         var itemSel = selectorEscape(item.title)
         
-        $('.attributes-optional-table').append(
+        $('#additional-product-options-section').append(
             '<div id="asd-id-'+itemSel+'" class="asd-containerOld panel panel-default">'+
                 '<div class="asd-title panel-heading">'+item.title+' ('+ item.list.length +')</div>'+
                 '<div class="asd-content panel-body">'+
@@ -5048,7 +4787,7 @@ var apOld = (function(){
     addAssociatedImageHover = function(){
         _log('associatedImageHover() Start',DLOG);
 
-       $('body').append('<img border="0/" src="" style="display: none; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
+       $('body').append('<img border="0/" src="" style="heightdisplay: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
 
         $('.asd-containerOld').hoverIntent({
             over: function () {
@@ -5082,16 +4821,15 @@ var apOld = (function(){
         //     });
         //     $(this).closest('tr').hide()
         // });
-
         $('.expander-div-5').each(function(){
             if($(this).find('.product-details-also-evaluated').length < 1){
                 boxDataArray.push({
-                    'title': $(this).parent().find('.beablocktitle').text().split('\n')[0], 
+                    'title': $(this).parent().find('.bota-headline').text().split('\n')[0], 
                     'list':getAssociationListFromElem($(this))
                 });
             }
         });
-        $('.attributes-optional-table .rd-extra-option').hide();
+        $('#additional-product-options-section .bota').hide();
         for (var i=0; i<boxDataArray.length; i++){
             buildProductViewerBox(boxDataArray[i]);
         }
@@ -5134,8 +4872,9 @@ var ap= (function(){
             allRows = allRows + buildRowHTML(associationSet.list[z]);
         }
         var escTitle = selectorEscape(associationSet.title);
+            
         
-        $('.attributes-optional-table').append(
+        $('#additional-product-options-section').append(
             '<div id="asd-id-'+escTitle+'" class="asd-container panel panel-default">'+
                 '<div class="asd-title panel-heading">'+associationSet.title+' ('+ associationSet.list.length +')</div>'+
                 '<div class="asd-content panel-body">'+
@@ -5154,6 +4893,7 @@ var ap= (function(){
             $(this).data('boxSel', $('#asd-id-'+escTitle));
         });
         
+
         $('#table-'+ escTitle).find('tbody>tr').slice(perPage).hide();
         if (associationSet.list.length > perPage){
             addPageination(escTitle, associationSet.list.length);
@@ -5258,7 +4998,7 @@ var ap= (function(){
     addAssociatedImageHover = function(){
         _log('associatedImageHover() Start',DLOG);
 
-       $('body').append('<img border="0/" src="" style="display: none; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
+       $('body').append('<img border="0/" src="" style="display: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
 
         $('.asd-container').hoverIntent({
             over: function () {
@@ -5308,56 +5048,60 @@ var ap= (function(){
         boxDataArray = getAllAssociations();
         for (var i=0; i<boxDataArray.length; i++){
             buildProductViewerBox(boxDataArray[i]);
+            console.log('**********************************', boxDataArray[i])
         }
         addAssociatedImageHover();
-        $('.product-details-also-evaluated').closest('.beablock').detach();
+        $('.additional-interested').detach();
         // handleExpanderDiv5();
     };
 
     return {'addAssociatedProductViewer': addAssociatedProductViewer};
 })();
 
-function handleExpanderDiv5(){ //alternate package, direct subs, etc
-    $('.expander-div-5').each(function(){
-        // $(this).closest('.beablock').hide();
-        getInfoFromExpanderDiv5($(this).closest('.beablock'))
-    });
-}
-function getInfoFromExpanderDiv5($beablock){
-    var retval = {};
+// function handleExpanderDiv5(){ //alternate package, direct subs, etc
+//     $('.expander-div-5').each(function(){
+//         // $(this).closest('.beablock').hide();
+//         getInfoFromExpanderDiv5($(this).closest('.bota'))
+//     });
+// }
+// function getInfoFromExpanderDiv5($beablock){
+//     var retval = {};
 
-    retval['title'] = $beablock.find('.beablocktitle').text().split('|')[0].trim();
-    $beablock.find('table.more-expander tbody>tr').gt(0).each(function(){
-        retval['data'].push()
-    });
-    console.log('expander5 retval', retval)
-}
-function getInfoFromRow($tr){
-    var rowInfo = {
-        'Digi-Key Part Number': $tr.eq(0).text(),
-        'link': $tr.eq(0).find('a').attr('href'),
-        'Manufacturer': $tr.eq(1).text(),
-        'Packaging': $tr.eq(1).text(),
-        'packaging': $tr.eq(1).text(),
-        'quantityavailable': $tr.eq(1).text(),
-        'mpn': $tr.eq(1).text(),
-    };
-    $tr.each(function(){
+//     retval['title'] = $beablock.find('.beablocktitle').text().split('|')[0].trim();
+//     $beablock.find('table.more-expander tbody>tr').gt(0).each(function(){
+//         retval['data'].push()
+//     });
+//     console.log('expander5 retval', retval)
+// }
+// function getInfoFromRow($tr){
+//     var rowInfo = {
+//         'Digi-Key Part Number': $tr.eq(0).text(),
+//         'link': $tr.eq(0).find('a').attr('href'),
+//         'Manufacturer': $tr.eq(1).text(),
+//         'Packaging': $tr.eq(1).text(),
+//         'packaging': $tr.eq(1).text(),
+//         'quantityavailable': $tr.eq(1).text(),
+//         'mpn': $tr.eq(1).text(),
+//     };
+//     $tr.each(function(){
 
-    });
-}
+//     });
+// }
 function getAssociationNames(){
     var names = [];
+    $('.expander-div-5').each(function(){
+        if($(this).find('.product-details-suggested-subs').length == 1){
+            names.push('Direct Subs')
+            $(this).parent('.bota').detach();
+        }else if ($(this).find('.product-details-alternate-packaging').length ==1){
+            names.push('AlternatePackaging');
+            $(this).parent('.bota').detach();
+        }
+    })
     $('.expander-div-10').each(function(){
         names.push($(this).closest('tr').find('th').text()); 
         $(this).closest('tr').hide();
     });
-    $('.expander-div-5').each(function(){
-        if($(this).parent('.beablock:contains("Direct Substitute")').length == 1){
-            names.push('Direct Subs')
-            $(this).parent('.beablock').detach();
-        }
-    })
     return names;
 }
 function getAssociationDataFromPageByType(assType){
@@ -5370,13 +5114,14 @@ function getAllAssociations(){
     names.forEach(function(el,idx,arr){
         var escaped = selectorEscape(el);
         var alldata = window.eval(escaped);
-        // console.log(window.eval(escaped).slice(1));
+        // console.log(escaped, 'escaped eval', alldata);
         assocationData.push({
             'title': el,
             'list': alldata.slice(1),
             'viewAllLink': alldata[0].showAllLink
         }) ;
     });
+    console.log('associatione data', assocationData);
     return assocationData;
 }
 
@@ -5482,14 +5227,15 @@ function makeImageHolder(){
     });
     $('.trayThumbnail').mouseenter(function(){
         console.log('hovering', $(this).attr('src'))
-        $('.image-table img:first').attr('src', $(this).attr('src'));
-        $('.image-table a:first').attr('href', $(this).attr('src'));
+        $('#product-photo-wrapper img:first').attr('src', $(this).attr('src'));
+        $('#product-photo-wrapper a:first').attr('href', $(this).attr('src'));
     });
     $('.image-disclaimer').hide();
-
-    $('.image-table').insertBefore($('.product-details-main'));
-    $('.beablock-image').css({'margin-left':'0px', 'border':'1px solid #ccc'});
-    $('.beablock-image img').css({'border':'1px solid #ccc'});
+    $('.product-top-section').append($('#product-details-side'));
+    // $('#product-details-side').insertBefore($('#product-details-wrapper'));
+    $('.product-photo-side').css({'margin-left':'0px', 'border':'1px solid #ccc'});
+    $('#product-photo-wrapper').css({'margin':'0px 15px 0px 0px'});
+    $('.product-photo-side img').css({'border':'1px solid #ccc'});
 
     _log('makeImageHolder() End',DLOG);
 }
