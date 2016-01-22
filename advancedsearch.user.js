@@ -38,7 +38,7 @@
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
-// @version     3.6.5
+// @version     3.6.6
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -243,6 +243,7 @@ function preloadFormat(){
     _log('preloadFormat() End',DLOG);
 }
 
+if (theTLD == 'com'){
 
 preloadFormat();
 
@@ -255,6 +256,14 @@ $(document).ready(function() {
 
     _log('[ready] end of document ready function');
 });
+}else{
+    tempMessage();
+}
+
+function tempMessage(){
+    $('#content').append('<div id="tempMessage" style="position:fixed; bottom:0px; right:0px; color:darkred; background-color:white;" >Due to some changes on the digikey website Advancedsearch was disabled and will be back sometime between Jan 27 - Jan 29</div>')
+    $('#tempMessage').click(function(){$(this).hide()})
+}
 
 function addResourceCSS(){
     var cssNames = [
