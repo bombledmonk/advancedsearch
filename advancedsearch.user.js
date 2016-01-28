@@ -215,7 +215,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '8/6/15';
+var lastUpdate = '1/28/16';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -263,7 +263,7 @@ $(document).ready(function() {
 
     _log('[ready] end of document ready function');
 });
-
+// 
 function addResourceCSS(){
     var cssNames = [
         "buttonCSS",
@@ -1071,7 +1071,6 @@ function getSingleOptionImageSet($option, filtername){
     //add extra data on hover
     //give choice to see unrestricted examples of filters. 
     //add (no images available message)   
-http://digikeytest.digikey.com/product-search/en/battery-products/batteries-rechargeable-secondary/undefined&k=&FV=fff40006%2Cfff804e4&mnonly=0&newproducts=0&ColumnSort=100001&page=1&quantity=1&ptm=0&fid=0&pageSize=25&akamai-feo=off&s=28995
         var selectname = $option.parent().attr('name');
         var optionval = $option.val();
         $option.parent().attr('disabled', true);
@@ -1079,7 +1078,7 @@ http://digikeytest.digikey.com/product-search/en/battery-products/batteries-rech
         $option.parent().attr('disabled', false);
 
         // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
-        var mylink =  '?'+1serialform + '&' +$option.parent().attr('name')+'='+$option.val();
+        var mylink =  '?'+serialform + '&' +$option.parent().attr('name')+'='+$option.val();
         // console.log(mylink)
         // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
         var ddclass = 'store-'+optionval;
@@ -1394,10 +1393,10 @@ function preProcessForQty($elem){
         parsableText = $elem;
         // console.log ( parsableText, 'parsabletext');
     }else {
-        var etext = $elem.text();
-
+        var etext = $elem.text().trim();
+        // console.log('etext...', etext)
         if($elem.hasClass('CLS 1')){
-            //console.log('type = resistance');
+            // console.log('type = resistance');
             parsableText = etext + 'Ohm';
         }else if ($elem.hasClass('tr-unitPrice') || $elem.hasClass('priceme')){
             //console.log('type = price')
@@ -1433,7 +1432,7 @@ function preProcessForQty($elem){
 function parseElemForQty($elem){
     var elemText = preProcessForQty($elem);
     try{
-        //console.log(elemText);
+        // console.log('----', elemText);
         var num = Qty.parse(elemText);
         if(num == null){ 
             console.log("can't parse ", elemText, elemText.length);
