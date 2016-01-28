@@ -39,7 +39,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.0
+// @version     4.0.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -278,11 +278,11 @@ function addResourceCSS(){
 
     console.log(GM_getResourceURL('buttonCSS'));
     for ( var x in cssNames){
-        // var thetext = GM_getResourceText(cssNames[x]);
-        var thetext = GM_getResourceURL(cssNames[x]);
+        var thetext = GM_getResourceText(cssNames[x]);
+        // var thetext = GM_getResourceURL(cssNames[x]);
         _log('style tick 1'+ cssNames[x], DLOG);
-        // GM_addStyle(thetext);
-        $('body').prepend('<link rel="stylesheet" href="'+thetext+'">');
+        GM_addStyle(thetext);
+        // $('body').prepend('<link rel="stylesheet" href="'+thetext+'">');
          // $('body').prepend('<link rel="stylesheet" href="data:text/css;base64,'+thetext+'">')
         _log('style tick end'+ cssNames[x], DLOG);
         // _log('style tick start '+cssNames[x], DLOG);
@@ -2518,8 +2518,8 @@ function formatDetailPage(){
         addPriceBreakHelper();
         var dataTable = $('.attributes-table-main');
         //addAssProdLinkToFilters();
-        console.log('pre addassociated')
-        ap.addAssociatedProductViewer();
+        // console.log('pre addassociated')
+        // ap.addAssociatedProductViewer();/////////// addback
         // apOld.addAssociatedProductViewer();
         addReverseFiltering(dataTable);
         addToTopButton();
