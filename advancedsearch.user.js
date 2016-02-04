@@ -39,7 +39,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.0.1
+// @version     4.0.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -190,6 +190,7 @@
 //3.6.2		added https in product search, added view more button at bottom of product table
 //3.6.3     added search help
 //4.0       Major overhaul needed because of digikey website update
+//4.0.2     Added image bar back.
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -215,9 +216,9 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '1/28/16';
+var lastUpdate = '2/4/16';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = true; //control detailed logging.
+var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -757,11 +758,11 @@ function formatFilterResultsPage(){
         $('.deapply-filter-selection').addClass('button-small pure-button primary');
         // $('#filters-buttons').css({'background-image':'none'})
         addToTopButton();
-        // addImageBar();
+        addImageBar();
         floatApplyFilters();// redo or add back
         //TODO fix dependencies of if statements below
         
-        // picsToAccel(); //add the thumnails to picture accelerator block
+        picsToAccel(); //add the thumnails to picture accelerator block
         if(localStorage.getItem('combinePN') == 1) {
             setTimeout(function(){combinePN();}, 1);
         }
@@ -3343,6 +3344,7 @@ function addImageBar() {
             'box-shadow': '1px 1px 2px #aaa',
             'margin-bottom': '8px',
             'border-radius': '1px',
+            'background-color':'white',
         });
         $('#accContent').css({
             'overflow': 'hidden',
@@ -3421,11 +3423,7 @@ function addChooserButtonAction(somespan, clickfunc){
 
 function addParamWizards(){
     _log('addParamWizards() Start',DLOG);
-    var filterfunctions = [ //['Series',                function(name, e){getAttributeExampleImgs(name, e);}, 'Ex Pics'],
-                            //['Connector Type',        function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
-                            //['Connector Style',       function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
-                            //['Number of Positions',   function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
-                            //['Contact Type',      function(name, e){getAttributeExampleImgs(name, e);}, '+Ex Pics'],
+    var filterfunctions = [ 
                             ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
