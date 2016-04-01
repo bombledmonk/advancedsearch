@@ -11,8 +11,8 @@
 // @include     http*digikey.*/classic/Ordering/FastAdd*
 // @include     http*digikey.*/short/*
 // @exclude     http://www.digikey.com
-// @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js
-// @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js
+// @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
+// @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/Highcharts-4.0.4/js/highcharts.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.localScroll.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.hoverIntent.js
@@ -25,6 +25,7 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.lazyloadxt.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.dragtable.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
+// @resource    jQueryUICSS https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
 // @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base.css
 // @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure.css
@@ -39,7 +40,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.0.2
+// @version     4.0.3
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -191,6 +192,7 @@
 //3.6.3     added search help
 //4.0       Major overhaul needed because of digikey website update
 //4.0.2     Added image bar back.
+//4.0.3     Retooled voltage range helper. Fixed
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -210,6 +212,7 @@
 //TODO add obsolete product direct subs to top of page PCC101CQCT-ND
 //TODO fuzzy similar to, start in opamps
 //TODO add a google like "advanced search" to the header
+//TODO impliment offscreen table wrap
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -218,7 +221,7 @@ var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '2/4/16';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = false; //control detailed logging.
+var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -248,6 +251,7 @@ function preloadFormat(){
     
     $('#header').detach();
     $('#footer').before('<div style="height:10px;"></div>');
+    // $('#footer').css({'position':'absolute', 'bottom':'0px', 'left': '0px', 'width':'100%'});
     // formatPagesPreReady();
     _log('preloadFormat() End',DLOG);
 }
@@ -256,6 +260,7 @@ function preloadFormat(){
 preloadFormat();
 
 $(document).ready(function() {
+    console.log('test1')
     _log('[ready] advanced search starts here. Jquery version '+ jQuery.fn.jquery);
     _log('[ready] hostname is '+ window.location.hostname,DLOG);
     _log('[ready] pathname is '+ window.location.pathname,DLOG);
@@ -265,12 +270,14 @@ $(document).ready(function() {
     _log('[ready] end of document ready function');
 });
 // 
+
 function addResourceCSS(){
     var cssNames = [
         "buttonCSS",
         "advCSS",
         "normalizeCSS",
         "pureCSS",
+        "jQueryUICSS",
         "fontAwesomeCSS",
         "stickyCSS",
         "tooltipsterCSS",
@@ -322,8 +329,112 @@ function formatPagesPostReady() {
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
     cleanup();
+
+
+addClippy();
+
+
     _log('formatPagesPostReady() End',DLOG);
 }
+
+
+function addClippy(){
+    console.log('adding clippy')
+var jokearray = [
+"If at first you don’t succeed; call it version 1.0.",
+"The code that is the hardest to debug is the code that you know cannot possibly be wrong",
+"Hand over the calculator, friends don’t let friends derive drunk.",
+"To err is human – and to blame it on a computer is even more so.",
+"There are only 10 types of people in the world: those that understand binary and those that don’t.",
+"Electrical Engineers deal with current events.",
+"If you're not part of the solution, you're part of the precipitate.",
+"To err is human, to forgive divine, but to check--that's engineering",
+"If at first you don't succeed, redefine success.",
+"Never trust an atom.  They make every thing up.",
+'A Nuetron walks into a bar and asks for a drink.  The bartender says "for you, no charge."',
+"Where does bad light end up?  In Prism.",
+"Why is the PH of Youtube very stable?   It constantly buffers.",
+"Why did I divide SIN by TAN......  Just COS",
+'A cop pulls Heisenberg over and asks "do you know how fast you were going?" Heisenberg replies "No, but I know where I am"',
+"Why did the hipster burn his mouth?   He ate it BEFORE it was cool.",
+"Two hydrogen atoms walk into a bar. One says, I think I’ve lost an electron. The other says, Are you sure? The first replies, Yes, I’m positive.",
+'A physicist sees a young man about to jump off the Empire State Building.  He yells, "Dont jump, you have so much potential!"',
+"What did the pirate say on his 80th birthday?  AYE MATEY!",
+"How do you think the unthinkable?  With an ithberg",
+"Whiteboards are remarkable.",
+"The dead batteries were given out free of charge.",
+"Sixteen sodium atoms walk into a bar…followed by Batman. ",
+
+];
+     $('head')
+    .append('<link rel="stylesheet" type="text/css" href="https://dl.dropboxusercontent.com/u/26263360/script/lib/clippy.js-master/build/clippy.css" media="all">')
+
+ var script = document.createElement('script');
+    script.setAttribute('src', 'https://dl.dropboxusercontent.com/u/26263360/script/lib/clippy.js-master/build/clippy.js');
+    script.setAttribute('async', 'async');
+    script.setAttribute('type', 'text/javascript');
+
+    var dochead = document.head || document.getElementsByTagName('head')[0];
+    dochead.appendChild(script);
+
+setTimeout(function(){window.eval(`
+                var jokearray = [
+"If at first you don’t succeed; call it version 1.0.",
+"The code that is the hardest to debug is the code that you know cannot possibly be wrong",
+"Hand over the calculator, friends don’t let friends derive drunk.",
+"To err is human – and to blame it on a computer is even more so.",
+"There are only 10 types of people in the world: those that understand binary and those that don’t.",
+"Electrical Engineers deal with current events.",
+"If you're not part of the solution, you're part of the precipitate.",
+"To err is human, to forgive divine, but to check--that's engineering",
+"If at first you don't succeed, redefine success.",
+"Never trust an atom.  They make every thing up.",
+'A Nuetron walks into a bar and asks for a drink.  The bartender says "for you, no charge."',
+"Where does bad light end up?  In Prism.",
+"Why is the PH of Youtube very stable?   It constantly buffers.",
+"Why did I divide SIN by TAN......  Just COS",
+'A cop pulls Heisenberg over and asks "do you know how fast you were going?" Heisenberg replies "No, but I know where I am"',
+"Why did the hipster burn his mouth?   He ate it BEFORE it was cool.",
+"Two hydrogen atoms walk into a bar. One says, I think I’ve lost an electron. The other says, Are you sure? The first replies, Yes, I’m positive.",
+'A physicist sees a young man about to jump off the Empire State Building.  He yells, "Dont jump, you have so much potential!"',
+"What did the pirate say on his 80th birthday?  AYE MATEY!",
+"How do you think the unthinkable?  With an ithberg",
+"Whiteboards are remarkable.",
+"The dead batteries were given out free of charge.",
+"Sixteen sodium atoms walk into a bar…followed by Batman. ",
+
+];
+                clippy.load('Clippy', function(agent) {
+                    // Do anything with the loaded agent
+                    // console.log('clippy show', jokearray);
+                    agent.show();
+                    setTimeout(function(){
+                        agent.speak(jokearray[Math.floor(Math.random() * (jokearray.length - 0)) + 0]);
+                        
+                    }, 5000)
+                    // agent.speak(jokearray[0]);
+
+                });
+                    
+                    `)
+}, 2000)
+// setTimeout(function(){
+//             console.log('clippy')
+//             try{
+//                 clippy.load('Clippy', function(agent) {
+//                     // Do anything with the loaded agent
+//                     console.log('clippy show');
+//                     agent.show();
+//                 });
+                
+//             }catch(e){
+//                 console.log(e);
+//             }
+//             console.log('clippy after')
+//         }, 10000
+//     )
+}
+
 
 function formatPagesPreReady() {
     _log('formatPagesPreReady() Start',DLOG);
@@ -665,8 +776,10 @@ function addControlWidgetActions2(){
     });
 
     if($('#qtydefault').is(':checked')){
-        $('#mainform').find('input[name=ColumnSort]').val('100001');
-        $('#mainform').find('input[name=qantity]').val($('#qtydefaulttext').val());
+        if($('#mainform').find('input[name=ColumnSort]') == 0){// leave alone if a sort isn't already selected
+            $('#mainform').find('input[name=ColumnSort]').val('100001');
+            $('#mainform').find('input[name=qantity]').val($('#qtydefaulttext').val());
+        }
     }
 
     $('#exploreModeDelay').change(function() {  
@@ -751,6 +864,9 @@ function formatFilterResultsPage(){
         $('.page-slector').css({'width': '1%'});
         $('.qty-form').css({'width': '1%'});
 
+        $('#appliedFilterHeaderRow').closest('div').css({'overflow':''});
+        $('#filters-panel').css({'display':''});
+
 
         // $('#search-within-results').css({'display':'inline'}).insertAfter($('.filters-group-chkbxs'))
         // $('#search-within-results input').css({'margin-bottom': 0});
@@ -758,10 +874,10 @@ function formatFilterResultsPage(){
         $('.deapply-filter-selection').addClass('button-small pure-button primary');
         // $('#filters-buttons').css({'background-image':'none'})
         addToTopButton();
-        addImageBar();
         floatApplyFilters();// redo or add back
         //TODO fix dependencies of if statements below
         
+        addImageBar();
         picsToAccel(); //add the thumnails to picture accelerator block
         if(localStorage.getItem('combinePN') == 1) {
             setTimeout(function(){combinePN();}, 1);
@@ -781,8 +897,8 @@ function formatFilterResultsPage(){
         // addApplyFiltersButtonHighlight();
         // wrapFilterTable(); //dependent on floatapplyfilters()
 
-        addParamWizards(); // TODO addback
-        
+        // addParamWizards(); // TODO addback
+        addParamWizards2();
         // if(localStorage.getItem('squishedFilters') == 1){
         //     squishedFilters();
         // }
@@ -1760,12 +1876,12 @@ function floatApplyFilters(){
     // addSearchWithin();
 }
 
-function addSearchWithin(){
-    // dependancy on floatApplyFilters #floatApply div
-    $('.filters-group:eq(1)').prepend('<label>Keyword Filters: <input type="text" name="k" style="margin-right:20px; padding-left:5px;" class="searchWithin" title="Provides a way to change your Keyword search while applying"></label>');
-    $('.filters-group:eq(1)').css({padding:'0 0 3px 4px'});
-    $('.searchWithin').val($('.dkdirchanger2').val());
-}
+// function addSearchWithin(){
+//     // dependancy on floatApplyFilters #floatApply div
+//     $('.filters-group:eq(1)').prepend('<label>Keyword Filters: <input type="text" name="k" style="margin-right:20px; padding-left:5px;" class="searchWithin" title="Provides a way to change your Keyword search while applying"></label>');
+//     $('.filters-group:eq(1)').css({padding:'0 0 3px 4px'});
+//     $('.searchWithin').val($('.dkdirchanger2').val());
+// }
 
 function addFilterHider(){
 }
@@ -3335,28 +3451,37 @@ function addImageBar() {
     _log('addImageBar() Start',DLOG);
     if($('#productTable').size() == 1) {
         _log('adding image bar', DLOG);
-        $('#mainform').after('<div id="accDiv" class="collapsed"><div id="accContent">loading...</div></div>');
+        var titleheight = 15;
+        var accdivheight = 66;
+        // $('#mainform').after('<div id="accDiv" class="collapsed"><div id="accContent">loading...</div></div>');
+        $('#filters-panel').after(
+            '<div id="accDiv" class="collapsed">'+
+                '<div style="height:'+titleheight+'px; font-weight:bold; width:100%; border-bottom:1px solid lightgray;" id=accTitle>Find By Image</div>'+
+                '<div id="accContent">loading...</div>'+
+            '</div>');
+        $('#accTitle').append('<div id="expand1"><div id="expand2">+ More Images +</div></div>');
         $('#accDiv').css({
             // 'width': ($(window).width() - 100),
             'width': '97vw',
-            'height': '66px',
+            // 'height': '66px',
+            'height': (titleheight+accdivheight)+'px',
             'border': '1px solid lightgrey',
             'box-shadow': '1px 1px 2px #aaa',
             'margin-bottom': '8px',
             'border-radius': '1px',
             'background-color':'white',
+            'overflow':'hidden'
         });
         $('#accContent').css({
             'overflow': 'hidden',
             'height': '100%'
         });
-        $('#accDiv').append('<div id="expand1"><div id="expand2">+ Expand +</div></div>');
         $('#expand1').css({
             'float': 'right',
             'position': 'relative',
             'top': 1,
             'background': 'linear-gradient(to bottom, #f5f5f5 0px, #e8e8e8 100%)',
-            'width': 80,
+            'width': 110,
             'border': '1px solid #eee',
             'border-radius': '0px 0px 1px 1px',
             'box-shadow': '1px 1px 3px #aaa'
@@ -3372,6 +3497,25 @@ function addImageBar() {
 
     $('#content').after('<div id="bigpic"></div>');
     $('#bigpic').hide();
+
+        $('#expand2').click(function(e){
+            _log($(this).attr('id')+' acc expand click');
+            if($('#accDiv.expanded').length){
+                $('#accDiv').animate({height:(titleheight+accdivheight)+'px'}, 300);
+                $('#expand2').text('+ More Images +');
+                $('#accDiv').toggleClass('expanded collapsed');
+            }
+            else if($('#accDiv.collapsed').length){
+                $('#accDiv').animate({height:'130px'}, 300, function(){
+                    $('#accDiv').css('height','100%');
+                });
+                
+                $('#expand2').text('- Collapse -');
+                $('#accDiv').toggleClass('expanded collapsed');
+            }
+        
+    });
+
     _log('addImageBar() End',DLOG);
 }
 
@@ -3421,20 +3565,33 @@ function addChooserButtonAction(somespan, clickfunc){
 }
 
 
+
+function addPowerSupplySelector(){
+    $('#content').after(
+        '<div id="powerselector">'+
+        '<div></div>'+
+        '</div>'
+    )
+}
+
+
+
+
+
 function addParamWizards(){
     _log('addParamWizards() Start',DLOG);
     var filterfunctions = [ 
-                            ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv659' ,'Voltage - Supply, Single/Dual',  function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            // ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            // ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            // ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            // ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            // ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            // ['pv659' ,'Voltage - Supply, Single/Dual',  function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+                            ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+                            ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
                             ['pv252' ,'Operating Temperature',  function(name, e){temperatureHelper(name, e);}, '+ helper'],
-                            ['pv772' ,'Voltage - Load', function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv772' ,'Voltage - Load', function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
                             ['pv1113' ,'Connectivity',  function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
                             ['pv1114' ,'Peripherals',   function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
                             ['pv16' ,'Package / Case',  function(name, e){checkboxHelper2(name, e);}, '+checkboxes'],
@@ -3450,6 +3607,33 @@ function addParamWizards(){
     });
 
     _log('addParamWizards() End',DLOG);
+}
+
+function addParamWizards2(){
+    _log('addParamWizards2() Start',DLOG);
+    var filterfunctions = [ 
+                            ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
+                            ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+    ];
+
+    for (var x=0; x<filterfunctions.length; x++){
+        if($('select[name='+filterfunctions[x][0]+']').length){
+            // console.log( '------------', x, filterfunctions[x])
+            // addNewHelper(filterfunctions[x], x)  
+            voltageHelper(filterfunctions[x])
+        } 
+    }
+
+    _log('addParamWizards2() End',DLOG);
+}
+
+function addNewHelper(filterData, x){
+    voltageHelper(filterData)
+    // $('select[name="'+filterData[0]+'"]').parent().append('<span class="adv pure-button myRedButton" order="'+x+'" > '+filterData[3]+'</span>');
+    // filterData[2]( filterData[1], $('select[name="'+filterData[0]+'"]'));
 }
 
 function createHelperBox(name,$selectElem, boxheight, boxwidth){
@@ -3484,7 +3668,121 @@ function opampVoltageHelper(){
     
 }
 
-function voltageHelper(name, $selectElem) {
+
+
+function voltageHelper(filterData) {
+        _log('voltageHelper() Start',DLOG);
+
+    var name = filterData[1];
+    var $selectElem = $('select[name="'+filterData[0]+'"]');
+    var filterid = 'filter-'+filterData[0]
+    _log('select name is '+ name + ' '+ filterData[0]+  $selectElem.parent().prop('tagName'));
+
+    $selectElem.parent().append(
+        '<div style="display:flex;"><input id="'+filterid+'" data-name="'+name+
+        '" class="nomRangeText" type="search" autocomplete="off" placeholder="Vnom ex. 3.3" >'+
+        // '<button id="'+filterid+'-button" class="clean-gray" ><i class="fa fa-tasks fa-lg" style="color:#555;"></i></button>'+
+        '</div>'
+    );
+    $selectElem.prop('size', 8);
+    //TODO differentiate between in and out.... add vin min, vin max
+    //TODO add ability to select multi output devices
+    //TODO deal with +- ranges
+    _log('voltagehelper name is ' +name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
+
+    $('#'+filterid).change(function(e){
+        var $targetElem = $('select[name="'+this.id.replace('filter-','')+'"]');
+        var name = $(this).attr('data-name');
+        e.preventDefault();
+        applyRangeSelect3(name, $targetElem );
+        // $('a[name=btnpv48]').show();
+    }).keyup(function(e){
+        var pv = this.id.replace('filter-','')
+        var $targetElem = $('select[name="'+pv+'"]');
+        var name = $(this).attr('data-name');
+        var selectedLength = $targetElem.find('option:selected').length
+
+        // _log('vhelper '+this.id.replace('filter-',''));
+        if (e.keyCode == 10 || e.keyCode == 13) {
+            e.preventDefault();
+            applyRangeSelect3(name, $targetElem );
+            return false;
+        }else{
+            applyRangeSelect3(name, $targetElem );
+        }
+        if(selectedLength){
+            $('a[name=btn'+pv+']').show();
+            $('a[name=btn'+pv+']').text('Clear '+ selectedLength+' Items');
+
+        }
+    });
+
+
+
+    var modalHTML = `
+        <div id="powerSupplyWiz">
+
+            <div id="powerSupplyTabs">
+                <ul>
+                    <li><a href="#fragment-1">simple</a></li>
+                    <li><a href="#fragment-2">Advanced</a></li>
+                </ul>
+                <div id="fragment-1">
+                    <input placeholder="voltage input"></input>
+                    <input placeholder="voltage output"></input>
+                    <input placeholder="current output"></input>
+                </div>
+                <div id="fragment-2">
+                    <input placeholder="voltage input"></input>
+                    <input placeholder="voltage output"></input>
+                    <input placeholder="current output"></input>
+                    <label>Number of Outputs</label><select>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                    </select>              
+                </div>
+            </div>
+
+        </div>        
+    `;
+    $('#content').append(modalHTML)
+    $('#powerSupplyTabs').tabs();
+    $('#powerSupplyWiz').dialog({
+            autoOpen: false,
+            resizable: true,
+            // draggable: false,
+            height:600,
+            width:800,
+            modal: false,
+            buttons: {
+                "Close": function() {
+                    // $(this).css('color', 'lightgrey');
+                    $( this ).dialog( "close" );
+                },
+            },
+            // open:function(){setTimeout(function(){$('#powerSupplyTabs').tabs(); _log('tabs opened')}, 5000)}
+    });
+
+
+    $('#'+filterid+'-button').click(function(e) {
+        e.preventDefault();
+        openAdvancedVoltagePopup(this);
+    });
+
+    
+    _log('voltageHelper() End',DLOG);
+}
+
+function openAdvancedVoltagePopup(button){
+
+
+    $('#powerSupplyWiz').dialog('open');
+}
+
+
+function voltageHelperOLD(name, $selectElem) {
     //TODO differentiate between in and out.... add vin min, vin max
     //TODO add ability to select multi output devices
     //TODO deal with +- ranges
@@ -3517,7 +3815,6 @@ function voltageHelper(name, $selectElem) {
     
     _log('end voltageHelper');
 }
-
 function temperatureHelper(name, $selectElem) {
     //TODO differentiate between in and out.... add vin min, vin max
     //TODO add ability to select multi output devices
@@ -3556,6 +3853,137 @@ function voltageHelper2(name, $selectElem){
 
 }
 
+
+function dkNumberParser(){
+    
+}
+
+
+function applyRangeSelect4(name, $selectElem){
+
+    // var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
+    var userinputvalue = parseFloat($selectElem.parent().find('.nomRangeText').val());
+    var commaselector = ':contains(,),:contains(、)'; //the oddball comma is for the .jp site
+    var tildeselector = ':contains(~),:contains(～)'; //the oddball tilde is for the .jp site
+    // var commaregex = /,、/g ;
+    // var tilde regex = /~～/g ;
+    var $optionList = $selectElem.find('option');
+    // _log($optionList.filter(commaselector).size(), true);
+    $optionList.prop('selected',false);
+    $optionList.filter(commaselector).each(function(){
+        var thisOption = $(this);
+        var splitOnComma = $(this).text().split(/[,、]/g);  // implicitly tested for comma by selector
+        // _log('splitoncomma is ' +splitOnComma, true);
+        splitOnComma.forEach(function(element, index, array){
+            if ((element.indexOf('~') != -1) || (element.indexOf('～')!= -1)){
+                if(isInRange(userinputvalue, element)){
+                    thisOption.prop('selected', true);
+                }
+            }else if(parseFloat(element) == userinputvalue){
+                thisOption.prop('selected', true);
+                _log(element, true);
+            }
+        });
+    });
+
+    $optionList.not(commaselector).each(function(){
+        var thisOption = $(this);
+        var otext = $(this).text();
+        if ((otext.indexOf('~') != -1) || (otext.indexOf('～')!= -1)){
+                if(isInRange(userinputvalue, otext)){
+                    thisOption.prop('selected', true);
+                }
+            }else {
+                if(parseFloat(otext) == userinputvalue){
+                    thisOption.prop('selected', true);
+                    _log(otext, true);  
+                }
+                thisOption.filter(':contains("Up to")').each(function(index) {
+                    if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                        $(this).prop('selected', true);
+                    }
+                });
+                thisOption.filter(':contains("Adj to")').each(function(index) {
+                    // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                        $(this).prop('selected', true);
+                    // }
+                });
+                thisOption.filter(':contains("Down to")').each(function(index) {
+                    if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
+                        $(this).prop('selected', true);
+                    }
+                });
+
+            }
+    });
+
+    // getRecordsMatching();
+    var selNum = $selectElem.find('option:selected').size();
+    $('#voltmess').text(' ' + selNum + ' options selected in ' + name);
+}
+
+function applyRangeSelect3(name, $selectElem){
+
+    // var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
+    var userinputvalue = parseFloat($selectElem.parent().find('.nomRangeText').val());
+    var commaselector = ':contains(,),:contains(、)'; //the oddball comma is for the .jp site
+    var tildeselector = ':contains(~),:contains(～)'; //the oddball tilde is for the .jp site
+    // var commaregex = /,、/g ;
+    // var tilde regex = /~～/g ;
+    var $optionList = $selectElem.find('option');
+    // _log($optionList.filter(commaselector).size(), true);
+    $optionList.prop('selected',false);
+    $optionList.filter(commaselector).each(function(){
+        var thisOption = $(this);
+        var splitOnComma = $(this).text().split(/[,、]/g);  // implicitly tested for comma by selector
+        // _log('splitoncomma is ' +splitOnComma, true);
+        splitOnComma.forEach(function(element, index, array){
+            if ((element.indexOf('~') != -1) || (element.indexOf('～')!= -1)){
+                if(isInRange(userinputvalue, element)){
+                    thisOption.prop('selected', true);
+                }
+            }else if(parseFloat(element) == userinputvalue){
+                thisOption.prop('selected', true);
+                _log(element, true);
+            }
+        });
+    });
+
+    $optionList.not(commaselector).each(function(){
+        var thisOption = $(this);
+        var otext = $(this).text();
+        if ((otext.indexOf('~') != -1) || (otext.indexOf('～')!= -1)){
+                if(isInRange(userinputvalue, otext)){
+                    thisOption.prop('selected', true);
+                }
+            }else {
+                if(parseFloat(otext) == userinputvalue){
+                    thisOption.prop('selected', true);
+                    _log(otext, true);  
+                }
+                thisOption.filter(':contains("Up to")').each(function(index) {
+                    if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                        $(this).prop('selected', true);
+                    }
+                });
+                thisOption.filter(':contains("Adj to")').each(function(index) {
+                    // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                        $(this).prop('selected', true);
+                    // }
+                });
+                thisOption.filter(':contains("Down to")').each(function(index) {
+                    if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
+                        $(this).prop('selected', true);
+                    }
+                });
+
+            }
+    });
+
+    // getRecordsMatching();
+    var selNum = $selectElem.find('option:selected').size();
+    $('#voltmess').text(' ' + selNum + ' options selected in ' + name);
+}
 function applyRangeSelect2(name, $selectElem){
     var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
     var commaselector = ':contains(,),:contains(、)'; //the oddball comma is for the .jp site
@@ -3618,6 +4046,7 @@ function applyRangeSelect2(name, $selectElem){
     $('.helperBox').delay(200).slideUp(500);
 }
 
+
 function isInRange(userinput, teststring){
     var rangeSplit = teststring.split(/[\~\～]/);
     var firstval = parseFloat(rangeSplit[0]);
@@ -3636,34 +4065,34 @@ function isInRange(userinput, teststring){
     }
 }
 
-function applyRangeSelect(name, $selectElem){
-    //The odd squiggly is support for the .jp website
-    $selectElem.find('option').prop('selected', false);
-    var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
-    _log(userinputvalue, DLOG);
+// function applyRangeSelect(name, $selectElem){
+//     //The odd squiggly is support for the .jp website
+//     $selectElem.find('option').prop('selected', false);
+//     var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
+//     _log(userinputvalue, DLOG);
 
-    $selectElem.find('option:contains(~),option:contains(～)').not(':contains(,)').not(':contains("&#x2213;")').each(function(index) {
-        selectInRange($(this), userinputvalue);
+//     $selectElem.find('option:contains(~),option:contains(～)').not(':contains(,)').not(':contains("&#x2213;")').each(function(index) {
+//         selectInRange($(this), userinputvalue);
 
-    });
+//     });
 
-    $selectElem.find('option:contains("Up to")').each(function(index) {
-        if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-            $(this).prop('selected', true);
-        }
-    });
-    $selectElem.find('option:contains("Down to")').each(function(index) {
-        if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
-            $(this).prop('selected', true);
-        }
-    });
-    $selectElem.find('option').not(':contains(~),:contains(～)').not(':contains("Down to")').not(':contains("Up to")').not(':contains("&#x2213;")').each(function(index) {
-        if(parseFloat($(this).text()) == userinputvalue) {
-            $(this).prop('selected', true);
-        }
-    });
+//     $selectElem.find('option:contains("Up to")').each(function(index) {
+//         if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+//             $(this).prop('selected', true);
+//         }
+//     });
+//     $selectElem.find('option:contains("Down to")').each(function(index) {
+//         if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
+//             $(this).prop('selected', true);
+//         }
+//     });
+//     $selectElem.find('option').not(':contains(~),:contains(～)').not(':contains("Down to")').not(':contains("Up to")').not(':contains("&#x2213;")').each(function(index) {
+//         if(parseFloat($(this).text()) == userinputvalue) {
+//             $(this).prop('selected', true);
+//         }
+//     });
 
-}
+// }
 
 function selectInRange(optElem, input) {
     var rangeSplit = optElem.text().split(/[\~\～]/);
@@ -4162,23 +4591,6 @@ function searchButtonHighlight(){
 function addEvents(){
     _log('addEvents() Start',DLOG);
 
-    $('#expand2').click(function(e){
-            _log($(this).attr('id')+' acc expand click');
-            if($('#accDiv.expanded').length){
-                $('#accDiv').animate({height:'65px'}, 300);
-                $('#expand2').text('+ Expand +');
-                $('#accDiv').toggleClass('expanded collapsed');
-            }
-            else if($('#accDiv.collapsed').length){
-                $('#accDiv').animate({height:'130px'}, 300, function(){
-                    $('#accDiv').css('height','100%');
-                });
-                
-                $('#expand2').text('- Collapse -');
-                $('#accDiv').toggleClass('expanded collapsed');
-            }
-        
-    });
 
     //adds rudimentary spell check
     if(localStorage.getItem('spellcheck') == 1){
@@ -4461,7 +4873,7 @@ function picsToAccel() {
     $('#accContent').empty();
     //var pictureLinkSet = $('img[src*="_tmb"]').parent(); // find the links wrapping all tmb images
     // var pictureSet = $('img[src*="_tmb"]'); // find the links wrapping all tmb images
-    var pictureSet = $('.pszoomer'); // find the links wrapping all tmb images
+    var pictureSet = $('#productTable .pszoomer'); // find the links wrapping all tmb images
     var piclinkhtml ='';
     pictureSet.each(function(mykey, myvalue) {
         //if statement to cull out consecutive images
@@ -5217,17 +5629,17 @@ function makeImageHolder(){
     _log('makeImageHolder() Start',DLOG);
     //for detail page image holder
 
-    $('.image-disclaimer').after('<div id="imageTray"></div>')
-    var images = getImageLinks();
-    images.forEach(function(image){
-        $('#imageTray').append('<img class="trayThumbnail" height=64px style="border:1px solid #ccc; margin:1px;" src="'+image+'">');
-    });
-    $('.trayThumbnail').mouseenter(function(){
-        console.log('hovering', $(this).attr('src'))
-        $('#product-photo-wrapper img:first').attr('src', $(this).attr('src'));
-        $('#product-photo-wrapper a:first').attr('href', $(this).attr('src'));
-    });
-    $('.image-disclaimer').hide();
+    // $('.image-disclaimer').after('<div id="imageTray"></div>')
+    // var images = getImageLinks();
+    // images.forEach(function(image){
+    //     $('#imageTray').append('<img class="trayThumbnail" height=64px style="border:1px solid #ccc; margin:1px;" src="'+image+'">');
+    // });
+    // $('.trayThumbnail').mouseenter(function(){
+    //     console.log('hovering', $(this).attr('src'))
+    //     $('#product-photo-wrapper img:first').attr('src', $(this).attr('src'));
+    //     $('#product-photo-wrapper a:first').attr('href', $(this).attr('src'));
+    // });
+    // $('.image-disclaimer').hide();
     $('.product-top-section').append($('#product-details-side'));
     // $('#product-details-side').insertBefore($('#product-details-wrapper'));
     $('.product-photo-side').css({'margin-left':'0px', 'border':'1px solid #ccc'});
