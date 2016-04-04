@@ -24,6 +24,7 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/js/jquery.tooltipster.min.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.lazyloadxt.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.dragtable.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.8/clipboard.min.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    jQueryUICSS https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
@@ -33,6 +34,8 @@
 // @resource    stickyCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.css
 // @resource    tooltipsterCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/css/tooltipster.css
 // @resource    tooltipster-shadowCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/css/themes/tooltipster-shadow.css
+// @connect     self
+// @connect     digikey.com
 // @updateURL   https://goo.gl/vbjoi
 // @downloadURL https://bit.ly/advsearch-user-js
 // @run-at      document-end
@@ -40,7 +43,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.0.3
+// @version     4.0.4
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -192,7 +195,8 @@
 //3.6.3     added search help
 //4.0       Major overhaul needed because of digikey website update
 //4.0.2     Added image bar back.
-//4.0.3     Retooled voltage range helper. Fixed
+//4.0.3     Retooled voltage range helper. Clippy!!!
+//4.0.4     added [at]connect declarations for tampermonkey 4.0, fixed sideindex background issue,
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -213,6 +217,7 @@
 //TODO fuzzy similar to, start in opamps
 //TODO add a google like "advanced search" to the header
 //TODO impliment offscreen table wrap
+//TODO enable doubleclick to copy field
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -221,7 +226,7 @@ var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '2/4/16';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
-var DLOG = true; //control detailed logging.
+var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -331,7 +336,9 @@ function formatPagesPostReady() {
     cleanup();
 
 
-addClippy();
+         if(localStorage.getItem('aprilf') == 1) {
+            setTimeout(function(){addClippy();}, 1);
+        }
 
 
     _log('formatPagesPostReady() End',DLOG);
@@ -339,33 +346,9 @@ addClippy();
 
 
 function addClippy(){
-    console.log('adding clippy')
-var jokearray = [
-"If at first you don’t succeed; call it version 1.0.",
-"The code that is the hardest to debug is the code that you know cannot possibly be wrong",
-"Hand over the calculator, friends don’t let friends derive drunk.",
-"To err is human – and to blame it on a computer is even more so.",
-"There are only 10 types of people in the world: those that understand binary and those that don’t.",
-"Electrical Engineers deal with current events.",
-"If you're not part of the solution, you're part of the precipitate.",
-"To err is human, to forgive divine, but to check--that's engineering",
-"If at first you don't succeed, redefine success.",
-"Never trust an atom.  They make every thing up.",
-'A Nuetron walks into a bar and asks for a drink.  The bartender says "for you, no charge."',
-"Where does bad light end up?  In Prism.",
-"Why is the PH of Youtube very stable?   It constantly buffers.",
-"Why did I divide SIN by TAN......  Just COS",
-'A cop pulls Heisenberg over and asks "do you know how fast you were going?" Heisenberg replies "No, but I know where I am"',
-"Why did the hipster burn his mouth?   He ate it BEFORE it was cool.",
-"Two hydrogen atoms walk into a bar. One says, I think I’ve lost an electron. The other says, Are you sure? The first replies, Yes, I’m positive.",
-'A physicist sees a young man about to jump off the Empire State Building.  He yells, "Dont jump, you have so much potential!"',
-"What did the pirate say on his 80th birthday?  AYE MATEY!",
-"How do you think the unthinkable?  With an ithberg",
-"Whiteboards are remarkable.",
-"The dead batteries were given out free of charge.",
-"Sixteen sodium atoms walk into a bar…followed by Batman. ",
+    _log('addClippy() Start',DLOG);
 
-];
+
      $('head')
     .append('<link rel="stylesheet" type="text/css" href="https://dl.dropboxusercontent.com/u/26263360/script/lib/clippy.js-master/build/clippy.css" media="all">')
 
@@ -377,62 +360,53 @@ var jokearray = [
     var dochead = document.head || document.getElementsByTagName('head')[0];
     dochead.appendChild(script);
 
-setTimeout(function(){window.eval(`
-                var jokearray = [
-"If at first you don’t succeed; call it version 1.0.",
-"The code that is the hardest to debug is the code that you know cannot possibly be wrong",
-"Hand over the calculator, friends don’t let friends derive drunk.",
-"To err is human – and to blame it on a computer is even more so.",
-"There are only 10 types of people in the world: those that understand binary and those that don’t.",
-"Electrical Engineers deal with current events.",
-"If you're not part of the solution, you're part of the precipitate.",
-"To err is human, to forgive divine, but to check--that's engineering",
-"If at first you don't succeed, redefine success.",
-"Never trust an atom.  They make every thing up.",
-'A Nuetron walks into a bar and asks for a drink.  The bartender says "for you, no charge."',
-"Where does bad light end up?  In Prism.",
-"Why is the PH of Youtube very stable?   It constantly buffers.",
-"Why did I divide SIN by TAN......  Just COS",
-'A cop pulls Heisenberg over and asks "do you know how fast you were going?" Heisenberg replies "No, but I know where I am"',
-"Why did the hipster burn his mouth?   He ate it BEFORE it was cool.",
-"Two hydrogen atoms walk into a bar. One says, I think I’ve lost an electron. The other says, Are you sure? The first replies, Yes, I’m positive.",
-'A physicist sees a young man about to jump off the Empire State Building.  He yells, "Dont jump, you have so much potential!"',
-"What did the pirate say on his 80th birthday?  AYE MATEY!",
-"How do you think the unthinkable?  With an ithberg",
-"Whiteboards are remarkable.",
-"The dead batteries were given out free of charge.",
-"Sixteen sodium atoms walk into a bar…followed by Batman. ",
+    setTimeout(function(){
 
-];
-                clippy.load('Clippy', function(agent) {
-                    // Do anything with the loaded agent
-                    // console.log('clippy show', jokearray);
-                    agent.show();
-                    setTimeout(function(){
-                        agent.speak(jokearray[Math.floor(Math.random() * (jokearray.length - 0)) + 0]);
+        window.eval(`
+                    var jokearray = [
+                        "If at first you don’t succeed; call it version 1.0.",
+                        "The code that is the hardest to debug is the code that you know cannot possibly be wrong",
+                        "Hand over the calculator, friends don’t let friends derive drunk.",
+                        "To err is human – and to blame it on a computer is even more so.",
+                        "There are only 10 types of people in the world: those that understand binary and those that don’t.",
+                        "Electrical Engineers deal with current events.",
+                        "If you're not part of the solution, you're part of the precipitate.",
+                        "To err is human, to forgive divine, but to check--that's engineering",
+                        "If at first you don't succeed, redefine success.",
+                        "Never trust an atom.  They make every thing up.",
+                        'A Nuetron walks into a bar and asks for a drink.  The bartender says "for you, no charge."',
+                        "Where does bad light end up?  In Prism.",
+                        "Why is the PH of Youtube very stable?   It constantly buffers.",
+                        "Why did I divide SIN by TAN......  Just COS",
+                        'A cop pulls Heisenberg over and asks "do you know how fast you were going?" Heisenberg replies "No, but I know where I am"',
+                        "Why did the hipster burn his mouth?   He ate it BEFORE it was cool.",
+                        "Two hydrogen atoms walk into a bar. One says, I think I’ve lost an electron. The other says, Are you sure? The first replies, Yes, I’m positive.",
+                        'A physicist sees a young man about to jump off the Empire State Building.  He yells, "Dont jump, you have so much potential!"',
+                        "What did the pirate say on his 80th birthday?  AYE MATEY!",
+                        "How do you think the unthinkable?  With an ithberg",
+                        "Whiteboards are remarkable.",
+                        "The dead batteries were given out free of charge.",
+                        "Sixteen sodium atoms walk into a bar…followed by Batman. ",
+
+
+                        ];
+                    clippy.load('Clippy', function(agent) {
+                        // Do anything with the loaded agent
+                        // console.log('clippy show', jokearray);
+                        agent.show();
+                        agent.speak("Hi, I'm Clippy.  I'll also work as a bodge wire in a pinch.");
+                        setTimeout(function(){
+                            agent.speak(jokearray[Math.floor(Math.random() * (jokearray.length - 0)) + 0]);
+                            
+                        }, 5000)
+                        // agent.speak(jokearray[0]);
+
+                    });
                         
-                    }, 5000)
-                    // agent.speak(jokearray[0]);
+        `);
+    }, 2000);
 
-                });
-                    
-                    `)
-}, 2000)
-// setTimeout(function(){
-//             console.log('clippy')
-//             try{
-//                 clippy.load('Clippy', function(agent) {
-//                     // Do anything with the loaded agent
-//                     console.log('clippy show');
-//                     agent.show();
-//                 });
-                
-//             }catch(e){
-//                 console.log(e);
-//             }
-//             console.log('clippy after')
-//         }, 10000
-//     )
+    _log('addClippy() End',DLOG);
 }
 
 
@@ -654,6 +628,7 @@ function addControlWidget() {
                 '<input type=checkbox id=spellcheck class="saveState css-checkbox " value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
                 '<input type=checkbox id=stickyfilters class="saveState css-checkbox " value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
                 '<input type=checkbox id=squishedFilters class="saveState css-checkbox " value="0"><label class="css-label" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
+                '<input type=checkbox id=aprilf class="saveState css-checkbox " value="0"><label class="css-label" for="aprilf">April fools joke.</label><br>' +  
             '</div><br><br>'+
             '<button id=restoredefaults class="button-small pure-button" style="margin-left:20px"> restore defaults </button>'+
             '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
@@ -934,8 +909,17 @@ function formatFilterResultsPage(){
         //addOpAmpWiz();
         //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
 
+        // addClipboardCopy();
+
         _log('formatFilterResultsPage() End',DLOG);
     }
+}
+
+function addClipboardCopy(){
+    _log('addClipboardCopy() Start',DLOG);
+
+
+    _log('addClipboardCopy() End',DLOG);
 }
 
 function addMorePartsToTable(){
@@ -2129,6 +2113,8 @@ function formatIndexResultsPage(){
 function formatJumpTo(){
     $('.jumpToCats');
     $('.jumpToCats').parent().css({'border':'0px', 'background':'white'}).addClass('box effect1');
+    $('#jumpTo .jumpToHeader').css({'max-height':''});
+    $('#jumpTo').css({'max-height':''});
 }
 
 function addLearnMore(){
@@ -2250,7 +2236,7 @@ function storeProductIndexTree(){
             oneCategoryFamilies.find('li').each(function(){
                 familyTree.push(getFamilyItemFromListElem(this, quantitytest)); 
             });
-            console.log('familyTree');
+            // console.log('familyTree');
             container.push({
                 'category': oneCategory.text(),
                 'catanchor':oneCategory.attr('id'), 
@@ -2626,7 +2612,6 @@ function addIndexPicPrev(){
 }
 
 function formatDetailPage(){
-    console.log (500000)
     if($('#reportPartNumber').length){
         _log('formatDetailPage() Start',DLOG);
 
