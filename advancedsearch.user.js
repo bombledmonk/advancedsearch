@@ -43,7 +43,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.0.5
+// @version     4.0.6
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -198,6 +198,7 @@
 //4.0.3     Retooled voltage range helper. Clippy!!!
 //4.0.4     added [at]connect declarations for tampermonkey 4.0, fixed sideindex background issue,
 //4.0.5     added dark theme/night mode, added auto search to results not found page, bug fixes
+//4.0.6     added back associated product, fixed night mode for chrome
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -225,7 +226,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '2/4/16';
+var lastUpdate = '5/12/16';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -500,14 +501,15 @@ function updateCache(){
 function addNightMode(){
     if(localStorage.getItem('nightMode') == 1){
         GM_addStyle(`
-                #content {filter: invert(100%);}
+                #content {filter: invert(100%);filter: -webkit-invert(100%);}
                 body {background-color:white;}
                 .mainFlexWrapper {background-color:white;}
                 #content {background-color:white;}
-                #content img {filter: invert(90%)}
+                #content img {filter: invert(90%);-webkit-filter:invert(100%);}
+                html {background-color:black;}
             `
         );
-        $('.mainFlexWrapper').css({'top':'50px'});
+        // $('.mainFlexWrapper').css({'top':'50px'});
         
     }
 }
@@ -560,7 +562,7 @@ function addCustomHeader(){
     // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
     $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:50px;"></div>');
     $('.mainFlexWrapper').append($('#content'));
-    $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
+    // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
 
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
@@ -666,7 +668,7 @@ function addControlWidget() {
                 '<label><input type=checkbox id=instantfilter class="saveState css-checkbox " value="1"><label class="css-label" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
                 '<br><span style="font-weight:bold">Experimental</span><br>'+
                 '<input type=checkbox id=nightMode class="saveState css-checkbox " value="0"> <label class="css-label" for="nightMode">Night Mode </label><br>' +
-                '<input type=checkbox id=analytics class="saveState css-checkbox " value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
+                '<input type=checkbox id=analytics class="saveState css-checkbox " value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. Only used by author to help with the search experience. </label><br>' +
                 '<input type=checkbox id=spellcheck class="saveState css-checkbox " value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
                 '<input type=checkbox id=stickyfilters class="saveState css-checkbox " value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
                 '<input type=checkbox id=squishedFilters class="saveState css-checkbox " value="0"><label class="css-label" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
@@ -2665,7 +2667,7 @@ function formatDetailPage(){
         var dataTable = $('.attributes-table-main');
         //addAssProdLinkToFilters();
         // console.log('pre addassociated')
-        // ap.addAssociatedProductViewer();/////////// addback
+        ap.addAssociatedProductViewer();/////////// addback
         // apOld.addAssociatedProductViewer();
         addReverseFiltering(dataTable);
         addToTopButton();
@@ -5494,7 +5496,7 @@ var ap= (function(){
             console.log('**********************************', boxDataArray[i])
         }
         addAssociatedImageHover();
-        $('.additional-interested').detach();
+        $('.additional-interested').insertAfter('#bottomhalf');
         // handleExpanderDiv5();
     };
 
