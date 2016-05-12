@@ -43,7 +43,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.0.4
+// @version     4.0.5
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -197,6 +197,7 @@
 //4.0.2     Added image bar back.
 //4.0.3     Retooled voltage range helper. Clippy!!!
 //4.0.4     added [at]connect declarations for tampermonkey 4.0, fixed sideindex background issue,
+//4.0.5     added dark theme/night mode, added auto search to results not found page, bug fixes
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -239,9 +240,9 @@ var cacheflag = false;
 //loads before document status is ready
 function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
-    $('#content').hide();
+    // $('#content').hide();
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
-    $('.breadcrumbs').css({'margin': '0', 'padding': '0'});
+    $('.breadcrumbs').css({'margin': '0', 'padding': '5 0 0 0'});
 
     GM_addStyle(
         `#header {display: none;} 
@@ -256,6 +257,7 @@ function preloadFormat(){
     
     $('#header').detach();
     $('#footer').before('<div style="height:10px;"></div>');
+    tc(addNightMode, 'addNightMode');
     // $('#footer').css({'position':'absolute', 'bottom':'0px', 'left': '0px', 'width':'100%'});
     // formatPagesPreReady();
     _log('preloadFormat() End',DLOG);
@@ -265,7 +267,6 @@ function preloadFormat(){
 preloadFormat();
 
 $(document).ready(function() {
-    console.log('test1')
     _log('[ready] advanced search starts here. Jquery version '+ jQuery.fn.jquery);
     _log('[ready] hostname is '+ window.location.hostname,DLOG);
     _log('[ready] pathname is '+ window.location.pathname,DLOG);
@@ -345,6 +346,7 @@ function formatPagesPostReady() {
 }
 
 
+
 function addClippy(){
     _log('addClippy() Start',DLOG);
 
@@ -415,11 +417,32 @@ function formatPagesPreReady() {
         tc(addCustomHeader, 'addCustomHeader');
         tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
         tc(addCartHover, 'addCartHover');
+        tc(formatNoResultsFoundPage, 'formatNoResultsFoundPage');
+
 
         // tc(preFormatDetailPage, 'preformatDetailPage');
 
     _log('formatPagesPreReady() End',DLOG);
 } 
+
+function formatNoResultsFoundPage(){
+    _log('formatNoResultsFoundPage() Start',DLOG);
+    if($('#noResultsTable').length){
+        $('p').show();
+        $('#noResultsTable').parent().parent().parent().css({'position':'relative', 'top':'35px'})
+        var loc = window.location.href;
+        var fixedLoc = loc.replace(/(stock|rohs|pbfree|new|has3d)\=1\&?/g,'');
+
+        $.get(fixedLoc, function(data){
+            var resultCount = parseInt($(data).find('#matching-records-count').text());
+            if(resultCount>0){
+                $('#noResultsTable p:first').html('There were 0 results using the In Stock, Lead Free, or RoHS provided. '+
+                    '<br><br><a style="font-size:16pt; color:blue; " href="'+fixedLoc+'">Click to see ' + resultCount +' results which may be out of stock.</a>');                
+            }
+        })
+    }
+    _log('formatNoResultsFoundPage() End',DLOG);
+}
 
 function getMyDigiKeyLink(){
     var retval ='';
@@ -474,6 +497,21 @@ function updateCache(){
     }
 }
 
+function addNightMode(){
+    if(localStorage.getItem('nightMode') == 1){
+        GM_addStyle(`
+                #content {filter: invert(100%);}
+                body {background-color:white;}
+                .mainFlexWrapper {background-color:white;}
+                #content {background-color:white;}
+                #content img {filter: invert(90%)}
+            `
+        );
+        $('.mainFlexWrapper').css({'top':'50px'});
+        
+    }
+}
+
 function addCustomHeader(){
 	try{
 	_log('addCustomHeader() Start',DLOG);
@@ -506,6 +544,9 @@ function addCustomHeader(){
     var rohsval = $('#rohs').prop('checked');
     _log('stockval is'+ stockval+ ' checked status is '+ $('#stock').prop('checked'),DLOG);
     $('#content').after(customform);
+    if($('#noResultsTable').length){
+        $('#_body').append(customform)   
+    }
     // $('.dkdirchanger2').val(keywordval).focus();
     $('.dkdirchanger2').val(keywordval);
     $('#stock').prop('checked', stockval);
@@ -517,9 +558,9 @@ function addCustomHeader(){
 
     // console.log('>>>>>>>>>>>>>>>>>tld', theTLD, ' gIndexLink ', gIndexLink, ' mydklink2 ', mydklink2);
     // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
-    $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
+    $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:50px;"></div>');
     $('.mainFlexWrapper').append($('#content'));
-    $('.dk-url-shortener').css({position:'fixed', right: '130px', top:'22px','z-index':'30'}); //move url shortener
+    $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
 
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
@@ -624,6 +665,7 @@ function addControlWidget() {
                 '<label><input type=checkbox id=familyHighlight class="saveState css-checkbox " value="1"> <label class="css-label" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
                 '<label><input type=checkbox id=instantfilter class="saveState css-checkbox " value="1"><label class="css-label" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
                 '<br><span style="font-weight:bold">Experimental</span><br>'+
+                '<input type=checkbox id=nightMode class="saveState css-checkbox " value="0"> <label class="css-label" for="nightMode">Night Mode </label><br>' +
                 '<input type=checkbox id=analytics class="saveState css-checkbox " value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. These are used only by the creator of this script to help with the search experience. </label><br>' +
                 '<input type=checkbox id=spellcheck class="saveState css-checkbox " value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
                 '<input type=checkbox id=stickyfilters class="saveState css-checkbox " value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
@@ -2093,7 +2135,7 @@ function formatIndexResultsPage(){
 
         //handleTopResults3(topResultsData);
         handleTopResults4();
-        $('#keywordSearchForm').hide();
+        // $('#keywordSearchForm').hide();
         formatJumpTo();
         addFullResultsTitle();
         addProductIndexThumbs();//dependent on fullresults title and newproductindexdiv
@@ -2200,7 +2242,7 @@ function addFullResultsTitle(){
         );
     }
         // $('#fullResultsTitle').append($('.matching-records').css({'margin':'auto auto',}));
-        $('#fullResultsTitle').append($('.initial-record-count').css({'margin':'auto auto'}));
+        $('#fullResultsTitle').append($('.initial-record-count').clone().css({'margin':'auto auto'}));
         $('.initial-record-count').children().css({'font-size':'16px'})
     _log('addFullResultsTitle() End',DLOG);
 
@@ -2208,10 +2250,12 @@ function addFullResultsTitle(){
 
 function handleTopResults4(){
     //TODO add category jumpto links with smoothscroll
-    $('#quickPicksDisplay').addClass('box effect1').css({border:'none', 'padding-bottom': '5px', 'margin-top':0});
+    $('#quickPicksDisplay').addClass('box effect1').css({border:'none', 'padding-bottom': '5px', 'margin-top':0, 'margin-bottom': '10px'});
     $('#qpLinkList').css({border:'none', 'margin-bottom':'10px'});
     $('#qpTitle').css({'background':'white'})
-    $('#qpTitle').append('for '+ $('#headKeySearch').val())
+    $('#search-dropdown-container').hide();
+    $('#search-within-results').css({'display':'inline'})
+    // $('#qpTitle').append('for '+ $('#headKeySearch').val())
 }
 
 
@@ -2683,7 +2727,7 @@ function preFormatDetailPage(){
         dataTable.find('td,th').css(trtdcss);
         
 
-        $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
+        // $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
 
         $('.update-quantity').insertAfter('.product-details');
         // $('.product-details-discount-pricing').css({'display':'inline'});
@@ -3602,6 +3646,7 @@ function addParamWizards2(){
                             ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
                             ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+
     ];
 
     for (var x=0; x<filterfunctions.length; x++){
@@ -3685,20 +3730,25 @@ function voltageHelper(filterData) {
         var pv = this.id.replace('filter-','')
         var $targetElem = $('select[name="'+pv+'"]');
         var name = $(this).attr('data-name');
-        var selectedLength = $targetElem.find('option:selected').length
 
         // _log('vhelper '+this.id.replace('filter-',''));
         if (e.keyCode == 10 || e.keyCode == 13) {
+            console.log('something is prevented')
             e.preventDefault();
+            console.log('something is prevented')
             applyRangeSelect3(name, $targetElem );
             return false;
         }else{
             applyRangeSelect3(name, $targetElem );
         }
+        var selectedLength = $targetElem.find('option:selected').length
         if(selectedLength){
             $('a[name=btn'+pv+']').show();
             $('a[name=btn'+pv+']').text('Clear '+ selectedLength+' Items');
-
+        }
+    }).keydown(function(e){
+        if (e.keyCode == 10 || e.keyCode == 13) {
+            e.preventDefault();
         }
     });
 
@@ -3761,7 +3811,6 @@ function voltageHelper(filterData) {
 }
 
 function openAdvancedVoltagePopup(button){
-
 
     $('#powerSupplyWiz').dialog('open');
 }
