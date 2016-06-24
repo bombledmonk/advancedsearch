@@ -8,8 +8,8 @@
 // @include     http*search.digikey.*/*
 // @include     http*www.digikey.*/product-detail/en/*
 // @include     http*digikey.*/product-detail/*/*
-// @include     http*digikey.*/classic/Ordering/FastAdd*
 // @include     http*digikey.*/short/*
+// @exclude     http*digikey.*/classic/Ordering/FastAdd*
 // @exclude     http://www.digikey.com
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js
@@ -30,7 +30,7 @@
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
 // @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base.css
 // @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure.css
-// @resource    fontAwesomeCSS https://dl.dropboxusercontent.com/u/26263360/script/css/font-awesome.css
+// @resource    fontAwesomeCSS https://dl.dropboxusercontent.com/u/26263360/script/css/font-awesome-4.6.2.css
 // @resource    stickyCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.css
 // @resource    tooltipsterCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/css/tooltipster.css
 // @resource    tooltipster-shadowCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/css/themes/tooltipster-shadow.css
@@ -43,7 +43,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.0.6
+// @version     4.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -199,6 +199,9 @@
 //4.0.4     added [at]connect declarations for tampermonkey 4.0, fixed sideindex background issue,
 //4.0.5     added dark theme/night mode, added auto search to results not found page, bug fixes
 //4.0.6     added back associated product, fixed night mode for chrome
+//4.0.7     actually fixed chrome night mode
+//4.1       fixed associated product bugs, updated font awesome, made the switch from getResourceText to getResourceURL for css, addtocart on filterpage
+//4.1       added show/hide TR, DKR button and function in options
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -226,7 +229,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '5/12/16';
+var lastUpdate = '6/24/16';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -268,7 +271,7 @@ function preloadFormat(){
 preloadFormat();
 
 $(document).ready(function() {
-    _log('[ready] advanced search starts here. Jquery version '+ jQuery.fn.jquery);
+    _log(`[ready] advanced search starts here. Jquery version ${jQuery.fn.jquery}`);
     _log('[ready] hostname is '+ window.location.hostname,DLOG);
     _log('[ready] pathname is '+ window.location.pathname,DLOG);
     _log('[ready] search is '+ window.location.search,DLOG);
@@ -291,13 +294,13 @@ function addResourceCSS(){
         "tooltipster-shadowCSS"
     ];
 
-    console.log(GM_getResourceURL('buttonCSS'));
+    // console.log(GM_getResourceURL('buttonCSS'));
     for ( var x in cssNames){
-        var thetext = GM_getResourceText(cssNames[x]);
-        // var thetext = GM_getResourceURL(cssNames[x]);
+        // var thetext = GM_getResourceText(cssNames[x]);
+        var thetext = GM_getResourceURL(cssNames[x]);
         _log('style tick 1'+ cssNames[x], DLOG);
-        GM_addStyle(thetext);
-        // $('body').prepend('<link rel="stylesheet" href="'+thetext+'">');
+        // GM_addStyle(thetext);
+        $('body').prepend('<link rel="stylesheet" href="'+thetext+'">');
          // $('body').prepend('<link rel="stylesheet" href="data:text/css;base64,'+thetext+'">')
         _log('style tick end'+ cssNames[x], DLOG);
         // _log('style tick start '+cssNames[x], DLOG);
@@ -308,6 +311,9 @@ function tc(thefunc, name){ // tc = try catch
     try{
         thefunc();
     }catch(err){
+        console.log("%c"+err.message, 'color:red;');
+        console.log( err);
+        console.log("%c edd of error", 'color:red;');
         alert('failed on '+ name + '\n' + err.message + 
             '\n\n If you are getting repeated errors try manually updating by clicking on the ++settings++ box in the upper right hand corner and then hit the manual update link.'+
             '\n\n Alternatively, copy and paste this link into your browser:  https://bit.ly/advsearch-user-js'+
@@ -501,7 +507,7 @@ function updateCache(){
 function addNightMode(){
     if(localStorage.getItem('nightMode') == 1){
         GM_addStyle(`
-                #content {filter: invert(100%);filter: -webkit-invert(100%);}
+                #content {filter: invert(100%);-webkit-filter: invert(100%);}
                 body {background-color:white;}
                 .mainFlexWrapper {background-color:white;}
                 #content {background-color:white;}
@@ -540,10 +546,14 @@ function addCustomHeader(){
         '<div class="dropShadow" />'+
     '</div>';
 
-    var keywordval = $('.psdkdirchanger').val();
+    var keywordval = '';
     var stockval = $('#stock').prop('checked');
     var pbfreeval = $('#pbfree').prop('checked');
     var rohsval = $('#rohs').prop('checked');
+
+    $('.deapplied-filters').not('#deapplyFilter').find('.deapply-form').each(function(){
+        keywordval += $(this).find('#deapply-text-link').text()+' ';
+    })
     _log('stockval is'+ stockval+ ' checked status is '+ $('#stock').prop('checked'),DLOG);
     $('#content').after(customform);
     if($('#noResultsTable').length){
@@ -563,6 +573,7 @@ function addCustomHeader(){
     $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:50px;"></div>');
     $('.mainFlexWrapper').append($('#content'));
     // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
+    $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
 
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
@@ -660,6 +671,7 @@ function addControlWidget() {
                 '<input type=checkbox id="combinePN" class="saveState css-checkbox " value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
                 '<input type=checkbox id=pricehoverControl class="saveState css-checkbox " value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
                 '<input type=checkbox id=queryHighlight class="saveState css-checkbox " value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
+                '<input type=checkbox id=hideShowTRFlag class="saveState css-checkbox " value="0"><label class="css-label" for="hideShowTRFlag">Automatically Hide Tape & Reel and Digi-Reel rows in the filter results page</label><br>' +   
                 '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
                 '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
                 '<label><input type=checkbox id=picPrevControl class="saveState css-checkbox " value="1"> <label class="css-label" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
@@ -877,7 +889,7 @@ function formatFilterResultsPage(){
     if ( $('#productTable').length){
         _log('formatFilterResultsPage() Start',DLOG);
         // $('.quantity-form br').add('#mainform br').remove();
-
+compactRows()
         $('a.altpkglink').hide();
         $('.dload-btn').css({'text-align':'left', 'width':'1%'});
         $('.page-slector').css({'width': '1%'});
@@ -905,6 +917,7 @@ function formatFilterResultsPage(){
         // setTimeout(function(){addPartCompare();}, 150);
         if(localStorage.getItem('pricehoverControl') == 1) {
             setTimeout(function(){addPriceHover();}, 3000);
+            // addAddToCart();
         }
 
         setTimeout(function(){addStickyHeader();}, 2500);  // wait for the page native javascript to load then reapply modified code
@@ -916,7 +929,7 @@ function formatFilterResultsPage(){
         // addApplyFiltersButtonHighlight();
         // wrapFilterTable(); //dependent on floatapplyfilters()
 
-        // addParamWizards(); // TODO addback
+        addParamWizards(); // TODO addback
         addParamWizards2();
         // if(localStorage.getItem('squishedFilters') == 1){
         //     squishedFilters();
@@ -927,7 +940,7 @@ function formatFilterResultsPage(){
 
         fixImageHover();
 
-        akamaiLazyLoadFixForFilterResults();
+        // akamaiLazyLoadFixForFilterResults();
 
         // $('input[value=Reset]').addClass('button-small pure-button').click(function(){
 
@@ -957,6 +970,96 @@ function formatFilterResultsPage(){
 
         _log('formatFilterResultsPage() End',DLOG);
     }
+}
+
+function compactRows(){
+    _log('compactRows() Start',DLOG);
+    $('.th-packaging.ps-headerColumn').append('<div class="pure-button button secondary button-xsmall hideshowdkr showingdkr" style="font-size:90%;">Hide TR,DKR</div>')
+    GM_addStyle(`
+            .hideTheRows .hiddenrow{
+                display:none;
+            }
+        `)
+    $('.hideshowdkr').click(
+        function(){showHideTR();}
+    )
+
+    if(localStorage.getItem('hideShowTRFlag') == 1){
+        showHideTR();
+    }
+
+    _log('compactRows() End',DLOG);
+}
+function showHideTR(){
+        if($('.hideshowdkr').hasClass('showingdkr')){
+            $('.hideshowdkr').addClass('hidingdkr primary').removeClass('showingdkr secondary').text('Show TR,DKR')
+            var packagingFilter = $('select[name=pv7]');
+            if(packagingFilter.find('option[value=2]').length){
+                var priority = packagingFilter.find('option[value=2]').text().trim();
+                var tapereel = packagingFilter.find('option[value=1]').text().trim();
+                var digireel = packagingFilter.find('option[value=243]').text().trim();
+                var packagingColumn = $('.tr-packaging:first').index()+1;
+                 
+                $('#lnkPart .tr-packaging:contains('+tapereel+')').closest('tr').addClass('hiddenrow') 
+                $('#lnkPart .tr-packaging:contains('+digireel+')').closest('tr').addClass('hiddenrow')    
+                $('#lnkPart').addClass('hideTheRows');
+            }
+        }else if($('.hideshowdkr').hasClass('hidingdkr')){
+            $('.hideshowdkr').removeClass('hidingdkr primary').addClass('showingdkr secondary').text('Hide TR,DKR')
+            $('#lnkPart').removeClass('hideTheRows');
+        }
+    
+}
+
+function compactRows2(){
+    _log('compactRows() Start',DLOG);
+
+    if($('select[name=pv7] option[value=2]').length){
+        var priority = $('select[name=pv7] option[value=2]').text().trim();
+        var packagingColumn = $('.tr-packaging:first').index()+1;
+        GM_addStyle(`
+                .compactrow td:nth-child(n+${packagingColumn}), 
+                .compactrow .tr-description, 
+                .compactrow .tr-vendor, 
+                .compactrow .tr-image, 
+                .compactrow .tr-datasheet{
+                    visibility:hidden;
+                }
+                .compactrow .pszoomer{
+                    display:none;
+                }
+                .compactrow .rohs-foilage{
+                    display:none;
+                }
+                .compactrow td, .compactrow{
+                    height:50px;
+                }
+            `)
+        $('.tr-packaging').each(function(){
+                // console.log(priority, this.innerText, packagingColumn)
+            if( $(this).text().indexOf(priority) != -1 ){
+                var mfgpn = $(this).siblings('.tr-mfgPartNumber')
+                var others = [
+                    $(this).closest('tr').prev().find('.tr-mfgPartNumber'),
+                    $(this).closest('tr').prev().prev().find('.tr-mfgPartNumber'),
+                    $(this).closest('tr').next().find('.tr-mfgPartNumber'),
+                    $(this).closest('tr').next().next().find('.tr-mfgPartNumber')
+                ]
+
+                others.forEach(function(el, index){
+                    // console.log('OTHERSSSSSSSSSSSSSSSSSSSSSSSSSS', el.text(), mfgpn.text(), (el.text().trim() == mfgpn.text().trim()))
+                    if(el.text().trim() == mfgpn.text().trim()){
+                        el.closest('tr').addClass('compactrow');
+                    }
+                })
+
+            }
+
+        }) 
+        
+    }
+    _log('compactRows() End',DLOG);
+
 }
 
 function addClipboardCopy(){
@@ -3618,11 +3721,11 @@ function addParamWizards(){
                             // ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
                             // ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
                             // ['pv659' ,'Voltage - Supply, Single/Dual',  function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            ['pv252' ,'Operating Temperature',  function(name, e){temperatureHelper(name, e);}, '+ helper'],
-                            ['pv772' ,'Voltage - Load', function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+                            // ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+                            // ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+                            // ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+                            // ['pv252' ,'Operating Temperature',  function(name, e){temperatureHelper(name, e);}, '+ helper'],
+                            // ['pv772' ,'Voltage - Load', function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
                             ['pv1113' ,'Connectivity',  function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
                             ['pv1114' ,'Peripherals',   function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
                             ['pv16' ,'Package / Case',  function(name, e){checkboxHelper2(name, e);}, '+checkboxes'],
@@ -4772,6 +4875,74 @@ function addBottomCompare(){
     _log('addBottomCompare() End',DLOG);
 }
 
+function addAddToCart(){
+    $('#content').after('<div id=addcartscratch>')
+    $('#content').append('<div id=gmloadtest></div>')
+    $('td.tr-unitPrice').each(function(){
+        if(!$(this).text().includes('Digi-Reel')){
+            $(this).append('<br><i class="fa fa-cart-plus fa-2x addToCartIcon" title="Add minimum quantity to cart."></i>')
+        }
+        $(this).attr('align', 'center');
+    })
+
+    GM_addStyle(`
+        .addToCartIcon { 
+            width:100%;
+            color:blue;
+            margin: 4px auto;
+            cursor:pointer;
+        }
+        .addToCartIcon:hover { color:red;}
+    `);
+
+    $('.addToCartIcon').click(function(){
+        // alert('hi');
+        var url = $(this).closest('tr').find('.tr-mfgPartNumber a:first').attr('href');
+        var pn = $(this).closest('tr').find('meta[itemprop*=productid]').attr('content').replace('sku:','');
+        var minqty = $(this).closest('tr').find('.tr-minQty').text().replace(/\,/g, '').trim();
+        var addurl = '/classic/Ordering/FastAdd.aspx?part1='+pn+'&qty1='+minqty;
+        console.log('minqty about to gmload',addurl);
+        // $('.cartHoverContent').gmload('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
+        //     alert('clicked and loaded')
+        // });
+        $('#addcartscratch').gmload('http://digikey.com/classic/Ordering/FastAdd.aspx?part1='+pn+'&qty1='+minqty+' #ctl00_ctl00_pnlNull', function(){
+            // $('#cartlink').tooltipster('content', $('#addcartscratch').html());
+            alert('aaaa');
+            console.log('reload cart')        
+            // $('.cartHoverContent').contents($('#addcartscratch'));
+            // console.log($('#cartlink').tooltipster('content'))
+            $('#cartlink').tooltipster({
+                // content: $('<div class=cartHover><div class=cartHoverTitle /> <div class=cartHoverContent> hit</div></div>'),
+                content: $('.cartHoverContent'),
+                trigger: 'hover',
+                delay: 350,
+                contentCloning: false,
+                position: 'bottom',
+                interactive: true,
+                // positionTracker: true,
+                offsetX: -30,
+                onlyOne: true,
+                // iconTouch: true,
+                theme: 'tooltipster-shadow',
+                functionReady: function(origin){
+                    // origin.tooltipster('reposition');
+                    origin.tooltipster('content', $('#addcartscratch'));
+                    console.log('hovering')
+                }
+            })
+            $('#cartquant').text( ' ('+($('#addcartscratch tr.detail').length)+')');
+        });
+
+        // $('#gmloadtest').load('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails', function(){
+        //     alert('aaaa')
+        //     console.log('reload cart')
+        //     // loadCartDetails()
+        // });
+
+        //finish error checking
+    })    
+}
+
 function addPriceHover(){
     _log('addPriceHover() Start',DLOG);
     //adds price hover over td.tr-unitprice
@@ -4793,6 +4964,8 @@ function addPriceHover(){
 
     _log('addPriceHover() End',DLOG);
 }
+
+
 
 // function loadPrices($hoveredObj){
 function loadPrices(origin){
@@ -5559,11 +5732,11 @@ function getAllAssociations(){
     names.forEach(function(el,idx,arr){
         var escaped = selectorEscape(el);
         var alldata = window.eval(escaped);
-        // console.log(escaped, 'escaped eval', alldata);
+        console.log(escaped, 'escaped eval', alldata[0]);
         assocationData.push({
             'title': el,
-            'list': alldata.slice(1),
-            'viewAllLink': alldata[0].showAllLink
+            'list': (alldata[0].showAllLink != undefined) ? alldata.slice(1) : alldata.slice(0),
+            'viewAllLink': (alldata[0].showAllLink != undefined) ? alldata[0].showAllLink : 'none'
         }) ;
     });
     console.log('associatione data', assocationData);
@@ -5614,9 +5787,28 @@ function addCartHover(){
     //avoid applying cart logic to the cart page
     if(window.location.pathname.indexOf('Ordering') == -1 ){
 
-        $('#content').after('<div class=cartHoverContainer style="display:none;"><div></div><div class=cartHoverContent></div></div>');
+        $('#content').after('<div class=cartHoverContainer style="display:none;"><div></div><div class=cartHoverContent style="max-height:400px; overflow-y:scroll;"></div></div>');
         // $('<div class=cartHoverContainer><div></div><div class=cartHoverContent></div></div>').insertAfter('#content').hide();
 
+        //If cart get's too tall cart appears above hovered icon. Not sure how to fix.
+        $('#cartlink').tooltipster({
+            // content: $('<div class=cartHover><div class=cartHoverTitle /> <div class=cartHoverContent> hit</div></div>'),
+            content: $('.cartHoverContent').html(),
+            trigger: 'hover',
+            delay: 350,
+            contentCloning: false,
+            position: 'bottom',
+            interactive: true,
+            // positionTracker: true,
+            offsetX: -30,
+            onlyOne: true,
+            // iconTouch: true,
+            theme: 'tooltipster-shadow',
+            functionReady: function(origin){
+                console.log('elementtooltip', $(origin.tooltipster('elementTooltip')).parent())
+                console.log('hovering')
+            }
+        })
         loadCartDetails();
     }
     _log('addCartHover() End',DLOG);
@@ -5627,25 +5819,11 @@ function loadCartDetails(serialstring){
     _log('loadCartDetails() Start',DLOG);
     if(serialstring == undefined){serialstring = '';}
     var ordet = ' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
-    $('.cartHoverContent').gmload('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(){
+    $('.cartHoverContent').gmload('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
         $('#cartquant').text( ' ('+($('img[src*="close-x"]').length)+')');
         _log('loadCartDetails() loaded',DLOG);
+        console.log('cart details loaded'+$(this).text())
 
-        $('#cartlink').tooltipster({
-        // content: $('<div class=cartHover><div class=cartHoverTitle /> <div class=cartHoverContent> hit</div></div>'),
-        content: $('.cartHoverContent'),
-        trigger: 'hover',
-        delay: 350,
-        contentCloning: true,
-        position: 'bottom',
-        interactive: true,
-        // positionTracker: true,
-        offsetX: -30,
-        onlyOne: true,
-        // iconTouch: true,
-        theme: 'tooltipster-shadow',
-        functionReady: function(){console.log('hovering')}
-        })
     });
     _log('loadCartDetails() End',DLOG);
 }
