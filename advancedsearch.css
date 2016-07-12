@@ -17,7 +17,7 @@ input[type="text"], select, input[type="search"]{
  border-style:solid; 
  background-color:#fbfcfc; 
  border-color:#e9eced; 
- padding:3px; 
+ /*padding:3px; */
  color:#465660;  } 
 .css-input:focus { outline:none; } 
 

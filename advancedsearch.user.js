@@ -43,7 +43,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.1
+// @version     4.1.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -202,6 +202,7 @@
 //4.0.7     actually fixed chrome night mode
 //4.1       fixed associated product bugs, updated font awesome, made the switch from getResourceText to getResourceURL for css, addtocart on filterpage
 //4.1       added show/hide TR, DKR button and function in options
+//4.1.1     started fixing detail page bugs introduced by changes on the website
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -484,10 +485,13 @@ function cleanup () {
 
     $('input[type=submit],input[type=reset],input[type=button]').addClass('button-small pure-button')
     .css({
-        'margin': '2px',
+        // 'margin': '2px',
         'background-image': ''
     });
-    $('.button').css({'background-image': 'none', margin:'2px'});
+    $('.button').css({
+        'background-image': 'none', 
+        // margin:'2px'
+    });
     $('p:contains("No records match your")').show();
     $('.alert').show();
     _log('cleanup() End',DLOG);
@@ -532,7 +536,7 @@ function addCustomHeader(){
         '<img align=left top="50px" height=50 src="http://www.digikey.com/Web%20Export/hp/common/logo_black.jpg"></a>'+
         '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">'+
         '<a href="http://dkc1.digikey.com/us/en/help/help10.html">'+
-        '<b>Keywords:</b></a> <input type="search" value="" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
+        '<b>Keywords:</b></a> <input type="search" value="" style="padding:3px; margin:3px 3px 1px 3px;" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
         '<input align=right type="submit" value="New Search" id="searchbutton">'+
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
@@ -573,7 +577,7 @@ function addCustomHeader(){
     $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:50px;"></div>');
     $('.mainFlexWrapper').append($('#content'));
     // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
-    $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
+    // $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
 
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
@@ -2764,15 +2768,15 @@ function formatDetailPage(){
     if($('#reportPartNumber').length){
         _log('formatDetailPage() Start',DLOG);
 
-        $('#bottomhalf').css({'margin-top': '10px'});
+        // $('#bottomhalf').css({'margin-top': '10px'});
         // var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
-        addPriceBreakHelper();
+        // addPriceBreakHelper();//TODO addback!!!!!!!!!!!!!!!!!!!!
         var dataTable = $('.attributes-table-main');
         //addAssProdLinkToFilters();
         // console.log('pre addassociated')
-        ap.addAssociatedProductViewer();/////////// addback
+        // ap.addAssociatedProductViewer();/////////// addback
         // apOld.addAssociatedProductViewer();
-        addReverseFiltering(dataTable);
+        // addReverseFiltering(dataTable);
         addToTopButton();
         
         addDetailPageEasyInfoCopy($('#content'));
@@ -2806,7 +2810,7 @@ function preFormatDetailPage(){
         var trtdcss = {
             'border': '1px solid #ccc'
         };
-        makeImageHolder();
+        // makeImageHolder();
         addDetailHoverMainImage();
 
         var priceTable = $('#reportPartNumber').parent().parent().parent();
@@ -2822,15 +2826,19 @@ function preFormatDetailPage(){
         // 'border': '1px solid #ccc'
         // });
         
-        priceTable.css(tablegeneralcss);
-        priceTable.find('td,th').css(trtdcss);
-        digireelTable.css(tablegeneralcss);
-        digireelTable.find('td,th').css(trtdcss);
-        discPriceTable.css(tablegeneralcss);
-        discPriceTable.find('td,th').css(trtdcss);
+        // priceTable.css(tablegeneralcss);
+        // priceTable.find('td,th').css(trtdcss);
+        // digireelTable.css(tablegeneralcss);
+        // digireelTable.find('td,th').css(trtdcss);
+        // discPriceTable.css(tablegeneralcss);
+        // discPriceTable.find('td,th').css(trtdcss);
         dataTable.css(tablegeneralcss);
         dataTable.find('td,th').css(trtdcss);
         
+        $('#prod-att-table input[type=checkbox]').each(function(){
+            var name = $(this).attr('name');
+            $(this).addClass('css-checkbox').attr('id', name).after('<label class="css-label" for='+name+'>');
+        })
 
         // $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
 
@@ -4953,7 +4961,7 @@ function addPriceHover(){
         delay: 350,
         // contentCloning: true,
         position: 'right',
-        // interactive: true,
+        interactive: true,
         // positionTracker: true,
         offsetX: -30,
         onlyOne: true,
