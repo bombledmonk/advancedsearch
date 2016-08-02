@@ -21,7 +21,7 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/dklib/dklib.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/js/jquery.tooltipster.min.js
+// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/js/tooltipster.bundle.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.lazyloadxt.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.dragtable.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.8/clipboard.min.js
@@ -32,8 +32,8 @@
 // @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure.css
 // @resource    fontAwesomeCSS https://dl.dropboxusercontent.com/u/26263360/script/css/font-awesome-4.6.2.css
 // @resource    stickyCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.css
-// @resource    tooltipsterCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/css/tooltipster.css
-// @resource    tooltipster-shadowCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master/css/themes/tooltipster-shadow.css
+// @resource    tooltipsterCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/css/tooltipster.bundle.css
+// @resource    tooltipster-shadowCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/css/plugins/tooltipster/sideTip/themes/tooltipster-sideTip-shadow.min.css
 // @connect     self
 // @connect     digikey.com
 // @updateURL   https://goo.gl/vbjoi
@@ -43,7 +43,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.1.1
+// @version     4.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -203,6 +203,7 @@
 //4.1       fixed associated product bugs, updated font awesome, made the switch from getResourceText to getResourceURL for css, addtocart on filterpage
 //4.1       added show/hide TR, DKR button and function in options
 //4.1.1     started fixing detail page bugs introduced by changes on the website
+//4.2       fixed datasheet loader, added copy to clipboard on detail page, updated tooltipster
 
 //TODO add copy info button  possibly on filter results page
 //TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -230,7 +231,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '6/24/16';
+var lastUpdate = '7/13/16';
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -335,7 +336,6 @@ function formatPagesPostReady() {
     tc(formatFilterResultsPage, 'formatFilterResultsPage');
     $('#content').show();
     tc(formatDetailPage, 'formatDetailPage');
-    // tc(formatOrderingPage,'formatOrderingPage');
     tc(formatFastAddPage,'formatFastAddPage');
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
@@ -422,11 +422,20 @@ function addClippy(){
 
 function formatPagesPreReady() {
     _log('formatPagesPreReady() Start',DLOG);
+        $.tooltipster.setDefaults({
+            content: '...loading',
+            trigger: 'hover',
+            delay: 350,
+            interactive: true,
+            side: 'bottom',
+            updateAnimation: null,
+            animation: 'fade',
+            theme: 'tooltipster-shadow',
+        });
         tc(addCustomHeader, 'addCustomHeader');
         tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
         tc(addCartHover, 'addCartHover');
         tc(formatNoResultsFoundPage, 'formatNoResultsFoundPage');
-
 
         // tc(preFormatDetailPage, 'preformatDetailPage');
 
@@ -970,7 +979,6 @@ compactRows()
         //addOpAmpWiz();
         //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
 
-        // addClipboardCopy();
 
         _log('formatFilterResultsPage() End',DLOG);
     }
@@ -1063,14 +1071,42 @@ function compactRows2(){
         
     }
     _log('compactRows() End',DLOG);
-
 }
 
-function addClipboardCopy(){
-    _log('addClipboardCopy() Start',DLOG);
+function addClipboardCopyToDetail(){
+    _log('addClipboardCopyToDetail() Start',DLOG);
+    $('#product-details td').each(function(){
+        if($(this).children().length > 0){
+            $(this).children(':first').after('<button class="copyContent" style=""><i class="fa fa-files-o"></i></button>');
+        }else{$(this).append('<button class="copyContent" style=""><i class="fa fa-files-o"></i></button>')}
+    })
+    $('.copyContent').tooltipster({
+        content:"copied!",
+        trigger:'custom',
+        'side': 'right',
+        'distance': -45
+    })
+    GM_addStyle(`
+        td .copyContent{
+            float:right;
+            visibility:hidden;
+            margin: -4px 0px;
+        }
+        td:hover .copyContent{
+            visibility:visible;
+        }
+    `);
+    var clip = new Clipboard('.copyContent', {
+        text: function(trigger){
+            return $(trigger).closest('td').text().trim();
+        }
+    })
+        clip.on('success', function(e){
+            $(e.trigger).tooltipster('open');
+            setTimeout(function(){$(e.trigger).tooltipster('close')}, 800)
+        });
 
-
-    _log('addClipboardCopy() End',DLOG);
+    _log('addClipboardCopyToDetail() End',DLOG);
 }
 
 function addMorePartsToTable(){
@@ -1188,12 +1224,14 @@ function addVisualPicker(){
     var p = $('.pickerbody');
     $('.pickerhelp1').tooltipster({
         content: $('<span> The Add More Lines button is exists to limit the number of calls to the server at one time in this experimental feature.</span>'),
-        theme: 'tooltipster-shadow'
+        theme: 'tooltipster-shadow',
+        side: 'bottom'
     });
     $('.pickerhelp2').tooltipster({
         content: $('<span>If you would like to see a more complete representation of example pictures for each filter option above, clear any other filters that may be selected. '+
                 '(ex items in Manufacturer or Series).</span>'),
-        theme: 'tooltipster-shadow'
+        theme: 'tooltipster-shadow',
+        side: 'left'
     });
 
     $( "#visualpickerdiv" ).dialog( { 
@@ -2413,7 +2451,7 @@ function getFamilyItemFromListElem(item, quantitytest){
     var count = parseInt(resultCount);
 
     // console.log('getFamilyItemFromListElem');
-    var akamai = 1;
+    var akamai = 0;
     // console.log('getFamilyItemFromListElem', resultCount, count)
 
     var name = $(item).find('a').text();
@@ -2713,48 +2751,58 @@ function addIndexColumnizerControls(){
 function addIndexPicPrev(){
     _log('addIndexPicPrev() Start',DLOG);
     if(localStorage.getItem('picPrevControl') == 1) {
-        setTimeout(function(){
+        setTimeout(
+            // GM_addStyle('.pszoomer {height:64px;}')
+            function(){
+                console.log('~~~~~~~~~~~~~~~indexpic')
             $('.famTitle a').tooltipster({
-                content: $('<div class=picPrev><div class=picPrevTitle /> <div class=picPrevBody></div></div>'),
-                trigger: 'hover',
-                delay: 350,
-                // contentCloning: true,
-                position: 'bottom-right',
-                // interactive: true,
-                positionTracker: false,
-                onlyOne: true,
-                iconTouch: true,
-                functionReady: function(origin){
-
-                    var queryCheckedURL = ($(this).attr('href').indexOf('?') != -1) ? 
-                                            ($(this).attr('href') + '&stock=1&pageSize=100&akamai-feo=off') : 
-                                            ($(this).attr('href') + '?stock=1&pageSize=100&akamai-feo=off');
-                    var onlink = $(this);
+                content: '....loading',
+                functionReady: function(instance, helper){
+                    console.log('!!!!!!!!!!!!!!!!!!')
+                    var $origin = $(helper.origin);
+                    var queryCheckedURL = ($origin.attr('href').indexOf('?') != -1) ? 
+                                            ($origin.attr('href') + '&stock=1&pageSize=100') : 
+                                            ($origin.attr('href') + '?stock=1&pageSize=100');
+                    var onlink = $origin;
                         
                     $('.picPrevBody').html('** loading pictures**<br><div class=loader />');
 
                     if(sessionStorage.getItem(queryCheckedURL) == undefined){
-                        $('.picPrevBody').load(queryCheckedURL + ' img.pszoomer', function() {
-                            $('.picPrevTitle').html('<span style="vertical-align:top" height="100%"> Example pictures of <b>'+
+
+                        $.get(queryCheckedURL, function(data){
+                            console.log('data loaded')
+                            // $('.tooltipster-content img').on('load', instance.reposition);
+
+                            var $imageLinks = $(data).find('.tr-image a');
+
+                            $imageLinks = filterDuplicateimageLinks($imageLinks);
+                            instance.content($imageLinks);
+                            var clearMe = setInterval(function(){
+                                instance.reposition(); 
+                                console.log('repositionoed'); 
+                                var complete = true;
+                                $('.tooltipster-content img').each(function(){
+                                    complete &= this.complete 
+                                    if (!complete){
+                                        return false;
+                                    }else{
+                                        console.log('all items loaded')
+                                        clearInterval(clearMe);
+                                    }
+                                })
+                            }, 500) 
+
+
+                            $('.tooltipster-content').prepend('<span style="vertical-align:top" height="100%"> Example pictures of <b>'+
                                 onlink.text() +'</b> (up to first 100 in stock):</span><br> '
-                             );
-                            $('.picPrevBody').find('img').each(function() {
-                                $(this).css('height', '64px');
-                                $('img[src="'+$(this).attr('src')+'"]:gt(0)').hide();
-                                // $('this').attr('alt','').attr('title', '');
-                            });
-                            $('.picPrevBody').find('img').attr('alt','').attr('title', '');
-
-                            if($('.picPrevBody').find('img').length == 0){
-                                $('.picPrevBody').html('----no pics exist?');
+                            );
+                            sessionStorage.setItem(queryCheckedURL, $('.tooltipster-content').html());
+                            if($('.tooltipster-content').find('img').length == 0){
+                                $('.tooltipster-content').html('----no pics exist?');
                             }
-                            sessionStorage.setItem(queryCheckedURL, $('.picPrev').html());
-                            origin.tooltipster('reposition');
+                            // console.log('width is:')
+                        })
 
-                        });
-                    }else{
-                        $('.picPrev').html(sessionStorage.getItem(queryCheckedURL));
-                        origin.tooltipster('reposition');
                     }
                 }
             });
@@ -2762,6 +2810,24 @@ function addIndexPicPrev(){
         },1000);
     }
     _log('addIndexPicPrev() End',DLOG);
+}
+
+function filterDuplicateimageLinks($imageset){
+    var srcs = [],
+        temp;
+        console.log('filtering stuff')
+    var x = $imageset.filter(function(){
+        temp = $(this).find('img').attr("src");
+        // console.log($.inArray(temp, srcs), ':::::' ,temp);
+        if($.inArray(temp, srcs) < 0){
+            srcs.push(temp);   
+            return true;
+        }
+        return false;
+        // return true;
+    });
+    // console.log('x', x);
+    return x;
 }
 
 function formatDetailPage(){
@@ -2792,6 +2858,8 @@ function formatDetailPage(){
         $('td:contains("obsolete") p').css('background-color','#FF8080'); // changes the color of the obsolete callout
         // $('#content').css({'position':'relative', 'top': '45px'});
         detailPageManufacturerHover();
+        detailPageAssociationHover()
+        addClipboardCopyToDetail();
 
         // newAssociatedProducts();
 
@@ -2856,21 +2924,43 @@ function preFormatDetailPage(){
 }
 
 function detailPageManufacturerHover(){
-	$('h2[itemprop=manufacturer] a').tooltipster({
-        content: $('<div class=logoHover> <div class=logoHoverContent> </div><div class=logoHoverTitle></div></div>'),
-        trigger: 'hover',
-        delay: 350,
-        // contentCloning: true,
-        position: 'bottom',
-        interactive: true,
-        // positionTracker: true,
-        offsetX: -30,
-        onlyOne: true,
-        // minWidth: '90%',
-        // iconTouch: true,
+	$('[itemprop=manufacturer] a')
+    .data('elementToLoad', '.supplier-logo')
+    .tooltipster({
+        side: 'bottom',
         theme: 'tooltipster-shadow',
-        functionReady: function(someitem){$('.logoHoverContent').gmload($(someitem).attr('href')+ ' #logo');}
+        functionReady: easyHoverAndLoad
     });
+}
+
+function detailPageAssociationHover(){
+    $('.list-item-img a, [itemprop=name] a')
+    .data('elementToLoad', '#prod-att-table')
+    .tooltipster({
+        distance: 60,
+        side: 'top',
+        functionReady: easyHoverAndLoad,
+    });
+}
+
+function easyHoverAndLoad(instance,helper){
+    //This function needs a data object called elementToLoad set on any tooltipster object
+    //The data should contain the jquery selector of the item to load from the hovered link.
+    //note: default tooltipster settings will need to be set globally or the minimum set will need to be passed in the tooltipster method
+    //usage: $('a').data('elementToLoad', '#someLogoId').tooltipster({settings..., functionReady: easyHoverAndLoad})
+    var $origin = $(helper.origin);
+    if($origin.data('loaded')!==true){
+        _log(helper.origin,true)
+        $.get(
+            $origin.attr('href'), 
+            function(data){
+                instance.content($(data).find($origin.data('elementToLoad')))
+                instance.reposition();
+                $origin.data('loaded',true)
+            }
+        
+        );
+    }
 }
 
 function addDetailPageEasyInfoCopy($pageobject){
@@ -3080,19 +3170,12 @@ function addFootprintSearch(){
 
 function addDetailHoverMainImage(){
     $('#product-photo-wrapper img:first').tooltipster({
-        content: $('<div class=detailHoverImage><div class=detailHoverTitle /> <div class=detailHoverBody> hit</div></div>'),
-        trigger: 'hover',
-        delay: 350,
-        // contentCloning: true,
-        position: 'right',
-        // interactive: true,
-        // positionTracker: true,
-        offsetX: -30,
-        offsetY: -150,
-        onlyOne: true,
-        // iconTouch: true,
+        content: '...loading',
         theme: 'tooltipster-shadow',
-        functionReady: function(origin){ $('.detailHoverBody').html('<img src="'+$(this).parent().attr('href')+'">'); origin.tooltipster('reposition');}
+        side: 'right',
+        trackTooltip: true,
+        distance: -30,
+        functionReady: function(instance, helper){ $('.tooltipster-content').html('<img src="'+$(helper.origin).parent().attr('href')+'">'); instance.reposition;}
     });
 }
 
@@ -3296,9 +3379,10 @@ function simpleInternationalParse(text, isEuro){
 
 function addDataSheetLoader(){
         _log('addDataSheetLoader() Start',DLOG);
-        var dslink = $('tr:contains("Datasheet") td>a:first').attr('href');
+        var dslink = $('.lnkDatasheet:first').attr('href');
         var hidenav = '#navpanes=0&zoom=100';
-        
+        var htmldatasheetlink = $('.attributes-table-main th:contains(HTML)').parent().find('a:first').attr('href');
+        console.log('~~~~~~~~~~~~~~~~~~~~~'+htmldatasheetlink)
         //KEEP different methods  KEEP*************>>>>
         //$('#content').append('<embed src="'+dslink+'" width=100% height=800px>');
         // $('#content').append('<embed src="'+dslink+'#toolbar=0&navpanes=0&scrollbar=0" width=100% height=auto>');
@@ -3318,11 +3402,29 @@ function addDataSheetLoader(){
         '</div>');
         addChooserButtonAction($('#datasheetchooser'), dataSheetButtonAction);
         
-        if($('tr:contains("Datasheet") td>a:first').length > 0 && $('#datasheetchooserinput').val() == 1){
-            setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
-            $('tr:contains("Datasheet") td>a:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" ><i class="fa fa-arrow-circle-down fa-lg"></i></button></a>').parent().localScroll();
-            // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
+
+        GM_addStyle(`
+            #jpedal{
+                box-shadow: 0 7px 6px -6px #777;
+                margin:20px;
+            }
+            #datasheetdiv{
+                background-color:#efefef;
+            }
+        `)
+
+
+        if($('.lnkDatasheet:first').length > 0 && $('#datasheetchooserinput').val() == 1){
+            if(htmldatasheetlink != undefined){
+                $('<div>').appendTo('#datasheetdiv').load(htmldatasheetlink+' '+'#pagelayout_0_content_0_richtextcontent');
+            }else{
+
+                setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
+                $('.lnkDatasheet:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" ><i class="fa fa-arrow-circle-down fa-lg"></i></button></a>').parent().localScroll();
+                // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
+            }
         }
+        
         _log('addDataSheetLoader() End',DLOG);
 }
 
@@ -3423,14 +3525,6 @@ function getReverseFilterLink(formRowsTD){
     return reverseFilterLink;
 }
 
-// function addBreadCrumbLink(){
-//     _log('addBreadCrumbLink() Start',DLOG);
-//     if ($('#productTable').size() > 0) {
-//         // appendURLParam($('.seohtagbold a:last'), 'akamai-feo', 'off');
-//     }
-//     addBreadcrumbHover();
-//     _log('addBreadCrumbLink() End',DLOG);
-// }
 
 //TODO keep and maybe use other places
 function appendURLParam(href, param, value){
@@ -4883,119 +4977,41 @@ function addBottomCompare(){
     _log('addBottomCompare() End',DLOG);
 }
 
-function addAddToCart(){
-    $('#content').after('<div id=addcartscratch>')
-    $('#content').append('<div id=gmloadtest></div>')
-    $('td.tr-unitPrice').each(function(){
-        if(!$(this).text().includes('Digi-Reel')){
-            $(this).append('<br><i class="fa fa-cart-plus fa-2x addToCartIcon" title="Add minimum quantity to cart."></i>')
-        }
-        $(this).attr('align', 'center');
-    })
 
-    GM_addStyle(`
-        .addToCartIcon { 
-            width:100%;
-            color:blue;
-            margin: 4px auto;
-            cursor:pointer;
-        }
-        .addToCartIcon:hover { color:red;}
-    `);
-
-    $('.addToCartIcon').click(function(){
-        // alert('hi');
-        var url = $(this).closest('tr').find('.tr-mfgPartNumber a:first').attr('href');
-        var pn = $(this).closest('tr').find('meta[itemprop*=productid]').attr('content').replace('sku:','');
-        var minqty = $(this).closest('tr').find('.tr-minQty').text().replace(/\,/g, '').trim();
-        var addurl = '/classic/Ordering/FastAdd.aspx?part1='+pn+'&qty1='+minqty;
-        console.log('minqty about to gmload',addurl);
-        // $('.cartHoverContent').gmload('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
-        //     alert('clicked and loaded')
-        // });
-        $('#addcartscratch').gmload('http://digikey.com/classic/Ordering/FastAdd.aspx?part1='+pn+'&qty1='+minqty+' #ctl00_ctl00_pnlNull', function(){
-            // $('#cartlink').tooltipster('content', $('#addcartscratch').html());
-            alert('aaaa');
-            console.log('reload cart')        
-            // $('.cartHoverContent').contents($('#addcartscratch'));
-            // console.log($('#cartlink').tooltipster('content'))
-            $('#cartlink').tooltipster({
-                // content: $('<div class=cartHover><div class=cartHoverTitle /> <div class=cartHoverContent> hit</div></div>'),
-                content: $('.cartHoverContent'),
-                trigger: 'hover',
-                delay: 350,
-                contentCloning: false,
-                position: 'bottom',
-                interactive: true,
-                // positionTracker: true,
-                offsetX: -30,
-                onlyOne: true,
-                // iconTouch: true,
-                theme: 'tooltipster-shadow',
-                functionReady: function(origin){
-                    // origin.tooltipster('reposition');
-                    origin.tooltipster('content', $('#addcartscratch'));
-                    console.log('hovering')
-                }
-            })
-            $('#cartquant').text( ' ('+($('#addcartscratch tr.detail').length)+')');
-        });
-
-        // $('#gmloadtest').load('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails', function(){
-        //     alert('aaaa')
-        //     console.log('reload cart')
-        //     // loadCartDetails()
-        // });
-
-        //finish error checking
-    })    
-}
 
 function addPriceHover(){
     _log('addPriceHover() Start',DLOG);
     //adds price hover over td.tr-unitprice
 
-    $('td.tr-unitPrice').tooltipster({
-        content: $('<div class=priceHover><div class=priceHoverTitle /> <div class=priceHoverBody> hit</div></div>'),
-        trigger: 'hover',
-        delay: 350,
-        // contentCloning: true,
-        position: 'right',
-        interactive: true,
-        // positionTracker: true,
-        offsetX: -30,
-        onlyOne: true,
-        // iconTouch: true,
+    $('td.tr-unitPrice')
+    .data('elementToLoad', '.catalog-pricing')
+    .tooltipster({
+        content: 'loading...',
+        side: 'right',
         theme: 'tooltipster-shadow',
+        distance: -40,
         functionReady: loadPrices
     });
 
     _log('addPriceHover() End',DLOG);
 }
 
-
-
-// function loadPrices($hoveredObj){
-function loadPrices(origin){
+function loadPrices(instance,helper){
     _log('loadPrices() Start',DLOG);
-    $('.priceHoverBody').html('...loading <img style="margin-left:60px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
-    // console.log($(this).closest('tr').find('.mfg-partnumber a:first').attr('href'));
-    // console.log($(this).text());
-    $('.priceHoverBody').load($(this).closest('tr').find('.tr-mfgPartNumber a:first').attr('href')+' .catalog-pricing', function(){
-        $('#product-dollars th').css({
-            'color': '#FFF',
-            'padding': '3px 5px',
-            'border': 'medium none !important',
-            'text-align': 'center',
-            'background-color': '#333',
-        });
-        addPriceBreakHelper();
-        origin.tooltipster('reposition');
-    });
+    var $origin = $(helper.origin);
+    if($origin.data('loaded')!==true){
+        $.get(
+            $origin.closest('tr').find('a[itemprop=url]').attr('href'), 
+            function(data){
+                instance.content($(data).find($origin.data('elementToLoad')))
+                instance.reposition();
+                $origin.data('loaded',true)
+            }
+        );
+    }
     _log('loadPrices() End',DLOG);
 }
 
-//TODO fix for 4.0
 function combinePN(){
     _log('combinePN() Start',DLOG);
     // var productTable = $('#productTable').eq(0).detach();
@@ -5065,23 +5081,11 @@ function combinePNAfterLoad($targetProductTable){
 }
 
 function addHoverLogo($productTable){
-	// $('[itemprop="url]')
-// $('span[itemprop="name"]').hide()
-    // $('#productTable a[href*="Suppliers"]').tooltipster({
-	$productTable.find('a[href*="Suppliers"]').tooltipster({
+    //intends to add logo when hovering over manufacturers links, mostly on filter results page.
+	$productTable.find('span[itemtype$="Organization"] a').data('elementToLoad', '.supplier-logo').tooltipster({
         content: $('<div class=logoHover> <div class=logoHoverContent> </div><div class=logoHoverTitle></div></div>'),
-        trigger: 'hover',
-        delay: 350,
-        // contentCloning: true,
-        position: 'bottom',
-        interactive: true,
-        // positionTracker: true,
-        offsetX: -30,
-        onlyOne: true,
-        // minWidth: '90%',
-        // iconTouch: true,
-        theme: 'tooltipster-shadow',
-        functionReady: function(someitem){$('.logoHoverContent').gmload($(someitem).attr('href')+ ' #logo');}
+        side: 'top',
+        functionReady: easyHoverAndLoad
     });
 }
 
@@ -5203,41 +5207,29 @@ function hideAccelTmb(e) {
 function addBreadcrumbHover(){
     //add hover over to the category link of the bread crumbs
     _log('addBreadcrumbHover() Start',DLOG);
-    $('h1.breadcrumbs').find('a:eq(1)').append(' <i class="fa fa-caret-down fa-lg" style="color:red;"></i>');
+    $('.breadcrumbs').find('a:eq(1)').append(' <i class="fa fa-caret-down fa-lg" style="color:red;"></i>');
 
-    $('h1.breadcrumbs').find('a:eq(1)').tooltipster({
-        content: $('<div class=priceHover><div class=breadcrumbHoverTitle /> <div class=breadcrumbHoverContent> hit</div></div>'),
-        trigger: 'hover',
-        delay: 350,
-        // contentCloning: true,
-        position: 'bottom',
-        interactive: true,
-        // positionTracker: true,
-        offsetX: -30,
-        onlyOne: true,
-        // minWidth: '90%',
-        // iconTouch: true,
-        theme: 'tooltipster-shadow',
+    $('.breadcrumbs').find('a:eq(1)').tooltipster({
         functionReady: loadBreadcrumbHover
     });
 
     _log('addBreadcrumbHover() End',DLOG);
 }
 
-function loadBreadcrumbHover(origin){
+function loadBreadcrumbHover(instance, helper){
     var $hoveredObj = $(this);
-    if($('.breadcrumbHoverContent').find('ul').length){
+    if($('.tooltipster-content').find('ul').length){
         //do nothing because it has already been loaded once
     } else{
-        $('.breadcrumbHoverContent').html('Loading....');
-        $('.breadcrumbHoverContent').load( $hoveredObj.attr('href') + ' .catfiltersub', function(){
+        $('.tooltipster-content').html('Loading....');
+        $('.tooltipster-content').load( $(helper.origin).attr('href') + ' .catfiltersub', function(){
             var linkcount = $(this).find('li').length;
             if(linkcount > 25){
                 $(this).addClass('columnized3');
                 $(this).parent().css({'overflow':'auto'});
                 $(this).parent().css({'width': '97%'});
             }
-            origin.tooltipster('reposition');
+            instance.reposition();
         });
     }
 }
@@ -5791,39 +5783,24 @@ function getAllAssociations(){
 
 function addCartHover(){
      _log('addCartHover() Start',DLOG);
-
     //avoid applying cart logic to the cart page
     if(window.location.pathname.indexOf('Ordering') == -1 ){
-
-        $('#content').after('<div class=cartHoverContainer style="display:none;"><div></div><div class=cartHoverContent style="max-height:400px; overflow-y:scroll;"></div></div>');
-        // $('<div class=cartHoverContainer><div></div><div class=cartHoverContent></div></div>').insertAfter('#content').hide();
-
         //If cart get's too tall cart appears above hovered icon. Not sure how to fix.
-        $('#cartlink').tooltipster({
-            // content: $('<div class=cartHover><div class=cartHoverTitle /> <div class=cartHoverContent> hit</div></div>'),
-            content: $('.cartHoverContent').html(),
-            trigger: 'hover',
-            delay: 350,
-            contentCloning: false,
-            position: 'bottom',
-            interactive: true,
-            // positionTracker: true,
-            offsetX: -30,
-            onlyOne: true,
-            // iconTouch: true,
-            theme: 'tooltipster-shadow',
-            functionReady: function(origin){
-                console.log('elementtooltip', $(origin.tooltipster('elementTooltip')).parent())
-                console.log('hovering')
-            }
-        })
-        loadCartDetails();
+        $('#cartlink')
+        .data('elementToLoad','#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails')
+        .tooltipster({
+            side:'left',
+            content:'...loading',
+            functionReady: easyHoverAndLoad
+        });
+console.log('zzzzzzzzzzzzzzzzzzzzz')
+        // loadCartDetails();
     }
     _log('addCartHover() End',DLOG);
 
 }
 
-function loadCartDetails(serialstring){
+function loadCartDetails(instance, helper){
     _log('loadCartDetails() Start',DLOG);
     if(serialstring == undefined){serialstring = '';}
     var ordet = ' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
@@ -5831,45 +5808,11 @@ function loadCartDetails(serialstring){
         $('#cartquant').text( ' ('+($('img[src*="close-x"]').length)+')');
         _log('loadCartDetails() loaded',DLOG);
         console.log('cart details loaded'+$(this).text())
-
     });
     _log('loadCartDetails() End',DLOG);
 }
 
 
-function formatOrderingPage(){
-    if($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails').length){
-        _log('inlineChangeQty() Start',DLOG);
-        $('form').show();
-        // getCartImages();
-        _log('inlineChangeQty() End',DLOG);
-    }
-}
-
-
-function makeImageHolder(){
-    _log('makeImageHolder() Start',DLOG);
-    //for detail page image holder
-
-    // $('.image-disclaimer').after('<div id="imageTray"></div>')
-    // var images = getImageLinks();
-    // images.forEach(function(image){
-    //     $('#imageTray').append('<img class="trayThumbnail" height=64px style="border:1px solid #ccc; margin:1px;" src="'+image+'">');
-    // });
-    // $('.trayThumbnail').mouseenter(function(){
-    //     console.log('hovering', $(this).attr('src'))
-    //     $('#product-photo-wrapper img:first').attr('src', $(this).attr('src'));
-    //     $('#product-photo-wrapper a:first').attr('href', $(this).attr('src'));
-    // });
-    // $('.image-disclaimer').hide();
-    $('.product-top-section').append($('#product-details-side'));
-    // $('#product-details-side').insertBefore($('#product-details-wrapper'));
-    $('.product-photo-side').css({'margin-left':'0px', 'border':'1px solid #ccc'});
-    $('#product-photo-wrapper').css({'margin':'0px 15px 0px 0px'});
-    $('.product-photo-side img').css({'border':'1px solid #ccc'});
-
-    _log('makeImageHolder() End',DLOG);
-}
 
 function getImageLinks(){
     //for detail page image holder
