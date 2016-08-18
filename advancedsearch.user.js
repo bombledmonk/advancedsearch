@@ -43,7 +43,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.2
+// @version     4.2.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -204,10 +204,10 @@
 //4.1       added show/hide TR, DKR button and function in options
 //4.1.1     started fixing detail page bugs introduced by changes on the website
 //4.2       fixed datasheet loader, added copy to clipboard on detail page, updated tooltipster
+//4.2.1     fixed bug in addMorePartsToTable
+//4.2.2     fixed part status bug
 
 //TODO add copy info button  possibly on filter results page
-//TODO move alternate packaging <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-//TODO fix the breadcrumb hover from being placed above
 //TODO add a messages/update
 //TODO offer no reload, infinite scroll? at end of product index page.
 //TODO display percentage of parameter on page, possibly graph  
@@ -224,7 +224,6 @@
 //TODO fuzzy similar to, start in opamps
 //TODO add a google like "advanced search" to the header
 //TODO impliment offscreen table wrap
-//TODO enable doubleclick to copy field
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -1077,8 +1076,8 @@ function addClipboardCopyToDetail(){
     _log('addClipboardCopyToDetail() Start',DLOG);
     $('#product-details td').each(function(){
         if($(this).children().length > 0){
-            $(this).children(':first').after('<button class="copyContent" style=""><i class="fa fa-files-o"></i></button>');
-        }else{$(this).append('<button class="copyContent" style=""><i class="fa fa-files-o"></i></button>')}
+            $(this).children(':first').after('<button class="copyContent" title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>');
+        }else{$(this).append('<button class="copyContent"  title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>')}
     })
     $('.copyContent').tooltipster({
         content:"copied!",
@@ -1116,7 +1115,8 @@ function addMorePartsToTable(){
             ' showing <span class="showingparts">'+$('#productTable tbody>tr').length+'</span> parts');
 
         //check if the paging is handled by javascript function
-        if($('.Next:first').attr('href').indexOf('gotoPage') !== -1){ //if gotoPage is found
+        var nextHref = $('.Next:first').attr('href') == undefined ? -1 : $('.Next:first').attr('href').indexOf('gotoPage');
+        if(nextHref !== -1){ //if gotoPage is found
             
             var pageNumber = parseInt($('.Next:first').attr('href').split('(')[1]);
             _log('page pageNumber is '+ pageNumber, DLOG);
@@ -1186,7 +1186,7 @@ function addMorePartsToTable(){
 }
 
 function replaceStarDash(){
-	$('select').each(function(){
+	$('select').not('[name=pv1989]').each(function(){
 		var thisSelect = $(this);
 		$(this).find('option:lt(2)').each(function(){
 			if($(this).text().trim() == '-'){
