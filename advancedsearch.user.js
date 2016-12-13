@@ -3,7 +3,9 @@
 // @namespace   advancedsearch
 // @description an advanced search
 // @include     http*www.digikey.*/product-search*
+// @include     http*www.digikey.*/products*
 // @include     http*digikeytest.digikey.*/product-search*
+// @include     http*digikeytest.digikey.*/products*
 // @include     http*www.digikey.*/scripts/dksearch*
 // @include     http*search.digikey.*/*
 // @include     http*www.digikey.*/product-detail/en/*
@@ -43,7 +45,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.2.2
+// @version     4.2.3
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -206,6 +208,7 @@
 //4.2       fixed datasheet loader, added copy to clipboard on detail page, updated tooltipster
 //4.2.1     fixed bug in addMorePartsToTable
 //4.2.2     fixed part status bug
+//4.2.3     fixed url bug
 
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
@@ -547,6 +550,9 @@ function addCustomHeader(){
         '<b>Keywords:</b></a> <input type="search" value="" style="padding:3px; margin:3px 3px 1px 3px;" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
         '<input align=right type="submit" value="New Search" id="searchbutton">'+
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
+        ' <input type="checkbox" style="margin:0 2px;" value="0" name="noworries" id="activePart" class="saveState css-checkbox"><label for="activePart" class="css-label">Normally Stocking </label>'+
+        ' <input type="hidden" style="margin:0 2px;" value="5" name="pv1989" id="shadowNew" disabled=true class="css-checkbox" >'+
+        ' <input type="hidden" style="margin:0 2px;" value="0" name="pv1989" id="shadowNew2" disabled=true class="css-checkbox" >'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="newproducts" id="newproducts" class="css-checkbox"><label style="margin-left:8px;" for="newproducts" class="css-label" title="Added in the last 90 days.">New</label>'+
         // '<span id="resnum"></span>'+
@@ -578,7 +584,17 @@ function addCustomHeader(){
     $('#content p.matching-records').show();
     $('.content-keywordSearch-form').detach();
 
+    $('#headForm').on('submit', function(data){
+        console.log(data)
+        if($('activePart:checked').length = 1){
+            $('input[name=pv1989]').attr('disabled',false);
 
+        }
+        // console.log($(this).serializeArray())
+        // alert(data);
+        $(this).submit();
+
+    })
 
     // console.log('>>>>>>>>>>>>>>>>>tld', theTLD, ' gIndexLink ', gIndexLink, ' mydklink2 ', mydklink2);
     // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
@@ -1148,8 +1164,8 @@ function addMorePartsToTable(){
                         $('.showingparts').text($('#productTable tbody>tr').length);  
                         $('#addmoreparts').hide();
                     }
-                });
             });
+                });
         }else{ // if gotoPage is not found
 
             $('#productTable:first').data('pagetoloadnext', $('.Next:first').attr('href'));
@@ -1498,7 +1514,7 @@ function mediumImageHover(){
     $('#content').after('<img style="display:none; height:300px" id="mzoomie"></img>');
     $('#mzoomie').css({
         'border':'0px solid white', 
-        'box-shadow': '0 0 10px 5px #888',
+        'box-shadow' :'0 0 10px 5px #888',
         'position': 'absolute',
         'background': '#f5f5f5'
     });
