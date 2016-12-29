@@ -45,7 +45,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.2.3
+// @version     4.2.4
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -209,6 +209,7 @@
 //4.2.1     fixed bug in addMorePartsToTable
 //4.2.2     fixed part status bug
 //4.2.3     fixed url bug
+//4.2.4     fixed normally stocking box
 
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
@@ -347,9 +348,9 @@ function formatPagesPostReady() {
     cleanup();
 
 
-         if(localStorage.getItem('aprilf') == 1) {
-            setTimeout(function(){addClippy();}, 1);
-        }
+     if(localStorage.getItem('aprilf') == 1) {
+        setTimeout(function(){addClippy();}, 1);
+    }
 
 
     _log('formatPagesPostReady() End',DLOG);
@@ -373,7 +374,6 @@ function addClippy(){
     dochead.appendChild(script);
 
     setTimeout(function(){
-
         window.eval(`
                     var jokearray = [
                         "If at first you don’t succeed; call it version 1.0.",
@@ -586,13 +586,12 @@ function addCustomHeader(){
 
     $('#headForm').on('submit', function(data){
         console.log(data)
-        if($('activePart:checked').length = 1){
-            $('input[name=pv1989]').attr('disabled',false);
-
+        if($('#activePart:checked').length == 1){
+            $('input[name=pv1989]').removeAttr('disabled');
         }
         // console.log($(this).serializeArray())
         // alert(data);
-        $(this).submit();
+        return true;
 
     })
 
