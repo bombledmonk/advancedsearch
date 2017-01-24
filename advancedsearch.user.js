@@ -45,7 +45,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.2.4
+// @version     4.2.5
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -210,6 +210,7 @@
 //4.2.2     fixed part status bug
 //4.2.3     fixed url bug
 //4.2.4     fixed normally stocking box
+//4.2.5     augmented compare parts, copy content, visual picker fixes , attform fix
 
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
@@ -585,7 +586,7 @@ function addCustomHeader(){
     $('.content-keywordSearch-form').detach();
 
     $('#headForm').on('submit', function(data){
-        console.log(data)
+        console.log('#headForm submit data: ', data)
         if($('#activePart:checked').length == 1){
             $('input[name=pv1989]').removeAttr('disabled');
         }
@@ -608,7 +609,7 @@ function addCustomHeader(){
     keywordSearchWizard()
     _log('addCustomHeader() End',DLOG);
 	}catch(e){
-		console.log('iiiiiiiiiiiiiiiiiiiiiiiiiiii',e);
+		console.log('addCustomHeader failed',e);
 		alert(e);
 	}
 }
@@ -942,6 +943,8 @@ compactRows()
         }
 
         // setTimeout(function(){addPartCompare();}, 150);
+
+        augmentCompareParts();
         if(localStorage.getItem('pricehoverControl') == 1) {
             setTimeout(function(){addPriceHover();}, 3000);
             // addAddToCart();
@@ -967,7 +970,7 @@ compactRows()
 
         fixImageHover();
 
-        // akamaiLazyLoadFixForFilterResults();
+
 
         // $('input[value=Reset]').addClass('button-small pure-button').click(function(){
 
@@ -1078,11 +1081,8 @@ function compactRows2(){
                         el.closest('tr').addClass('compactrow');
                     }
                 })
-
             }
-
-        }) 
-        
+        })
     }
     _log('compactRows() End',DLOG);
 }
@@ -1099,6 +1099,13 @@ function addClipboardCopyToDetail(){
         trigger:'custom',
         'side': 'right',
         'distance': -45
+    })
+    $('.copyContent').tooltipster({
+        content:"Copy Field to Clipboard",
+        // "trigger":'hover',
+        'side': 'right',
+        'distance': -45,
+        'multiple':true
     })
     GM_addStyle(`
         td .copyContent{
@@ -1290,13 +1297,16 @@ function pickerOptionClick(){
             $cb = $(this);
             $pickerItem = $(this).closest('.pickerItem');
         }
+        // console.log('this is, ', this)
         $pickerItem.toggleClass('pickerItemSelected pickerItemNotSelected');
         var targetSelect = $('select[name="'+p.data('selectval')+'"]');
-        // console.log('targetselect', targetSelect)
+        console.log('targetselect', targetSelect.text())
         p.find('input[type=checkbox]').each(function(){
+            // console.log('hi', this)
             // console.log($pickerItem.prop('checked'), $pickerItem.val());
             targetSelect.find('[value="'+$(this).val()+'"]').prop('selected', $(this).prop('checked'));
         });
+        console.log('pickerOptionClick finished')
 }
 
 // function openVisualPickerOLD(){
@@ -1324,10 +1334,10 @@ function openVisualPickerNoWrap(){
         // var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
         var filtername = $(this).closest('th').text(); //for non wrapping function
         var colIndex = $(this).closest('th').index()
-        p.data('selectval', $('#appliedFilterOptions').eq(colIndex).find('select').attr('name'));
+        p.data('selectval', $('#appliedFilterOptions td').eq(colIndex).find('select').attr('name'));
         // p.data('selectval', $(this).parent().find('select').attr('name'));
         var $options = $('#appliedFilterOptions td').eq(colIndex).find('select option');
-        console.log($options);
+        // console.log($options);
 
 
         p.data('optioncount', $options.length);
@@ -1402,10 +1412,11 @@ function getSingleOptionImageSet($option, filtername){
                 ' </div>'
             );
 
-            dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],.matching-records,#reportPartNumber', function(){
-                var matching = (dd.find('.matching-records-count').length > 0 ) ? dd.find('.matching-records-count').text().split(':')[1].trim() : '1';
-                var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
+            dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],#matching-records-count,#reportPartNumber', function(){
 
+                _log('matching', dd.find('#matching-records-count').text())
+                var matching = (dd.find('#matching-records-count').length > 0 ) ? dd.find('#matching-records-count').text().trim() : '1';
+                var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
                 $('#pickerid'+optionval).find('.matchnum').text(matching);
 
                  $images.css({'height':'50px', 'width':'50px'});
@@ -1524,7 +1535,7 @@ function mediumImageHover(){
 
             //check if src is from a from a detail page or from a results page
             var src = ($(this).filter('[itemprop]').length == 1)? this.src : $(this).attr('zoomimg');  
-            $('#mzoomie').attr('src', src);
+            $('#mzoomie').attr('src', src.replace('tmb','sml'));
             $('#mzoomie').show().position({
                 'my': 'left top',
                 'at': 'left bottom',
@@ -1725,6 +1736,8 @@ function preProcessForQty($elem){
         }else if ($elem.hasClass('tr-qtyAvailable')){
             // this will have problems with European notation '5,4' vs '5.4'
             parsableText = etext.split('-')[0].replace(/,/g, '');
+        }else if ($elem.hasClass('CLS 17')){//Temperature coefficient
+            parsableText = etext.replace('±', '').replace('°C','degC');
         }
         else{
             parsableText = etext;
@@ -1742,7 +1755,10 @@ function parseElemForQty($elem){
         if(num == null){ 
             console.log("can't parse ", elemText, elemText.length);
             return num;
-        }else{ return num;}
+        }else{ 
+            console.log('parseEQTY', num)
+            return num;
+        }
     }catch(err){
         console.log('parseElemForQty Error', $elem.text() , err);
     }
@@ -2218,32 +2234,44 @@ function wrapFilterTable(){
     _log('wrapFilterTable() End',DLOG);
 }
 
+// function setupAttForm() {
+// 	//ripped right from digikey
+//     var f = $('[name="attform"]');
+//     var summaryUrl='/product-search/summary/en';
+//     f.contextId = 0;
+//     f.updateEnabled = true;
+//     f.oldRecordCount = $('.matching-records').html();
+//     f.resetRecordCount = function () { $('.matching-records').html(f.oldRecordCount); f.find(":submit").each(function () { this.disabled = false; }); };
+//     f.updateRecordCount = function () {
+//         if (this.updateEnabled) {
+//             this.contextId++;
+//             $.ajax({
+//                 type: 'POST',
+//                 url: summaryUrl,
+//                 data: $(this).serialize() + "&contextId=" + this.contextId,
+//                 timeout: 3000,
+//                 success: function (data, status) { if (data.contextId == f.contextId) $('.matching-records').html(data.msg); f.find(":submit").each(function(){this.disabled = !data.nMatches;}); },
+//                 error: function () { f.resetRecordCount(); f.updateEnabled = false; }
+//             });
+//         }
+//     };
+//     f.bind('reset', function () { f.resetRecordCount(); });
+//     f.find('input:not(:reset)').click(function () { f.updateRecordCount(); });
+//     //f.find('select').change(function () { f.updateRecordCount(); });
+//     f.find('select').each(function () { this.onchange = function () { f.updateRecordCount(); }; });
+//     f.updateRecordCount();
+// }
+
 function setupAttForm() {
-	//ripped right from digikey
-    var f = $('[name="attform"]');
-    var summaryUrl='/product-search/summary/en';
-    f.contextId = 0;
-    f.updateEnabled = true;
-    f.oldRecordCount = $('.matching-records').html();
-    f.resetRecordCount = function () { $('.matching-records').html(f.oldRecordCount); f.find(":submit").each(function () { this.disabled = false; }); };
-    f.updateRecordCount = function () {
-        if (this.updateEnabled) {
-            this.contextId++;
-            $.ajax({
-                type: 'POST',
-                url: summaryUrl,
-                data: $(this).serialize() + "&contextId=" + this.contextId,
-                timeout: 3000,
-                success: function (data, status) { if (data.contextId == f.contextId) $('.matching-records').html(data.msg); f.find(":submit").each(function(){this.disabled = !data.nMatches;}); },
-                error: function () { f.resetRecordCount(); f.updateEnabled = false; }
-            });
-        }
-    };
-    f.bind('reset', function () { f.resetRecordCount(); });
-    f.find('input:not(:reset)').click(function () { f.updateRecordCount(); });
-    //f.find('select').change(function () { f.updateRecordCount(); });
-    f.find('select').each(function () { this.onchange = function () { f.updateRecordCount(); }; });
-    f.updateRecordCount();
+//TODO doublecheck to see if this new rip has any problems... 
+    var n = $('[name="attform"]'),
+        t, i;
+    n.contextId = 0,
+     n.updateEnabled = !0,
+     n.oldRecordCount = $(".matching-records").html(),
+     n.resetRecordCount = function() { $(".matching-records").html(n.oldRecordCount),
+     n.find(":submit").each(function() { this.disabled = !1 }) },
+      n.updateRecordCount = function() { this.updateEnabled && (this.contextId++, $.ajax({ type: "POST", url: summaryUrl, data: $(this).serialize() + "&contextId=" + this.contextId, timeout: summaryTimeout, success: function(t) { t.contextId == n.contextId && $(".matching-records").html(t.msg), n.find(":submit").each(function() { this.disabled = !t.nMatches, t.nMatches ? $("#btn-apply-filters").removeClass("disabled") : $("#btn-apply-filters").addClass("disabled"), verifyRecordCounts() }) }, error: function() { n.resetRecordCount(), n.updateEnabled = !1 } })) }, n.bind("reset", function() { $("a[name^='btn']").hide(), $(".matching-records").hide(), $("#btn-apply-filters").removeClass("disabled"), n.resetRecordCount() }), $("a[name^='btn']").click(function() { n.updateRecordCount() }), t = n.find("input:not([type=reset], [type=checkbox])"), t.focus(function() { n.updateRecordCount() }), t.blur(function() { n.updateRecordCount() }), i = n.find("input:checkbox"), i.click(function() { n.updateRecordCount() }), n.find("select").each(function() { selectionVerification(this), this.onchange = function() { n.updateRecordCount(), selectionVerification(this) } }), n.updateRecordCount()
 }
 
 function squishedFilters(){
@@ -4493,22 +4521,6 @@ function getAttributeExampleImgs(name,$selectElem) {
     });
 }
 
-function akamaiLazyLoadFixForIndexResults(){
-    _log('akamaiLazyLoadFixForIndexResults() Start',DLOG);
-
-    // $('.catfilterlink').each(function(){
-    //         var querycheckedURL = ($(this).attr('href').indexOf('?') != -1) ? ($(this).attr('href') + '&akamai-feo=off') : ($(this).attr('href') + '?akamai-feo=off');
-    //         $(this).attr('href', querycheckedURL);
-    // });
-    _log('akamaiLazyLoadFixForIndexResults() End',DLOG);
-
-}
-
-function akamaiLazyLoadFixForFilterResults(){
-    $('#mainform').append('<input type=hidden value="off" name="akamai-feo">');
-}
-
-
 
 function addKeywordMatchedSprites(){
     _log('addKeywordMatchedSprites() Start',DLOG);
@@ -4924,75 +4936,199 @@ function hideIdenticalColumns(){
     });
 }
 
-function addPartCompare(){
-    _log('addPartCompare() Start',DLOG);
-    $('form[name=compform]').attr('id','compareForm');
-    $('#content').append('<div style="height:150px;"></div>');
-    addBottomCompare();
-    $('#compareForm').change(function(){
-            if($('#compareForm input:checked').length > 0 && $('#bottomCompare:hidden').length == 1){
-                $('#bottomCompare').show('slide', {'direction':'down'}, 500);
-                populateCompare($('#compareForm input:checked'));
+// function addPartCompare(){
+//     _log('addPartCompare() Start',DLOG);
+//     $('form[name=compform]').attr('id','compareForm');
+//     $('#content').append('<div style="height:150px;"></div>');
+//     addBottomCompare();
+//     $('#compareForm').change(function(){
+//             if($('#compareForm input:checked').length > 0 && $('#bottomCompare:hidden').length == 1){
+//                 $('#bottomCompare').show('slide', {'direction':'down'}, 500);
+//                 populateCompare($('#compareForm input:checked'));
+//             }
+//             else if($('#compareForm input:checked').length===0){
+//                 $('#bottomCompare').hide('slide', {'direction':'down'}, 500);
+//             }else{
+//                 populateCompare($('#compareForm input:checked'));
+//             }           
+//         });
+//     _log('addPartCompare() End',DLOG);
+// }
+
+// function populateCompare($checkedItems){
+//     $('#bottomCompareCont').empty();
+//     $('#bottomCompareCont').append('<table style="height:100%"><tbody><tr></tr></tbody></table>');
+//     $checkedItems.removeClass();
+//     $checkedItems.each(function(i){
+//         var mytr = $(this).closest('tr');
+//         $('#bottomCompareCont>table tr:first').append('<td class="compdivs" valign=top align=center>'+
+//             '<span class=clickcheck style="float:right; cursor:pointer; color:red;">x</span>'+
+//             mytr.find('a[href*="-ND"]:first').html()+'<br>' +mytr.find('a[href*="-ND"]:eq(2)').html()+'</td>');
+//         $('.clickcheck:last').data('mycheck',$(this));
+//     });
+
+//     $('#complink').attr('href','http://www.digikey.'+theTLD+'/scripts/DkSearch/dksus.dll?'+$('#compareForm').serialize().replace('=',''));
+//     $('#compcount').text($checkedItems.length);
+//     $('.clickcheck').click(function(){
+//         $($(this).data('mycheck')).prop('checked','');
+//         populateCompare($('#compareForm input:checked'));
+//     });
+// }
+
+// function addBottomCompare(){
+//     _log('addBottomCompare() Start',DLOG);
+//     $('#content').after('<div id=bottomCompare class="gray-grad">'+
+//         '<div style="float:left; margin:1px 5px 0px 1px; width:100px; height:110px;" class=clearfix>'+
+//         '<button class="minimal close" style="margin:4px; float:left; padding:2px;">hide</button><br>'+
+//         '<a style="margin:2px;" href="" id="complink" target="_blank"></a>'+
+//         '<br><span><span id=compcount>0</span> items selected</span></div>'+
+//         '<button class="close minimal" >hide</button>'+
+//         '<div id=bottomCompareCont style="height:100%">bottom world</div></div>');
+
+//     $('#bottomCompare').css({
+//         'position': 'fixed',
+//         'bottom' : '0px',
+//         'width': '100%',
+//         'height': '110px',
+//         //'background': 'white',
+//         'border-top': '3px solid red',
+//         'box-shadow': '0px -1px 2px 2px #888',
+//         'z-index': '10'
+//     }).hide();
+
+//     $('#bottomCompare .close').click(function(){
+//         $('#bottomCompare').hide('slide', {'direction':'down'}, 500);
+//     });
+
+//     $('#complink').after($('#compare-button').attr('value','Compare\n Now').addClass('minimal').css('height','50px'));
+//     _log('addBottomCompare() End',DLOG);
+// }
+
+function augmentCompareParts(){
+    GM_addStyle(`
+        .compare-preview img{
+            margin: 5px;
+        }
+        .compare-img-container {
+            position: relative;
+            display: inline-block;
+        }
+        .compare-img-container .removerx {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            z-index: 5000;
+            background-color: #FFF;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: .2;
+            text-align: center;
+            font-size: 22px;
+            line-height: 10px;
+        }
+        .compare-img-container:hover .removerx {
+            opacity: 1;
+        }
+        .highlightrow{
+            background-color: #8b4;
+        }
+        .highlightrowdelete{
+            background-color: red;
+        }
+        .tr-compareParts{
+            -webkit-transition: all 1s ease;
+            -moz-transition: all 1s ease;
+            -o-transition: all 1s ease;
+            transition: all 1s ease;
+        }
+
+    `);
+
+    $('.th-compareParts').text('Select Parts to...')
+    $('#products-compare').css({'background-color':'#888'})
+    $('#compare-button').attr('value',"Compare")
+    $('#products-compare').append('<input class="button button-small pure-button" id="unhideslected-button" title="Hides lines with uncheck boxes" value="Hide Un-checked" style="background-image: none;" type="button">')
+    $('#products-compare').append('<input class="button button-small pure-button" id="comparecart-button" value="Add to Cart" style="background-image: none;" type="button">')
+    $('#products-compare').append('<div class=compare-preview></div>')
+    $('#products-compare').find('input').css({'margin':'8px 6px 12px 6px'})
+
+    $('#unhideslected-button').on('click', function(){
+        // $('tr[itemtype="http://schema.org/Product"]')
+        if($('.hiding-unchecked').length === 0){
+            $('.tr-compareParts input').closest('tr').hide();
+            $('.tr-compareParts input:checked').closest('tr').show();
+            $(this).addClass('hiding-unchecked').attr('value','Show Un-checked')
+
+        }else{
+            $('.tr-compareParts input').closest('tr').show();
+            $(this).removeClass('hiding-unchecked');
+            $(this).attr('value','Hide Un-checked')
+        }   
+    })
+
+    $('#productTable').on('click', '.tr-compareParts input', function(){
+
+        fillComparePreview()
+
+        $('.compare-img-container').tooltipster({
+            functionInit: function(instance,helper){ 
+                // instance.content($(instance.origin).data('urldata'))
+                // console.log($(instance.origin))
+                instance.content($(helper.origin).data('descdata'))
+                // console.log(helper.origin)
             }
-            else if($('#compareForm input:checked').length===0){
-                $('#bottomCompare').hide('slide', {'direction':'down'}, 500);
-            }else{
-                populateCompare($('#compareForm input:checked'));
-            }           
-        });
-    _log('addPartCompare() End',DLOG);
-}
+        })
+    })
 
-function populateCompare($checkedItems){
-    $('#bottomCompareCont').empty();
-    $('#bottomCompareCont').append('<table style="height:100%"><tbody><tr></tr></tbody></table>');
-    $checkedItems.removeClass();
-    $checkedItems.each(function(i){
-        var mytr = $(this).closest('tr');
-        $('#bottomCompareCont>table tr:first').append('<td class="compdivs" valign=top align=center>'+
-            '<span class=clickcheck style="float:right; cursor:pointer; color:red;">x</span>'+
-            mytr.find('a[href*="-ND"]:first').html()+'<br>' +mytr.find('a[href*="-ND"]:eq(2)').html()+'</td>');
-        $('.clickcheck:last').data('mycheck',$(this));
+    $('.compare-preview').on('click','.compare-img-container',function(){
+        var urldata = $(this).data('urldata');
+        $('.tr-compareParts').removeClass('highlightrow');
+        $('.tr-image a[href="'+urldata+'"]').closest('tr').find('.tr-compareParts').addClass('highlightrow');
+        var mypos = $('.tr-image a[href="'+urldata+'"]').position().top - 200;
+        // alert('hi')  
+        $('html,body').animate(
+            {scrollTop: mypos},
+            {       
+                duration: 250,
+                easing: 'swing'
+            }
+        );
     });
 
-    $('#complink').attr('href','http://www.digikey.'+theTLD+'/scripts/DkSearch/dksus.dll?'+$('#compareForm').serialize().replace('=',''));
-    $('#compcount').text($checkedItems.length);
-    $('.clickcheck').click(function(){
-        $($(this).data('mycheck')).prop('checked','');
-        populateCompare($('#compareForm input:checked'));
-    });
+    $('.compare-preview')
+    .on('mouseenter','.compare-img-container',
+        function(){
+            var urldata = $(this).data('urldata');
+            $('.tr-compareParts').removeClass('highlightrow');
+            $('.tr-image a[href="'+urldata+'"]').closest('tr').find('.tr-compareParts').addClass('highlightrow');
+    })
+    .on('mouseleave', '.compare-img-container', function(){$('.tr-compareParts').removeClass('highlightrow');    }
+    );
+
+    $('#products-compare').on('click', '.removerx', function(){
+        var urldata = $(this).closest('.compare-img-container').data('urldata');
+        $('.tr-image a[href="'+urldata+'"]').closest('tr').find('input[type=checkbox]').prop('checked',false);
+        fillComparePreview()
+    })
 }
 
-function addBottomCompare(){
-    _log('addBottomCompare() Start',DLOG);
-    $('#content').after('<div id=bottomCompare class="gray-grad">'+
-        '<div style="float:left; margin:1px 5px 0px 1px; width:100px; height:110px;" class=clearfix>'+
-        '<button class="minimal close" style="margin:4px; float:left; padding:2px;">hide</button><br>'+
-        '<a style="margin:2px;" href="" id="complink" target="_blank"></a>'+
-        '<br><span><span id=compcount>0</span> items selected</span></div>'+
-        '<button class="close minimal" >hide</button>'+
-        '<div id=bottomCompareCont style="height:100%">bottom world</div></div>');
+function fillComparePreview(){
+    $('.compare-preview').empty()
+    $('.tr-compareParts').removeClass('highlightrow');
+    $('.tr-compareParts input:checked').each(function(){
+        $('.compare-preview').append('<div class="compare-img-container"><span class=removerx><i class="fa fa-times-circle"></i></span></div>')
+        var urldata = $(this).closest('tr').find('.pszoomer').parent().attr('href');
+        var descdata = $(this).closest('tr').find('.tr-description').text();
+        // alert( descdata)
+        $('.compare-img-container:last')
+        .append($(this).closest('tr').find('.pszoomer').clone())
+        .data('urldata', urldata)
+        .data('descdata',descdata)
+        
 
-    $('#bottomCompare').css({
-        'position': 'fixed',
-        'bottom' : '0px',
-        'width': '100%',
-        'height': '110px',
-        //'background': 'white',
-        'border-top': '3px solid red',
-        'box-shadow': '0px -1px 2px 2px #888',
-        'z-index': '10'
-    }).hide();
-
-    $('#bottomCompare .close').click(function(){
-        $('#bottomCompare').hide('slide', {'direction':'down'}, 500);
-    });
-
-    $('#complink').after($('#compare-button').attr('value','Compare\n Now').addClass('minimal').css('height','50px'));
-    _log('addBottomCompare() End',DLOG);
+    })
 }
-
-
 
 function addPriceHover(){
     _log('addPriceHover() Start',DLOG);
@@ -5808,7 +5944,6 @@ function addCartHover(){
             content:'...loading',
             functionReady: easyHoverAndLoad
         });
-console.log('zzzzzzzzzzzzzzzzzzzzz')
         // loadCartDetails();
     }
     _log('addCartHover() End',DLOG);
@@ -5822,7 +5957,7 @@ function loadCartDetails(instance, helper){
     $('.cartHoverContent').gmload('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
         $('#cartquant').text( ' ('+($('img[src*="close-x"]').length)+')');
         _log('loadCartDetails() loaded',DLOG);
-        console.log('cart details loaded'+$(this).text())
+        _log('cart details loaded'+$(this).text())
     });
     _log('loadCartDetails() End',DLOG);
 }
