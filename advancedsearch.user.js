@@ -32,7 +32,6 @@
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
 // @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base.css
 // @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure.css
-// @resource    fontAwesomeCSS https://dl.dropboxusercontent.com/u/26263360/script/css/font-awesome-4.6.2.css
 // @resource    stickyCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.css
 // @resource    tooltipsterCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/css/tooltipster.bundle.css
 // @resource    tooltipster-shadowCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/css/plugins/tooltipster/sideTip/themes/tooltipster-sideTip-shadow.min.css
@@ -45,7 +44,7 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.2.5
+// @version     4.2.6
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -211,6 +210,7 @@
 //4.2.3     fixed url bug
 //4.2.4     fixed normally stocking box
 //4.2.5     augmented compare parts, copy content, visual picker fixes , attform fix
+//4.2.6     added quickfilter, fixed bugs with product-search url changes
 
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
@@ -229,6 +229,7 @@
 //TODO fuzzy similar to, start in opamps
 //TODO add a google like "advanced search" to the header
 //TODO impliment offscreen table wrap
+//TODO fix datasheet autoloader encode spaces
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -264,9 +265,9 @@ function preloadFormat(){
         `
     );
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
-    
     $('#header').detach();
     $('#footer').before('<div style="height:10px;"></div>');
+    $('#content').append('<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">')
     tc(addNightMode, 'addNightMode');
     // $('#footer').css({'position':'absolute', 'bottom':'0px', 'left': '0px', 'width':'100%'});
     // formatPagesPreReady();
@@ -477,7 +478,7 @@ function getMyDigiKeyLink(){
 
 function getIndexLink(){
     var ret = $('#header-middle').find('.header-resource').attr('href'); 
-    return (ret == undefined)? 'http://www.digikey.com/product-search/en' : ret;
+    return (ret == undefined)? 'http://www.digikey.com/products/en' : ret;
 }
 
 function replaceQuestionMark(){
@@ -541,7 +542,7 @@ function addCustomHeader(){
 	_log('addCustomHeader() Start',DLOG);
     //TODO style the form with purecss
     var mydklink2 = 'https://www.digikey.com/classic/RegisteredUser/Login.aspx';
-    gIndexLink = 'http://www.digikey.com/product-search/en';
+    gIndexLink = 'http://www.digikey.com/products/en';
     theTLD = 'com';
 
     var customform = '<div id="cHeader" style="display:block; background:black; color:white;"><a href="http://digikey.'+theTLD+'">'+
@@ -993,12 +994,48 @@ compactRows()
         addVisualPicker();
         replaceStarDash();
         addMorePartsToTable();
+        addQuickFilterButton();
         //addOpAmpWiz();
         //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
 
 
         _log('formatFilterResultsPage() End',DLOG);
     }
+}
+
+function addQuickFilterButton(){
+    var checkselector = '#filters-panel .filters-group-chkbxs #stock';
+    $('#search-within-results')
+    .after(`
+        <div 
+            id=quickFilterButtonDiv class="pure-button button secondary"
+            title="Selects In Stock, Active, all packaging but T&R,T&B, and Digi-Reel"
+        >
+            Quick Select Filters
+        </div>`);
+    $('#quickFilterButtonDiv').on('click', function(){
+        $('select[name=pv7] option')
+        .not('[value=243]')  // digireel
+        .not('[value=1]')  // tape and reel
+        .not('[value=4]')  // tape and box
+        .prop('selected',true);
+        $(checkselector).prop('checked',true);
+        $('select[name=pv1989] option[value=0]').prop('selected',true);
+    });
+
+    GM_addStyle(`
+        .highlightselectbox,.highlightcheckbox {border: 1px solid red;}
+    `)
+    $('#quickFilterButtonDiv')
+    .on('mouseenter', function(){ 
+        $('select[name=pv7], select[name=pv1989]').addClass('highlightselectbox'); 
+        $(checkselector).parent().addClass('highlightselectbox')
+    })
+    .on('mouseleave', function(){ 
+        $('select[name=pv7], select[name=pv1989]').removeClass('highlightselectbox');
+        $(checkselector).parent().removeClass('highlightselectbox')
+    })
+
 }
 
 function compactRows(){
@@ -2622,12 +2659,12 @@ function buildCategoryItem(catItem, exampleFamilyImages){
 function buildFamilyItemHTML(fam, catSelector, exampleFamilyImages){
 
         // _log('>>>>>>>>><<<<<<<<<<<>>>>>>>>>>>'+fam.link)
-        var root = fam.link.replace('product-search/en/','').split('?')[0];
+        var root = fam.link.replace('products/en/','').split('?')[0];
         var famitem = $(this);
         var imagestring = '';
         if (exampleFamilyImages[root] != undefined){
             exampleFamilyImages[root].slice(0,3).forEach(function(item, ind){
-                // console.log(root, item);
+                console.log(root, item);
                 // famitem.find('.familyimages').append('<img class=lazyimg data-original="http://media.digikey.com'+item+'">');
                 imagestring = imagestring + '<img class=lazyimg data-src="http://media.digikey.com'+item+'">';
             });
@@ -3248,7 +3285,7 @@ function addCOBLEDWizard(){
     var param2Escaped = selectorEscape(param2);
     var param1Text = getParametricValueText(param1);
     var param2Text = getParametricValueText(param2);
-    var driverLink = '/product-search/en/power-supplies-external-internal-off-board/led-supplies/591038';
+    var driverLink = '/products/en/power-supplies-external-internal-off-board/led-supplies/591038';
 
     $('#additional-product-options-section').prepend('<div id="'+id+'" style="width:100%;" class="panel panel-default">'+
         '<div class="panel-heading">Compatible Driver Wizard</div>'+
@@ -3462,7 +3499,7 @@ function addDataSheetLoader(){
                 $('<div>').appendTo('#datasheetdiv').load(htmldatasheetlink+' '+'#pagelayout_0_content_0_richtextcontent');
             }else{
 
-                setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
+                setTimeout(function(){$('#datasheetdiv').append('<embed src="'+(dslink)+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
                 $('.lnkDatasheet:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" ><i class="fa fa-arrow-circle-down fa-lg"></i></button></a>').parent().localScroll();
                 // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
             }

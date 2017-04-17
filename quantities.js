@@ -125,7 +125,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
     /* temperature_difference */
     "<kelvin>" : [["degK","kelvin"], 1.0, "temperature", ["<kelvin>"]],
-    "<celsius>" : [["degC","celsius","celsius","centigrade", "°C"], 1.0, "temperature", ["<kelvin>"]],
+    "<celsius>" : [["degC","celsius","celsius","centigrade"], 1.0, "temperature", ["<kelvin>"]],
     "<fahrenheit>" : [["degF","fahrenheit"], 5/9, "temperature", ["<kelvin>"]],
     "<rankine>" : [["degR","rankine"], 5/9, "temperature", ["<kelvin>"]],
     "<temp-K>"  : [["tempK"], 1.0, "temperature", ["<temp-K>"]],
