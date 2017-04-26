@@ -214,7 +214,7 @@ function addpiwik(theversion){
     var cvar = '{"1":["version", "'+theversion+'"], "2":["iview", "'+iview+'"]}';
     // var docloc = document.location.toString().replace(/\&/g, '&');
     // _log(docloc, DLOG);
-    var imgsrc = ('http://he-st.com/p/piwik.php?idsite=1&amp;rec=1'+
+    var imgsrc = ('https://he-st.com/p/piwik.php?idsite=1&amp;rec=1'+
         '&amp;url='+ encodeURIComponent( docloc) +
         '&amp;_id='+ encodeURIComponent( theuid) +
         // '&amp;action_name='+ webref +

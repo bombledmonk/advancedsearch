@@ -44,7 +44,8 @@
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
-// @version     4.2.6
+// @grant       GM_openInTab
+// @version     4.2.8
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -211,6 +212,9 @@
 //4.2.4     fixed normally stocking box
 //4.2.5     augmented compare parts, copy content, visual picker fixes , attform fix
 //4.2.6     added quickfilter, fixed bugs with product-search url changes
+//4.2.7     added Direct Manufacturer URL, fixed datasheets for https website, added detail page part compare.
+//4.2.8     fixed datasheet autoloader bug
+
 
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
@@ -236,9 +240,10 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '7/13/16';
+var lastUpdate = '4/19/17';  // I usually forget this
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
+// var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
 var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
@@ -546,13 +551,13 @@ function addCustomHeader(){
     theTLD = 'com';
 
     var customform = '<div id="cHeader" style="display:block; background:black; color:white;"><a href="http://digikey.'+theTLD+'">'+
-        '<img align=left top="50px" height=50 src="http://www.digikey.com/Web%20Export/hp/common/logo_black.jpg"></a>'+
+        '<img align=left top="50px" height=50 src="https://www.digikey.com/Web%20Export/hp/common/logo_black.jpg"></a>'+
         '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">'+
         '<a href="http://dkc1.digikey.com/us/en/help/help10.html">'+
         '<b>Keywords:</b></a> <input type="search" value="" style="padding:3px; margin:3px 3px 1px 3px;" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
         '<input align=right type="submit" value="New Search" id="searchbutton">'+
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
-        ' <input type="checkbox" style="margin:0 2px;" value="0" name="noworries" id="activePart" class="saveState css-checkbox"><label for="activePart" class="css-label">Normally Stocking </label>'+
+        ' <input type="checkbox" style="margin:0 2px;" value="0" name="noworries" id="activePart" class="saveState css-checkbox"><label for="activePart" class="css-label">Active</label>'+
         ' <input type="hidden" style="margin:0 2px;" value="5" name="pv1989" id="shadowNew" disabled=true class="css-checkbox" >'+
         ' <input type="hidden" style="margin:0 2px;" value="0" name="pv1989" id="shadowNew2" disabled=true class="css-checkbox" >'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
@@ -561,7 +566,7 @@ function addCustomHeader(){
         '<a id="advancedsearchlink" style="margin-left:20px; cursor:pointer;">search help</a>'+
         '<span id=quicklinks><a href="'+gIndexLink+'">Product Index</a> | '+
         '<a href="'+mydklink2+'">My Digi-Key</a> | '+
-        '<a id="cartlink" href="http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
+        '<a id="cartlink" href="https://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
         // '<a href="'+sitemaplink+'">Site Map</a></span>'+
         '<div class="dropShadow" />'+
     '</div>';
@@ -994,7 +999,7 @@ compactRows()
         addVisualPicker();
         replaceStarDash();
         addMorePartsToTable();
-        addQuickFilterButton();
+        setTimeout(addQuickFilterButton, 1000)
         //addOpAmpWiz();
         //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
 
@@ -1128,9 +1133,12 @@ function addClipboardCopyToDetail(){
     _log('addClipboardCopyToDetail() Start',DLOG);
     $('#product-details td').each(function(){
         if($(this).children().length > 0){
-            $(this).children(':first').after('<button class="copyContent" title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>');
-        }else{$(this).append('<button class="copyContent"  title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>')}
-    })
+            $(this).children(':first').after('<button class="copyContent button pure-button" title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>');
+        }else{
+            $(this).append('<button class="copyContent button pure-button"  title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>')
+        }
+    });
+    $('.lnkMfct').css({'display':'inline-block'});
     $('.copyContent').tooltipster({
         content:"copied!",
         trigger:'custom',
@@ -2937,13 +2945,16 @@ function formatDetailPage(){
 
         $('td:contains("obsolete") p').css('background-color','#FF8080'); // changes the color of the obsolete callout
         // $('#content').css({'position':'relative', 'top': '45px'});
-        detailPageManufacturerHover();
+        detailPageManufacturerLogoHover();
         detailPageAssociationHover()
         addClipboardCopyToDetail();
 
         // newAssociatedProducts();
 
         // addFootprintSearch()
+
+        addManufacturerDirectLink();
+        setTimeout(detailCompareList, 1);
         _log('formatDetailPage() End',DLOG);
     }
 }
@@ -3003,7 +3014,7 @@ function preFormatDetailPage(){
     }
 }
 
-function detailPageManufacturerHover(){
+function detailPageManufacturerLogoHover(){
 	$('[itemprop=manufacturer] a')
     .data('elementToLoad', '.supplier-logo')
     .tooltipster({
@@ -3023,7 +3034,159 @@ function detailPageAssociationHover(){
     });
 }
 
+// TODO complete
+function addManufacturerDirectLink(){
+    $('.lnkMfct:first').append('<div id="manuDirLink" class="button pure-button" '+
+        'title="Opens new tab to manufacturer\'s website">'+
+        '<i class="fa fa-external-link" aria-hidden="true"></i></div>')
+    var supplierPageHref = $('[itemprop=manufacturer] a').attr('href')
+    $('#manuDirLink').tooltipster({
+        content:"Fetching Manufactuer's Website",
+        trigger:'custom',
+        'side': 'right',
+        'distance': -45
+    })
+    $('#manuDirLink').on('click', function(){
+        console.log('clkick');
+        var mlink = this;
+        $(mlink).tooltipster('open');
+        setTimeout(function(){$(mlink).tooltipster('close')}, 2000)
+        $('<div>').load(supplierPageHref+' #_supplierLink', function(){
+            console.log($(this).find('a').attr('href'));
+            GM_openInTab($(this).find('a').attr('href'), false);
+        })
+    })
+}
+//TODO complete
+function detailCompareList(){
+    _log('detailCompareList() Start',DLOG);
+
+    $('.breadcrumbs').after('<div id=staticCompareButton class="button pure-button">Compare (<span id=staticCompareCount></span>) </div>');
+    $('#content').after(`
+        <div id=staticCompare style=""> 
+            <div id=staticCompareTitle style="margin:5px 0; font-weight:bolder;">Compare These Products</div>
+            <div id=staticCompareBody></div>
+            <div style="margin-top:10px;">
+                <div id=addCompare class="button pure-button primary">Add</div>
+                <div id=clearCompare class="button pure-button primary">Clear</div>
+                <div id=doCompare class="button pure-button primary">Compare</div>
+            </div>
+            </div>
+    `);
+
+    setCompareCount();
+
+    $('#staticCompareButton').tooltipster({
+        content:$('#staticCompare'),
+        trigger:'custom',
+        'side': 'bottom',
+        // 'distance': ,
+        'triggerClose':{        
+            click: true,
+            tap: true
+        },
+        functionReady: function(){
+            loadCompareContent();
+        },
+    });
+    $('#staticCompareButton').tooltipster('open'); //to hide staticcompare
+    $('#staticCompareButton').tooltipster('close'); //to hide staticcompare
+    
+    $('#doCompare').on('click', function(){
+        var compareurl="/products/compare/en?part=";
+        var pnlist = getCompareList();
+        GM_openInTab(compareurl+ pnlist.join('&part='))
+        $('#staticCompareButton').tooltipster('close');
+    })    
+
+    $('#staticCompareButton').on('click', function(){
+        loadCompareContent();
+    })
+
+    $('#addCompare').on('click', function(){
+        var currentPart = $('#reportPartNumber').text();
+        addComparePart(currentPart)
+        // storeCompareList();
+        loadCompareContent();
+    })
+
+    $('#clearCompare').on('click', function(){
+        clearCompareList();
+        loadCompareContent();
+    })
+    _log('detailCompareList() End',DLOG);
+}
+
+function loadCompareContent(){
+    console.log('compare button clicked')
+        
+    $('#staticCompareBody').empty();
+    var currentPart = $('#reportPartNumber').text();
+    var pnlist = getCompareList();
+    if(pnlist.length){
+        pnlist.forEach(function(elem, idx, array){
+            $('#staticCompareBody').append(`
+                <div style="margin:5px 0px;" data-item="${elem}">
+                    ${elem} 
+                    <i class="fa fa-times-circle" aria-hidden="true" style="cursor:pointer;"></i>
+                </div>
+            `);
+        });
+        $('#staticCompareCount').text(pnlist.length);
+        $('#staticCompareBody .fa-times-circle').on('click', function(){
+            console.log('killing part')
+            removeCompareItem($(this).parent().data('data-item'))
+        })
+    }else{
+        $('#staticCompareBody').append('No items to compare.')
+    }
+    setCompareCount();
+    $('#staticCompareButton').tooltipster('open');
+    $('#staticCompareButton').tooltipster('reposition');
+}
+
+function addComparePart(pnstring){
+    pnstring = pnstring.trim();
+    var pnlist = getCompareList();
+    if (!pnlist.includes(pnstring)){ 
+        pnlist.push(pnstring)
+    }
+    storeCompareList(pnlist);
+}
+
+function setCompareCount(){
+    $('#staticCompareCount').text(getCompareList().length);
+}
+
+function getCompareList(){
+    var storedtext = localStorage.getItem('detailCompareList')
+    var list = (storedtext)? JSON.parse(storedtext) : [];
+    console.log(list)
+ return list;
+}
+
+function storeCompareList(somelist){
+    localStorage.setItem('detailCompareList', JSON.stringify(somelist));
+    console.log('stored!')
+}
+
+function clearCompareList(){
+    localStorage.removeItem('detailCompareList');
+    console.log('list cleared!')
+}
+function removeCompareItem(item){
+    var list = getCompareList();
+    var index = list.indexOf(item);
+    list.splice(index,1)
+    storeCompareList(list);
+    loadCompareContent();
+    $('#staticCompareButton').tooltipster('open');
+}
+
+
+
 function easyHoverAndLoad(instance,helper){
+    //This function loads an element from a separate page into a tooltip.
     //This function needs a data object called elementToLoad set on any tooltipster object
     //The data should contain the jquery selector of the item to load from the hovered link.
     //note: default tooltipster settings will need to be set globally or the minimum set will need to be passed in the tooltipster method
@@ -3462,7 +3625,8 @@ function addDataSheetLoader(){
         var dslink = $('.lnkDatasheet:first').attr('href');
         var hidenav = '#navpanes=0&zoom=100';
         var htmldatasheetlink = $('.attributes-table-main th:contains(HTML)').parent().find('a:first').attr('href');
-        console.log('~~~~~~~~~~~~~~~~~~~~~'+htmldatasheetlink)
+        // console.log('~~~~~~~~~~~~~~~~~~~~~'+htmldatasheetlink + ' dslink '+dslink)
+
         //KEEP different methods  KEEP*************>>>>
         //$('#content').append('<embed src="'+dslink+'" width=100% height=800px>');
         // $('#content').append('<embed src="'+dslink+'#toolbar=0&navpanes=0&scrollbar=0" width=100% height=auto>');
@@ -3496,10 +3660,11 @@ function addDataSheetLoader(){
 
         if($('.lnkDatasheet:first').length > 0 && $('#datasheetchooserinput').val() == 1){
             if(htmldatasheetlink != undefined){
+                console.log('adding html datasheet', htmldatasheetlink)
                 $('<div>').appendTo('#datasheetdiv').load(htmldatasheetlink+' '+'#pagelayout_0_content_0_richtextcontent');
             }else{
-
-                setTimeout(function(){$('#datasheetdiv').append('<embed src="'+(dslink)+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
+                console.log('adding pdf datasheet', dslink, hidenav)
+                setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink.replace('http','https')+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
                 $('.lnkDatasheet:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" ><i class="fa fa-arrow-circle-down fa-lg"></i></button></a>').parent().localScroll();
                 // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
             }
@@ -3509,8 +3674,9 @@ function addDataSheetLoader(){
 }
 
 function dataSheetButtonAction(){
-    var dslink = $('tr:contains("Datasheet") td>a:first').attr('href');
+    var dslink = $('.lnkDatasheet:first').attr('href').replace('http','https');
     var hidenav = '#navpanes=0&zoom=100';
+    _log('Turning On Datasheets'+ dslink);
     if($('#datasheetchooserinput').val() == 1){
         $('#datasheetdiv>embed').remove();
         setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
@@ -5991,7 +6157,8 @@ function loadCartDetails(instance, helper){
     _log('loadCartDetails() Start',DLOG);
     if(serialstring == undefined){serialstring = '';}
     var ordet = ' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
-    $('.cartHoverContent').gmload('http://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
+    $('.cartHoverContent').gmload('https://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
+        // console.log('hi here this is cool', $('img[src*="close-x"]').length)
         $('#cartquant').text( ' ('+($('img[src*="close-x"]').length)+')');
         _log('loadCartDetails() loaded',DLOG);
         _log('cart details loaded'+$(this).text())
