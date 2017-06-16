@@ -45,7 +45,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.2.8
+// @version     4.2.9
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -214,6 +214,7 @@
 //4.2.6     added quickfilter, fixed bugs with product-search url changes
 //4.2.7     added Direct Manufacturer URL, fixed datasheets for https website, added detail page part compare.
 //4.2.8     fixed datasheet autoloader bug
+//4.2.9 	added copy button to filter results table page, big speed optimizations, compare parts page features
 
 
 //TODO add copy info button  possibly on filter results page
@@ -234,13 +235,14 @@
 //TODO add a google like "advanced search" to the header
 //TODO impliment offscreen table wrap
 //TODO fix datasheet autoloader encode spaces
+//TODO
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '4/19/17';  // I usually forget this
+var lastUpdate = '6/15/17';  // I usually forget this
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var DLOG = true; //control detailed logging.
@@ -344,12 +346,13 @@ function formatPagesPostReady() {
     // tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
     tc(preFormatDetailPage, 'preformatDetailPage');
     tc(formatFilterResultsPage, 'formatFilterResultsPage');
-    $('#content').show();
+    // $('#content').show();
     tc(formatDetailPage, 'formatDetailPage');
     tc(formatFastAddPage,'formatFastAddPage');
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
     tc(addBreadcrumbHover, 'addBreadcrumbHover');
+    tc(formatComparePartsPage, 'formatComparePartsPage');
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
     cleanup();
@@ -488,11 +491,15 @@ function getIndexLink(){
 
 function replaceQuestionMark(){
     _log('replaceQuestionMark() Start',DLOG);
-    var $img = $('img[src$="help.png"]');
-    // $('img[src*="help.png"]').attr('src', 'https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png');
-    // $img.addClass('qmark').hide();
-    $img.hide();
-    $img.after('<i class="fa fa-question-circle fa-lg" style="color:#999;"></i>');// css used to replace image as a background image
+    GM_addStyle(`img[src$="help.png"]{
+    	-webkit-filter: grayscale(100%);
+    	filter: grayscale(100%);
+    }`)
+    // var $img = $('img[src$="help.png"]');
+    // // $('img[src*="help.png"]').attr('src', 'https://dl.dropboxusercontent.com/u/26263360/img/newhelp.png');
+    // // $img.addClass('qmark').hide();
+    // $img.hide();
+    // $img.after('<i class="fa fa-question-circle fa-lg" style="color:#999;"></i>');// css used to replace image as a background image
     _log('replaceQuestionMark() End',DLOG);
 }
 
@@ -609,6 +616,15 @@ function addCustomHeader(){
     // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
     // $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
 
+    // var thebody = document.querySelector('body');
+    // var wrapper =  document.createElement('div');
+    // var content = document.querySelector('#content')
+    // wrapper.classList.add("mainFlexWrapper");
+    // wrapper.style.position = 'relative';
+    // wrapper.style.top = '50px';
+    // thebody.insertBefore(wrapper, thebody.firstChild)
+    // wrapper.appendChild(content)
+    _log('custome header tick',DLOG);
 
     tc(searchButtonHighlight, 'searchButtonHighlight');
 
@@ -729,29 +745,65 @@ function addControlWidget() {
 
     $('#content').after('<div id="controlSpan" class="pure-button"><i class="fa fa-cog"></i> settings v' + version + '</div>');
     _log('control dialog tick start ', DLOG);
-            $('#controlDiv').dialog({
-                autoOpen: false,
-                resizable: false,
-                // draggable: false,
-                height:600,
-                width:800,
-                modal: true,
-                buttons: {
-                    "Apply & Refesh Page": function() {
-                        $(this).css('color', 'lightgrey');
-                        $( this ).dialog( "close" );
-                        document.location.reload();
-                    },
-                    Cancel: function() {
-                        $( this ).dialog( "close" );
-                    }
-                }
-            });
+
+
+            // $('#controlDiv').dialog({
+            //     autoOpen: false,
+            //     resizable: false,
+            //     // draggable: false,
+            //     height:600,
+            //     width:800,
+            //     modal: true,
+            //     buttons: {
+            //         "Apply & Refesh Page": function() {
+            //             $(this).css('color', 'lightgrey');
+            //             $( this ).dialog( "close" );
+            //             document.location.reload();
+            //         },
+            //         Cancel: function() {
+            //             $( this ).dialog( "close" );
+            //         }
+            //     }
+            // });
+            // $('#controlspan')
+
+
+
+
     _log('control dialog tick end ', DLOG);
 
+    // $('#controlSpan').click(function(){
+    //     $('#controlDiv').dialog('open');
+    //     hoveringHelpHighlighter();
+
+    // });
     $('#controlSpan').click(function(){
-        $('#controlDiv').dialog('open');
-        hoveringHelpHighlighter();
+	    if($('#controlDiv.firstopen')){
+
+	        $('#controlDiv').dialog({
+	            autoOpen: true,
+	            resizable: false,
+	            // draggable: false,
+	            height:600,
+	            width:800,
+	            modal: true,
+	            buttons: {
+	                "Apply & Refesh Page": function() {
+	                    $(this).css('color', 'lightgrey');
+	                    $( this ).dialog( "close" );
+	                    document.location.reload();
+	                },
+	                Cancel: function() {
+	                    $( this ).dialog( "close" );
+	                }
+	            }
+	        });
+	        $('#controlDiv').removeClass('firstopen')
+	    }else{
+	        $('#controlDiv').dialog('open');
+	        hoveringHelpHighlighter();
+
+	    }
 
     });
 
@@ -924,13 +976,14 @@ function formatFilterResultsPage(){
         _log('formatFilterResultsPage() Start',DLOG);
         // $('.quantity-form br').add('#mainform br').remove();
 compactRows()
-        $('a.altpkglink').hide();
+        // $('a.altpkglink').hide();
+        GM_addStyle(`a.altpkglink{display:none;}`)
         $('.dload-btn').css({'text-align':'left', 'width':'1%'});
         $('.page-slector').css({'width': '1%'});
         $('.qty-form').css({'width': '1%'});
-
-        $('#appliedFilterHeaderRow').closest('div').css({'overflow':''});
-        $('#filters-panel').css({'display':''});
+        _log('formatFilterResultsPage() tick',DLOG);
+        // $('#appliedFilterHeaderRow').closest('div').css({'overflow':''});
+        // $('#filters-panel').css({'display':''});
 
 
         // $('#search-within-results').css({'display':'inline'}).insertAfter($('.filters-group-chkbxs'))
@@ -939,14 +992,14 @@ compactRows()
         $('.deapply-filter-selection').addClass('button-small pure-button primary');
         // $('#filters-buttons').css({'background-image':'none'})
         addToTopButton();
-        floatApplyFilters();// redo or add back
+        // floatApplyFilters();// redo or add back
         //TODO fix dependencies of if statements below
         
         addImageBar();
         picsToAccel(); //add the thumnails to picture accelerator block
         if(localStorage.getItem('combinePN') == 1) {
-            setTimeout(function(){combinePN();}, 1);
-        }
+            setTimeout(function(){combinePN();addClipboardCopyToResultsTable();}, 1);
+        }else{addClipboardCopyToResultsTable();}
 
         // setTimeout(function(){addPartCompare();}, 150);
 
@@ -1002,7 +1055,7 @@ compactRows()
         setTimeout(addQuickFilterButton, 1000)
         //addOpAmpWiz();
         //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
-
+        // addClipboardCopyToResultsTable();
 
         _log('formatFilterResultsPage() End',DLOG);
     }
@@ -1029,16 +1082,18 @@ function addQuickFilterButton(){
     });
 
     GM_addStyle(`
-        .highlightselectbox,.highlightcheckbox {border: 1px solid red;}
+        .highlightcheckbox {border: 1px solid red;}
+        .highlightselectbox[name="pv7"] option:not([value="1"]):not([value="243"]):not([value="4"]) {background-color:blue; color:white;}
+        .highlightselectbox[name="pv1989"] option[value="0"] {background-color:blue; color:white;}
     `)
     $('#quickFilterButtonDiv')
     .on('mouseenter', function(){ 
         $('select[name=pv7], select[name=pv1989]').addClass('highlightselectbox'); 
-        $(checkselector).parent().addClass('highlightselectbox')
+        $(checkselector).parent().addClass('highlightcheckbox')
     })
     .on('mouseleave', function(){ 
         $('select[name=pv7], select[name=pv1989]').removeClass('highlightselectbox');
-        $(checkselector).parent().removeClass('highlightselectbox')
+        $(checkselector).parent().removeClass('highlightcheckbox')
     })
 
 }
@@ -1167,15 +1222,59 @@ function addClipboardCopyToDetail(){
             return $(trigger).closest('td').text().trim();
         }
     })
-        clip.on('success', function(e){
-            $(e.trigger).tooltipster('open');
-            setTimeout(function(){$(e.trigger).tooltipster('close')}, 800)
-        });
+    clip.on('success', function(e){
+        $(e.trigger).tooltipster('open');
+        setTimeout(function(){$(e.trigger).tooltipster('close')}, 800)
+    });
 
     _log('addClipboardCopyToDetail() End',DLOG);
 }
 
+function addClipboardCopyToResultsTable(){
+	_log('addClipboardCopyToResultsTable() Start',DLOG);
+
+	$('#content').append(`
+		<div id="clipmecontainer" style="display:none;">
+		<button class="copyContent button pure-button"  title="Copy to Clipboard">
+			<i class="fa fa-files-o"></i> Copy Text
+		</button></div>
+	`);
+
+    $('#productTable').on('mouseenter', '.tr-dkPartNumber, .tr-mfgPartNumber', function(){
+
+	    $(this).find('a:not(.tooltipstered)').tooltipster({
+	        content: $('.copyContent:last'),        
+	        'side': 'right',
+	        'distance': -45,
+	        'multiple':true,
+	        'delay': 50,
+	        'contentCloning': true,
+	        'functionReady': function(instance,helper){
+	        	$('.copyContent').html('<i class="fa fa-files-o"></i> Copy Text')
+	        	$('.copyContent').attr('data-clipboard-text', $(helper.origin).text().trim());
+	        	// console.log('~~~~~~~~~~~~~~~~~', instance, helper);
+	        	$(helper.tooltip).find('.tooltipster-content').css('padding','2px')
+	        	instance.reposition();
+	        },
+	    });
+    });
+
+    var clip = new Clipboard('.copyContent', {
+        text: function(trigger){
+            return $(trigger).attr('data-clipboard-text');
+        }
+    });
+    clip.on('success', function(trigger){
+    	// alert('success!')
+    	// console.log(trigger)
+    	$(trigger.trigger).text('copied!')
+    })
+    _log('addClipboardCopyToResultsTable() End',DLOG);
+}
+
 function addMorePartsToTable(){
+    _log('addMorePartsToTable() Start',DLOG);
+
     if($('.paging .digiGray').length > 0){ // if there are no pages to load don't add a button
         //add button
     	$('.paging:last').append('<button id="addmoreparts" class="button-small pure-button" style="margin-left:15px;">Show More Parts In Table</button>'+
@@ -1250,9 +1349,12 @@ function addMorePartsToTable(){
         	});
         }  
     }
+    _log('addMorePartsToTable() End',DLOG);
+
 }
 
 function replaceStarDash(){
+	_log('replaceStarDash() Start',DLOG);
 	$('select').not('[name=pv1989]').each(function(){
 		var thisSelect = $(this);
 		$(this).find('option:lt(2)').each(function(){
@@ -1264,19 +1366,69 @@ function replaceStarDash(){
 			thisSelect.append($(this).filter('[value=0]').text('*(TBD)').attr('title', 'Parameter To Be Completed Soon'));
 		});
 	});
+	_log('replaceStarDash() End',DLOG);
 }
+
+function formatComparePartsPage(){
+	if (window.location.href.indexOf('products/compare') != -1){
+		_log('formatComparePartsPage() Start',DLOG);
+		$('.tablescroller table tr:eq(3) td').each(function(idx){
+			$('.tablescroller table tr:eq(8) td:eq('+idx+')')
+			.addClass('tr-unitPrice')
+			.data('url', $(this).find('a').attr('href')).
+			append('<i class="fa fa-shopping-cart fa-lg" style="color:red;"></i>')
+		})
+		$('td.tr-unitPrice')
+	    .data('elementToLoad', '.catalog-pricing')
+	    .tooltipster({
+	        content: 'loading...',
+	        side: 'bottom',
+	        theme: 'tooltipster-shadow',
+	        // distance: -40,
+	        functionReady: loadPricesInCompare
+	    });
+
+		$('#content').append('<img id="pszoomie" class="pszoomie psshadow" style="border: 0px solid white; box-shadow: 0px 0px 10px 5px rgb(136, 136, 136); height: 640px; width: 640px; display: none;" src="">')
+		fixImageHover();
+		_log('formatComparePartsPage() End',DLOG);
+	}
+
+}
+
+function loadPricesInCompare(instance,helper){
+    _log('loadPricesInCompare() Start',DLOG);
+    var $origin = $(helper.origin);
+    if($origin.data('loaded')!==true){
+        $.get(
+            $(helper.origin).data('url'), 
+            function(data){
+                instance.content($(data).find($origin.data('elementToLoad')))
+                instance.reposition();
+                $origin.data('loaded',true)
+            }
+        );
+    }
+    _log('loadPricesInCompare() End',DLOG);
+}
+
 
 
 // TODO add the ability to submit using form filters
 function addVisualPicker(){
     _log('addVisualPicker() Start',DLOG);
-    var dialogHeight = ($(window).height() * 0.8);
-    var dialogWidth = ($(window).width() * 0.8);
+    _log('addVisualPicker() tick',DLOG);
+    // var dialogHeight = ($(window).height() * 0.8);
+    // var dialogHeight = (window.innerHeight * 0.8);
+    var dialogHeight = window.innerHeight * 0.8;
+    _log('addVisualPicker() tick',DLOG);
+    // var dialogWidth = ($(window).width() * 0.8);
+    // var dialogWidth = ($(window).width() * 0.8);
+    var dialogWidth = window.innerWidth * 0.8;
 
     // $('.selectboxdivclass>b').after('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
     $('#appliedFilterHeaderRow th').append('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
     $('#content').after(
-        '<div id="visualpickerdiv" style="display:none;">'+
+        '<div id="visualpickerdiv" class="firstopen" style="display:none;">'+
             '<div class="pickerbody" style="overflow-y:scroll; height:'+(dialogHeight-90)+'px;"></div>'+
             '<div class="pickerbuttondiv" style="height:30px">'+
             '<div class="moreadder" style="height:30px">'+
@@ -1300,18 +1452,18 @@ function addVisualPicker(){
         theme: 'tooltipster-shadow',
         side: 'left'
     });
+    _log('addVisualPicker() tick',DLOG);
 
-    $( "#visualpickerdiv" ).dialog( { 
-        autoOpen: false,
-        modal: true,
-        height: ($(window).height() * 0.8),
-        width: ($(window).width() * 0.8),
-        close: function(){
-            $('.moreadder').prependTo($('.pickerbuttondiv'));
-            $('.pickerbody').empty('');
-        }, 
-    } );
-
+    // $( "#visualpickerdiv" ).dialog( { 
+    //     autoOpen: false,
+    //     modal: true,
+    //     height: ($(window).height() * 0.8),
+    //     width: ($(window).width() * 0.8),
+    //     close: function(){
+    //         $('.moreadder').prependTo($('.pickerbuttondiv'));
+    //         $('.pickerbody').empty('');
+    //     }, 
+    // } );
     // $('.pickericon').on('click', openVisualPicker );
     $('.pickericon').on('click', openVisualPickerNoWrap );
     
@@ -1375,6 +1527,20 @@ function pickerOptionClick(){
 
 function openVisualPickerNoWrap(){
         // _log('clicked on .pickeritem', true);
+
+        if($('#visualpickerdiv.firstopen').length){
+        	$( "#visualpickerdiv" ).dialog( { 
+		        autoOpen: false,
+		        modal: true,
+		        height: ($(window).height() * 0.95),
+		        width: ($(window).width() * 0.95),
+		        close: function(){
+		            $('.moreadder').prependTo($('.pickerbuttondiv'));
+		            $('.pickerbody').empty('');
+		        }, 
+		    } );
+        }else{}
+
         var p = $('.pickerbody');
         // var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
         var filtername = $(this).closest('th').text(); //for non wrapping function
@@ -1384,7 +1550,8 @@ function openVisualPickerNoWrap(){
         var $options = $('#appliedFilterOptions td').eq(colIndex).find('select option');
         // console.log($options);
 
-
+        p.attr('data-selectval', p.data('selectval'))
+        p.attr('data-filtername', filtername);
         p.data('optioncount', $options.length);
         p.data('optionsvisible', 0);
         p.data('currentfilter', filtername);
@@ -1453,7 +1620,7 @@ function getSingleOptionImageSet($option, filtername){
                     '<label class="css-label" for="check'+optionval+'"></label>'+
                 '</div>'+
                 '<div class="imageholder imgholder'+optionval+'">'+
-                    '<div style="font-weight:bold; font-size:1.2em;">'+$option.text()+' (<span class="matchnum">loading</span>) </div>'+
+                    '<div style="font-weight:bold; font-size:1.2em;"><span class="optiontext">'+$option.text()+'</span> (<span class="matchnum">loading</span>) </div>'+
                 ' </div>'
             );
 
@@ -1464,7 +1631,7 @@ function getSingleOptionImageSet($option, filtername){
                 var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
                 $('#pickerid'+optionval).find('.matchnum').text(matching);
 
-                 $images.css({'height':'50px', 'width':'50px'});
+                 $images.css({'height':'64px', 'width':'64px'});
                 $('.imgholder'+optionval).append(deDuplicateCollection($images, 'src').slice(0,20));
 
                 if($(this).find('.product-photo-wrapper img').length == 1){
@@ -1598,12 +1765,12 @@ function mediumImageHover(){
 }
 
 
-function addMatchingRecordsToApply(){
-    _log('addMatchingRecordsToApply() Start',DLOG);
-    $('.filters-buttons').append('<div class="matching-records" style="display:inline; margin-left:30px; position:relative;">'+$('.matching-records').text()+'</div>');
-    //$(".matching-records:last").css({display:'inline', 'margin-left': '30px', postion:'relative'});
-    _log('addMatchingRecordsToApply() End',DLOG);
-}
+// function addMatchingRecordsToApply(){
+//     _log('addMatchingRecordsToApply() Start',DLOG);
+//     $('.filters-buttons').append('<div class="matching-records" style="display:inline; margin-left:30px; position:relative;">'+$('.matching-records').text()+'</div>');
+//     //$(".matching-records:last").css({display:'inline', 'margin-left': '30px', postion:'relative'});
+//     _log('addMatchingRecordsToApply() End',DLOG);
+// }
 
 function addColumnMath(){
     _log('addColumnMath() Start',DLOG);
@@ -2093,7 +2260,7 @@ function fixImageHover(){
 
     window.eval("$('.pszoomer').unbind('mouseenter mouseleave');");
 
-    $('#productTable').hoverIntent(
+    $('#productTable, .tablescroller table').hoverIntent( // tablescroller is for product compare page
         function () {
             var d = Math.min(640, 0.8 * Math.min($(window).width(), $(window).height()));
             $('#pszoomie').attr('src','');
@@ -3973,12 +4140,12 @@ function addImageBar() {
             'cursor': 'pointer'
         });
     }
+_log('addImageBar() tick',DLOG);
+    $('#content').after('<div id="itemInfo" style="display:none;"></div>');
+    // $('#itemInfo').hide();
 
-    $('#content').after('<div id="itemInfo"></div>');
-    $('#itemInfo').hide();
-
-    $('#content').after('<div id="bigpic"></div>');
-    $('#bigpic').hide();
+    $('#content').after('<div id="bigpic" style="display:none;"></div>');
+    // $('#bigpic').hide();
 
         $('#expand2').click(function(e){
             _log($(this).attr('id')+' acc expand click');
@@ -4235,23 +4402,25 @@ function voltageHelper(filterData) {
 
         </div>        
     `;
-    $('#content').append(modalHTML)
-    $('#powerSupplyTabs').tabs();
-    $('#powerSupplyWiz').dialog({
-            autoOpen: false,
-            resizable: true,
-            // draggable: false,
-            height:600,
-            width:800,
-            modal: false,
-            buttons: {
-                "Close": function() {
-                    // $(this).css('color', 'lightgrey');
-                    $( this ).dialog( "close" );
-                },
-            },
-            // open:function(){setTimeout(function(){$('#powerSupplyTabs').tabs(); _log('tabs opened')}, 5000)}
-    });
+
+
+    // $('#content').append(modalHTML) //dialog is slowing down, feature not enabled anyways so comment out.  TODO finish
+    // $('#powerSupplyTabs').tabs();
+    // $('#powerSupplyWiz').dialog({
+    //         autoOpen: false,
+    //         resizable: true,
+    //         // draggable: false,
+    //         height:600,
+    //         width:800,
+    //         modal: false,
+    //         buttons: {
+    //             "Close": function() {
+    //                 // $(this).css('color', 'lightgrey');
+    //                 $( this ).dialog( "close" );
+    //             },
+    //         },
+    //         // open:function(){setTimeout(function(){$('#powerSupplyTabs').tabs(); _log('tabs opened')}, 5000)}
+    // });
 
 
     $('#'+filterid+'-button').click(function(e) {
@@ -5460,9 +5629,9 @@ function picsToAccel() {
     });
     _log('picsToAccel() tick1',DLOG);
     $('#accContent').append(piclinkhtml);
-    _log('picsToAccel() tick2',DLOG);
-    $('#accContent img').each(function(){ $(this).attr('src', $(this).attr('data-blzsrc'));});
-    _log('picsToAccel() afterpicturelinkset ',DLOG);
+    // _log('picsToAccel() tick2',DLOG);
+    // $('#accContent img').each(function(){ $(this).attr('src', $(this).attr('data-blzsrc'));});//probably don't need this anymore
+    // _log('picsToAccel() afterpicturelinkset ',DLOG);
 
     $('#accContent').append('<< last one');
     
