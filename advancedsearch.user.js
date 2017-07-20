@@ -994,7 +994,7 @@ compactRows()
         $('.deapply-filter-selection').addClass('button-small pure-button primary');
         // $('#filters-buttons').css({'background-image':'none'})
         addToTopButton();
-        // setTimeout(floatApplyFilters, 1);// redo or add back
+        setTimeout(floatApplyFilters, 1);// redo or add back
         //TODO fix dependencies of if statements below
         
         addImageBar();
