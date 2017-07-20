@@ -1,4 +1,4 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name        advancedsearch
 // @namespace   advancedsearch
 // @description an advanced search
@@ -21,12 +21,13 @@
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.spellchecker.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/quantities.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/dklib/dklib.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/dklib.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/js/tooltipster.bundle.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.lazyloadxt.js
 // @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.dragtable.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.8/clipboard.min.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/familyimages.js
 // @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
 // @resource    jQueryUICSS https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css
 // @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
@@ -45,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.2.9
+// @version     4.3.0
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -215,6 +216,7 @@
 //4.2.7     added Direct Manufacturer URL, fixed datasheets for https website, added detail page part compare.
 //4.2.8     fixed datasheet autoloader bug
 //4.2.9 	added copy button to filter results table page, big speed optimizations, compare parts page features
+//4.3.0 	added normally stocking feature to header, added image to related product, fixed floating apply, range height fixed
 
 
 //TODO add copy info button  possibly on filter results page
@@ -242,7 +244,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '6/15/17';  // I usually forget this
+var lastUpdate = '6/30/17';  // I usually forget this
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var DLOG = true; //control detailed logging.
@@ -564,9 +566,9 @@ function addCustomHeader(){
         '<b>Keywords:</b></a> <input type="search" value="" style="padding:3px; margin:3px 3px 1px 3px;" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
         '<input align=right type="submit" value="New Search" id="searchbutton">'+
         ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
-        ' <input type="checkbox" style="margin:0 2px;" value="0" name="noworries" id="activePart" class="saveState css-checkbox"><label for="activePart" class="css-label">Active</label>'+
-        ' <input type="hidden" style="margin:0 2px;" value="5" name="pv1989" id="shadowNew" disabled=true class="css-checkbox" >'+
-        ' <input type="hidden" style="margin:0 2px;" value="0" name="pv1989" id="shadowNew2" disabled=true class="css-checkbox" >'+
+        ' <input type="checkbox" style="margin:0 2px;" value="0" name="nstock" id="activePart" class="saveState css-checkbox"><label for="activePart" class="css-label">Normally Stocking</label>'+
+        // ' <input type="hidden" style="margin:0 2px;" value="5" name="pv1989" id="shadowNew" disabled=true class="css-checkbox" >'+
+        // ' <input type="hidden" style="margin:0 2px;" value="0" name="pv1989" id="shadowNew2" disabled=true class="css-checkbox" >'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
         ' <input type="checkbox" style="padding-left:5px;" value="1" name="newproducts" id="newproducts" class="css-checkbox"><label style="margin-left:8px;" for="newproducts" class="css-label" title="Added in the last 90 days.">New</label>'+
         // '<span id="resnum"></span>'+
@@ -678,9 +680,9 @@ function keywordSearchWizard(){
                         'The keyword <b style="color:red;">LED</b> will match control<b style="color:red;">led</b>,'+' O<b style="color:red;">LED</b> and LTC3458<b style="color:red;">LED</b>E#PBF </td>'+
                     '</tr>'+
                     '<tr>'+
-                        '<td>It&#39s best to treat keyword searches as a guide to help find where product is hiding rather than expect ALL results to be spoonfed.'+
+                        '<td>Using keywords with too much specificity may artificially limit results. It&#39s best to treat keyword searches as a guide to help find where product is hiding rather than expect ALL results to be spoonfed.'+
                         '  It&#39s often better to find the families of interest and then filter and browse the full contents of that family unless you are sure'+
-                        ' there there is an exact keyword found in product listing pages. Using keywords with too much specificity may artificially limit results.</td>'+
+                        ' there there is an exact keyword found in product listing pages. </td>'+
                     '</tr>'+
                 '</tbody>'+
             '</table>'+
@@ -992,7 +994,7 @@ compactRows()
         $('.deapply-filter-selection').addClass('button-small pure-button primary');
         // $('#filters-buttons').css({'background-image':'none'})
         addToTopButton();
-        // floatApplyFilters();// redo or add back
+        // setTimeout(floatApplyFilters, 1);// redo or add back
         //TODO fix dependencies of if statements below
         
         addImageBar();
@@ -2285,9 +2287,9 @@ function fixImageHover(){
 function floatApplyFilters(){
     // $('.filters-buttons').wrapAll('<div id=floatApply>');
     
-    $('#filters-buttons, #record-count-container').children().css('position', 'relative');
+    $('#filters-buttons, #record-count-container').css('position', 'relative');
     $(window).scroll(function(){
-        $('#filters-buttons, #record-count-container').children().css('left', $(window).scrollLeft() );
+        $('#filters-buttons, #record-count-container').css('left', $(window).scrollLeft() );
     });
     // addSearchWithin();
 }
@@ -2740,7 +2742,7 @@ function newProductIndexDiv(productTree){
     $('#productIndexList').after('<div id="productIndexDiv" class="" style="white-space:normal;" />').detach();
 
     var exampleFamilyImages = getIndexImages();
-
+    console.log(exampleFamilyImages);
 
     // productTree.slice(0,10).forEach(function(item){
     //     buildCategoryItem(item, exampleFamilyImages);
@@ -2834,14 +2836,14 @@ function buildCategoryItem(catItem, exampleFamilyImages){
 function buildFamilyItemHTML(fam, catSelector, exampleFamilyImages){
 
         // _log('>>>>>>>>><<<<<<<<<<<>>>>>>>>>>>'+fam.link)
-        var root = fam.link.replace('products/en/','').split('?')[0];
+        var root = fam.link.replace('products/en/','').split('?')[0].replace(/\d+$/,'');
         var famitem = $(this);
         var imagestring = '';
         if (exampleFamilyImages[root] != undefined){
             exampleFamilyImages[root].slice(0,3).forEach(function(item, ind){
-                console.log(root, item);
+                // console.log(root, item);
                 // famitem.find('.familyimages').append('<img class=lazyimg data-original="http://media.digikey.com'+item+'">');
-                imagestring = imagestring + '<img class=lazyimg data-src="http://media.digikey.com'+item+'">';
+                imagestring = imagestring + '<img class=lazyimg data-src="https://media.digikey.com'+item+'">';
             });
         }
 
@@ -3113,7 +3115,8 @@ function formatDetailPage(){
         $('td:contains("obsolete") p').css('background-color','#FF8080'); // changes the color of the obsolete callout
         // $('#content').css({'position':'relative', 'top': '45px'});
         detailPageManufacturerLogoHover();
-        detailPageAssociationHover()
+        detailPageAssociationHover();
+        // detailPageAssociationImageHover();
         addClipboardCopyToDetail();
 
         // newAssociatedProducts();
@@ -3193,13 +3196,25 @@ function detailPageManufacturerLogoHover(){
 
 function detailPageAssociationHover(){
     $('.list-item-img a, [itemprop=name] a')
-    .data('elementToLoad', '#prod-att-table')
+    .data('elementToLoad', '#prod-att-table, #product-photo-wrapper img:first')
     .tooltipster({
-        distance: 60,
-        side: 'top',
+        distance: 30,
+        side: 'right',
         functionReady: easyHoverAndLoad,
+        multiple: true
     });
 }
+
+// function detailPageAssociationImageHover(){
+//     $('.list-item-img a, [itemprop=name] a')
+//     .data('elementToLoad', '#product-photo-wrapper img:first')
+//     .tooltipster({
+//         distance: 60,
+//         side: 'top',
+//         functionReady: easyHoverAndLoad,
+//         multiple: true
+//     });
+// }
 
 // TODO complete
 function addManufacturerDirectLink(){
@@ -4334,7 +4349,7 @@ function voltageHelper(filterData) {
         // '<button id="'+filterid+'-button" class="clean-gray" ><i class="fa fa-tasks fa-lg" style="color:#555;"></i></button>'+
         '</div>'
     );
-    $selectElem.prop('size', 8);
+    $selectElem.css('height', '10em');
     //TODO differentiate between in and out.... add vin min, vin max
     //TODO add ability to select multi output devices
     //TODO deal with +- ranges
