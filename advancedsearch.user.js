@@ -31,8 +31,8 @@
 // @resource    buttonCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/buttons.css
 // @resource    jQueryUICSS https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css
 // @resource    advCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/advancedsearch.css
-// @resource    normalizeCSS https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/base.css
-// @resource    pureCSS https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/pure.css
+// @resource    normalizeCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/base.css
+// @resource    pureCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/pure.css
 // @resource    stickyCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/fixedsticky.css
 // @resource    tooltipsterCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster.bundle.css
 // @resource    tooltipster-shadowCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster-sideTip-shadow.min.css
@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.1
+// @version     4.3.1.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -219,6 +219,7 @@
 //4.3.0 	added normally stocking feature to header, added image to related product, fixed floating apply, range height fixed
 //4.3.0.1 	actually fixed floating apply
 //4.3.1 	added canonical link on detail page, moved mfg links on associations, dead code cull, switched resources to github links
+//4.3.1.1 	changed pure resource to github
 
 
 //TODO add copy info button  possibly on filter results page
