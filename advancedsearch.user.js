@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        advancedsearch
 // @namespace   advancedsearch
 // @description an advanced search
@@ -13,29 +13,29 @@
 // @include     http*digikey.*/short/*
 // @exclude     http*digikey.*/classic/Ordering/FastAdd*
 // @exclude     http://www.digikey.com
-// @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
-// @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/Highcharts-4.0.4/js/highcharts.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.localScroll.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.hoverIntent.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.spellchecker.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/quantities.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.jqpagination.js
+// @require     https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
+// @require     https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/highcharts.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.localScroll.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.hoverIntent.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.spellchecker.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/quantities.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.jqpagination.js
 // @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/dklib.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/js/tooltipster.bundle.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.lazyloadxt.js
-// @require     https://dl.dropboxusercontent.com/u/26263360/script/lib/jquery.dragtable.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/fixedsticky.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster.bundle.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.lazyloadxt.js
+// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.dragtable.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.8/clipboard.min.js
 // @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/familyimages.js
-// @resource    buttonCSS https://dl.dropboxusercontent.com/u/26263360/script/css/buttons.css
+// @resource    buttonCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/buttons.css
 // @resource    jQueryUICSS https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css
-// @resource    advCSS https://dl.dropboxusercontent.com/u/26263360/script/css/advancedsearch.css
-// @resource    normalizeCSS http://yui.yahooapis.com/pure/0.5.0/base.css
-// @resource    pureCSS http://yui.yahooapis.com/pure/0.5.0/pure.css
-// @resource    stickyCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/fixedsticky/fixedsticky.css
-// @resource    tooltipsterCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/css/tooltipster.bundle.css
-// @resource    tooltipster-shadowCSS https://dl.dropboxusercontent.com/u/26263360/script/lib/tooltipster-master-4.1.0/dist/css/plugins/tooltipster/sideTip/themes/tooltipster-sideTip-shadow.min.css
+// @resource    advCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/advancedsearch.css
+// @resource    normalizeCSS https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/base.css
+// @resource    pureCSS https://cdnjs.cloudflare.com/ajax/libs/pure/0.5.0/pure.css
+// @resource    stickyCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/fixedsticky.css
+// @resource    tooltipsterCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster.bundle.css
+// @resource    tooltipster-shadowCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster-sideTip-shadow.min.css
 // @connect     self
 // @connect     digikey.com
 // @updateURL   https://goo.gl/vbjoi
@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.0
+// @version     4.3.1
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -217,6 +217,8 @@
 //4.2.8     fixed datasheet autoloader bug
 //4.2.9 	added copy button to filter results table page, big speed optimizations, compare parts page features
 //4.3.0 	added normally stocking feature to header, added image to related product, fixed floating apply, range height fixed
+//4.3.0.1 	actually fixed floating apply
+//4.3.1 	added canonical link on detail page, moved mfg links on associations, dead code cull, switched resources to github links
 
 
 //TODO add copy info button  possibly on filter results page
@@ -236,15 +238,14 @@
 //TODO fuzzy similar to, start in opamps
 //TODO add a google like "advanced search" to the header
 //TODO impliment offscreen table wrap
-//TODO fix datasheet autoloader encode spaces
-//TODO
+//TODO fix cannonical link on filter page
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '6/30/17';  // I usually forget this
+var lastUpdate = '7/20/17';  // I usually forget this
 var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var DLOG = true; //control detailed logging.
@@ -354,6 +355,7 @@ function formatPagesPostReady() {
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
     tc(addBreadcrumbHover, 'addBreadcrumbHover');
+    tc(addCanonicalLinkToBreadCrumbs, 'addCanonicalLinkToBreadCrumbs');
     tc(formatComparePartsPage, 'formatComparePartsPage');
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
@@ -2657,8 +2659,8 @@ function handleTopResults4(){
     $('#quickPicksDisplay').addClass('box effect1').css({border:'none', 'padding-bottom': '5px', 'margin-top':0, 'margin-bottom': '10px'});
     $('#qpLinkList').css({border:'none', 'margin-bottom':'10px'});
     $('#qpTitle').css({'background':'white'})
-    $('#search-dropdown-container').hide();
-    $('#search-within-results').css({'display':'inline'})
+    // $('#search-dropdown-container').before('<br>');
+    // $('#search-within-results').css({'display':'flex'});
     // $('#qpTitle').append('for '+ $('#headKeySearch').val())
 }
 
@@ -2742,7 +2744,7 @@ function newProductIndexDiv(productTree){
     $('#productIndexList').after('<div id="productIndexDiv" class="" style="white-space:normal;" />').detach();
 
     var exampleFamilyImages = getIndexImages();
-    console.log(exampleFamilyImages);
+    // console.log(exampleFamilyImages);
 
     // productTree.slice(0,10).forEach(function(item){
     //     buildCategoryItem(item, exampleFamilyImages);
@@ -3116,6 +3118,7 @@ function formatDetailPage(){
         // $('#content').css({'position':'relative', 'top': '45px'});
         detailPageManufacturerLogoHover();
         detailPageAssociationHover();
+        detailPageMoveManufacturerLink();
         // detailPageAssociationImageHover();
         addClipboardCopyToDetail();
 
@@ -3205,18 +3208,12 @@ function detailPageAssociationHover(){
     });
 }
 
-// function detailPageAssociationImageHover(){
-//     $('.list-item-img a, [itemprop=name] a')
-//     .data('elementToLoad', '#product-photo-wrapper img:first')
-//     .tooltipster({
-//         distance: 60,
-//         side: 'top',
-//         functionReady: easyHoverAndLoad,
-//         multiple: true
-//     });
-// }
+function detailPageMoveManufacturerLink(){
+	$('.asscontainer ul').each(function(){
+		$(this).find('.list-item-vendor').appendTo($(this));
+	})
+}
 
-// TODO complete
 function addManufacturerDirectLink(){
     $('.lnkMfct:first').append('<div id="manuDirLink" class="button pure-button" '+
         'title="Opens new tab to manufacturer\'s website">'+
@@ -3239,7 +3236,7 @@ function addManufacturerDirectLink(){
         })
     })
 }
-//TODO complete
+
 function detailCompareList(){
     _log('detailCompareList() Start',DLOG);
 
@@ -5772,6 +5769,47 @@ function loadBreadcrumbHover(instance, helper){
     }
 }
 
+function addCanonicalLinkToBreadCrumbs(){
+	_log('addCanonicalLinkToBreadCrumbs() Start',DLOG);
+	var canlink = $('link[rel=canonical]').attr('href');
+	var mpn = $('h1[itemprop=model]').text();
+	var dkpn = $('#reportPartNumber').text();
+	console.log('canlink ', canlink)
+	$('.breadcrumbs').append('<i class="fa fa-link canlink" aria-hidden="true"></i>')
+
+	$('#content').append(`
+		<div id="clipmecontainer" style="display:none;">
+			<div id=canonicalContainer>
+				<button class="canonicalCopy button pure-button"  title="Copy true page URL to clipboard rather than a long filtered URL" data-clipboard-text="${canlink}">
+					<i class="fa fa-files-o"></i> Copy Canonical Link
+				</button><br>
+				<a href="${canlink}">${mpn}</a>
+				<br>
+				<a href="${canlink}">${dkpn}</a>
+			</div>
+		</div>
+	`);
+	$('.mpncopy').attr('data-clipboard-text',"<i>Markup</i> <b>text</b>. Paste me into a rich text editor.");
+
+	$('.canlink').tooltipster({
+		content: $('#canonicalContainer')
+	});
+
+    var clip = new Clipboard('.canonicalCopy', {
+        "text": function(trigger){
+            return $(trigger).attr('data-clipboard-text');
+        }
+    });
+    
+    clip.on('success', function(trigger){
+    	// alert('success!')
+    	// console.log(trigger)
+    	$(trigger.trigger).text('copied!')
+    })
+
+	_log('addCanonicalLinkToBreadCrumbs() End',DLOG);
+}
+
 //--------------------------------------------------
 
 
@@ -5804,482 +5842,435 @@ var detailPageInfo2 = (function(){
     };
 })();
 
-// associated parts function.
-var apOld = (function(){
-    var columnList = [
-        {'name':'Image', 'f': detailPageInfo.getImage,},
-        {'name':'Manufacturer Part Number', 'f':detailPageInfo.getMPN},
-        {'name':'Manufacturer', 'f':detailPageInfo.getManufacturer},
-        {'name':'Description', 'f':detailPageInfo.getDescription},
-        {'name':'Packaging', 'f':detailPageInfo.getPackaging},
-        {'name':'Unit Price', 'f':detailPageInfo.getUnitPrice},
-        {'name':'Quantity Available', 'f':detailPageInfo.getQuantityAvailable},
-        {'name':'Min Quantity', 'f':detailPageInfo.getMinQuantity}
-    ];
-    var cLen = columnList.length;
-    var perPage = 5;
+// // associated parts function.
+// var apOld = (function(){
+//     var columnList = [
+//         {'name':'Image', 'f': detailPageInfo.getImage,},
+//         {'name':'Manufacturer Part Number', 'f':detailPageInfo.getMPN},
+//         {'name':'Manufacturer', 'f':detailPageInfo.getManufacturer},
+//         {'name':'Description', 'f':detailPageInfo.getDescription},
+//         {'name':'Packaging', 'f':detailPageInfo.getPackaging},
+//         {'name':'Unit Price', 'f':detailPageInfo.getUnitPrice},
+//         {'name':'Quantity Available', 'f':detailPageInfo.getQuantityAvailable},
+//         {'name':'Min Quantity', 'f':detailPageInfo.getMinQuantity}
+//     ];
+//     var cLen = columnList.length;
+//     var perPage = 5;
 
-    var buildProductViewerBox = function(item){
+//     var buildProductViewerBox = function(item){
 
-        var firstRowHTML = '';
-        for (var z=0; z<columnList.length; z++){
-            firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
-        }
-        var allRows = ''
-        for(var z=0; z<item.list.length; z++){
-            allRows = allRows + buildRowHTML(item.list[z]);
-        }
-        var itemSel = selectorEscape(item.title)
+//         var firstRowHTML = '';
+//         for (var z=0; z<columnList.length; z++){
+//             firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
+//         }
+//         var allRows = ''
+//         for(var z=0; z<item.list.length; z++){
+//             allRows = allRows + buildRowHTML(item.list[z]);
+//         }
+//         var itemSel = selectorEscape(item.title)
         
-        $('#additional-product-options-section').append(
-            '<div id="asd-id-'+itemSel+'" class="asd-containerOld panel panel-default">'+
-                '<div class="asd-title panel-heading">'+item.title+' ('+ item.list.length +')</div>'+
-                '<div class="asd-content panel-body">'+
-                '<table id="table-'+itemSel+'" class="asd-table tstripe"> '+
-                    '<thead><tr>'+firstRowHTML+'</tr></thead>'+
-                    '<tbody>'+allRows+'</tbody>'+
-                '</table>'+
-                '</div>'+
-            '</div>'
-        );
+//         $('#additional-product-options-section').append(
+//             '<div id="asd-id-'+itemSel+'" class="asd-containerOld panel panel-default">'+
+//                 '<div class="asd-title panel-heading">'+item.title+' ('+ item.list.length +')</div>'+
+//                 '<div class="asd-content panel-body">'+
+//                 '<table id="table-'+itemSel+'" class="asd-table tstripe"> '+
+//                     '<thead><tr>'+firstRowHTML+'</tr></thead>'+
+//                     '<tbody>'+allRows+'</tbody>'+
+//                 '</table>'+
+//                 '</div>'+
+//             '</div>'
+//         );
         
-        $('#asd-id-'+itemSel).data('itemlist', item.list);
+//         $('#asd-id-'+itemSel).data('itemlist', item.list);
         
-        $('#table-'+itemSel).find('tbody tr').each(function(ind){
-            $(this).data('linkobj',item.list[ind]);
-            $(this).data('boxSel', $('#asd-id-'+itemSel));
-        });
+//         $('#table-'+itemSel).find('tbody tr').each(function(ind){
+//             $(this).data('linkobj',item.list[ind]);
+//             $(this).data('boxSel', $('#asd-id-'+itemSel));
+//         });
         
-        $('#table-'+ itemSel).find('tbody>tr').slice(perPage).hide();
+//         $('#table-'+ itemSel).find('tbody>tr').slice(perPage).hide();
 
-        if (item.list.length > perPage){
-            addPageination(itemSel, item.list.length);
-        }
+//         if (item.list.length > perPage){
+//             addPageination(itemSel, item.list.length);
+//         }
 
-        addFilterAllForm($('#asd-id-'+itemSel));
+//         addFilterAllForm($('#asd-id-'+itemSel));
 
-        var listlength = (item.list.length >= perPage) ? perPage :item.list.length;
-        for(var z=0; z<listlength; z++){
-            getDetailPage(item.list[z], $('#asd-id-'+itemSel));
-        }
+//         var listlength = (item.list.length >= perPage) ? perPage :item.list.length;
+//         for(var z=0; z<listlength; z++){
+//             getDetailPage(item.list[z], $('#asd-id-'+itemSel));
+//         }
 
-    },
+//     },
 
-    addPageination = function (itemSel, listLen) {
-        $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
-                '<a href="#" class="first" data-action="first">&laquo;</a>'+
-                '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
-                '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
-                '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
-                '<a href="#" class="last" data-action="last">&raquo;</a>'+
-            '</div>');
+//     addPageination = function (itemSel, listLen) {
+//         $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
+//                 '<a href="#" class="first" data-action="first">&laquo;</a>'+
+//                 '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
+//                 '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
+//                 '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
+//                 '<a href="#" class="last" data-action="last">&raquo;</a>'+
+//             '</div>');
 
-            $('.page-'+itemSel).jqPagination({
-                paged: function(page) {
-                    var $rows = $('#table-'+itemSel+' tbody > tr')
-                    $rows.hide()// do something with the page variable
-                    var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
-                    $showing.not('.filled').each(function(){
-                        getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
-                    })
-                }
-            });
-    }
+//             $('.page-'+itemSel).jqPagination({
+//                 paged: function(page) {
+//                     var $rows = $('#table-'+itemSel+' tbody > tr')
+//                     $rows.hide()// do something with the page variable
+//                     var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
+//                     $showing.not('.filled').each(function(){
+//                         getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
+//                     })
+//                 }
+//             });
+//     }
 
-    buildRowHTML = function(pnlinkobj){
-        var row = "";
-        for (var i = 0; i < columnList.length; i++) {
-            row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
-        };
-        row = '<tr class="'+selectorEscape(pnlinkobj.pn)+'">' + row + '</tr>'
-        return row;
-    },
+//     buildRowHTML = function(pnlinkobj){
+//         var row = "";
+//         for (var i = 0; i < columnList.length; i++) {
+//             row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
+//         };
+//         row = '<tr class="'+selectorEscape(pnlinkobj.pn)+'">' + row + '</tr>'
+//         return row;
+//     },
 
-    getDetailPage =    function (pnlinkobj, $boxSel){
-        var jqxhr = $.get(pnlinkobj.href)
-                .done(function(data){
-                    var $d = $(data);
-                    fillRow($d, pnlinkobj, $boxSel)
-                })
-                .fail(function(){console.log(pnlinkobj, ' failed');})
-                .always(function(){});
-    },
-    fillRow = function ($DetailPageContent, pnlinkobj, $boxSel){
-        var rowSel = selectorEscape(pnlinkobj.pn);
-        var row = $('.'+rowSel);
+//     getDetailPage =    function (pnlinkobj, $boxSel){
+//         var jqxhr = $.get(pnlinkobj.href)
+//                 .done(function(data){
+//                     var $d = $(data);
+//                     fillRow($d, pnlinkobj, $boxSel)
+//                 })
+//                 .fail(function(){console.log(pnlinkobj, ' failed');})
+//                 .always(function(){});
+//     },
+//     fillRow = function ($DetailPageContent, pnlinkobj, $boxSel){
+//         var rowSel = selectorEscape(pnlinkobj.pn);
+//         var row = $('.'+rowSel);
 
-        for (var x=0; x<cLen; x++){
-            row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f($DetailPageContent));
-            if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+pnlinkobj.href+'" />') ; }
-        }
-        row.addClass('filled');
-        console.log('addrowdone');
-    },
+//         for (var x=0; x<cLen; x++){
+//             row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f($DetailPageContent));
+//             if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+pnlinkobj.href+'" />') ; }
+//         }
+//         row.addClass('filled');
+//         console.log('addrowdone');
+//     },
 
-    getAssociationListFromElem = function (parentElem){
-        var pnlinkarray = []
-        parentElem.find('.more-expander-item').each(function(){
-            pnlinkarray.push({
-                'href': $(this).find('a:first').attr('href'),
-                'pn': $(this).find('a:first').text()
-            });
-        });
-        //console.log(pnlinkarray);
-        return pnlinkarray;
-    },
+//     getAssociationListFromElem = function (parentElem){
+//         var pnlinkarray = []
+//         parentElem.find('.more-expander-item').each(function(){
+//             pnlinkarray.push({
+//                 'href': $(this).find('a:first').attr('href'),
+//                 'pn': $(this).find('a:first').text()
+//             });
+//         });
+//         //console.log(pnlinkarray);
+//         return pnlinkarray;
+//     },
 
-    addFilterAllForm = function($boxSel){
-        var pnlist = '';
-        var itemlist = $boxSel.data('itemlist');
-        itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
-        console.log(pnlist);
-        var formHTML = '<div style="float:right;"><div style="clear:both; margin:0px 15px 1px 0px;"><form  action="/scripts/DkSearch/dksus.dll" method=get>'+
-        '<input type=submit value="View All '+itemlist.length+'">'+ '<input id="associatedInStock" type="checkbox" class="css-checkbox"><label class="css-label" for="associatedInStock">In Stock</label>'+
-            pnlist+
-        '</form></div></div><div style="clear:both;"></div>';
-        $boxSel.find('.asd-content').append(formHTML);
-    },
+//     addFilterAllForm = function($boxSel){
+//         var pnlist = '';
+//         var itemlist = $boxSel.data('itemlist');
+//         itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
+//         console.log(pnlist);
+//         var formHTML = '<div style="float:right;"><div style="clear:both; margin:0px 15px 1px 0px;"><form  action="/scripts/DkSearch/dksus.dll" method=get>'+
+//         '<input type=submit value="View All '+itemlist.length+'">'+ '<input id="associatedInStock" type="checkbox" class="css-checkbox"><label class="css-label" for="associatedInStock">In Stock</label>'+
+//             pnlist+
+//         '</form></div></div><div style="clear:both;"></div>';
+//         $boxSel.find('.asd-content').append(formHTML);
+//     },
 
-    addAssociatedImageHover = function(){
-        _log('associatedImageHover() Start',DLOG);
+//     addAssociatedImageHover = function(){
+//         _log('associatedImageHover() Start',DLOG);
 
-       $('body').append('<img border="0/" src="" style="heightdisplay: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
+//        $('body').append('<img border="0/" src="" style="heightdisplay: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
 
-        $('.asd-containerOld').hoverIntent({
-            over: function () {
-                $('#pszoomie2').attr('src','');
-                $('#pszoomie2')
-                .attr('src', $(this).attr('src'))
-                .show('fade', 200)
-                .position({
-                    my : 'right middle',
-                    at : 'left middle',
-                    of: $(this), 
-                    offset : '-10 0',
-                    collision : 'fit fit'
-                });
-            },
-            out: function () {
-                $('.pszoomie2').fadeOut(100);
-            },
-            'selector': '.col-Image img'
-        }
-        );
-        _log('associatedImageHover() End',DLOG);
-    },
+//         $('.asd-containerOld').hoverIntent({
+//             over: function () {
+//                 $('#pszoomie2').attr('src','');
+//                 $('#pszoomie2')
+//                 .attr('src', $(this).attr('src'))
+//                 .show('fade', 200)
+//                 .position({
+//                     my : 'right middle',
+//                     at : 'left middle',
+//                     of: $(this), 
+//                     offset : '-10 0',
+//                     collision : 'fit fit'
+//                 });
+//             },
+//             out: function () {
+//                 $('.pszoomie2').fadeOut(100);
+//             },
+//             'selector': '.col-Image img'
+//         }
+//         );
+//         _log('associatedImageHover() End',DLOG);
+//     },
 
-    addAssociatedProductViewer = function (){
-        var boxDataArray = [];
-        // $('.expander-div-10').each(function(){
-        //     boxDataArray.push({
-        //         'title': $(this).closest('tr').find('th').text(), 
-        //         'list':getAssociationListFromElem($(this))
-        //     });
-        //     $(this).closest('tr').hide()
-        // });
-        $('.expander-div-5').each(function(){
-            if($(this).find('.product-details-also-evaluated').length < 1){
-                boxDataArray.push({
-                    'title': $(this).parent().find('.bota-headline').text().split('\n')[0], 
-                    'list':getAssociationListFromElem($(this))
-                });
-            }
-        });
-        $('#additional-product-options-section .bota').hide();
-        for (var i=0; i<boxDataArray.length; i++){
-            buildProductViewerBox(boxDataArray[i]);
-        }
-        addAssociatedImageHover();
-    };
-
-    return {'addAssociatedProductViewer': addAssociatedProductViewer};
-})();
-
-var ap= (function(){
-    var columnList = [
-        {'name':'Image', 'f': detailPageInfo2.getImage,},
-        {'name':'Manufacturer Part Number', 'f':detailPageInfo2.getMPN},
-        {'name':'Manufacturer', 'f':detailPageInfo2.getManufacturer},
-        {'name':'Description', 'f':detailPageInfo2.getDescription},
-        // {'name':'Packaging', 'f':detailPageInfo2.getPackaging},
-        {'name':'Unit Price', 'f':detailPageInfo2.getUnitPrice},
-        {'name':'Quantity Available', 'f':detailPageInfo2.getQuantityAvailable},
-        // {'name':'Min Quantity', 'f':detailPageInfo2.getMinQuantity}
-    ];
-    var assTypes = [
-        "MatingProducts",
-        "AssociatedProduct"
-    ];
-
-    // reference: description, detailLink, imageLink, manufacturer, manufacturerPartNumber, minimumOrderQuantity, 
-    // nonStock, packageType, quantityAvailable, reportPartNumber, unitPrice
-    var cLen = columnList.length;
-    var perPage = 5;
-
-
-
-    var buildProductViewerBox = function(associationSet){
-        var firstRowHTML = '';
-        for (var z=0; z<columnList.length; z++){
-            firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
-        }
-        var allRows = '';
-        for(var z=0; z<associationSet.list.length; z++){
-            allRows = allRows + buildRowHTML(associationSet.list[z]);
-        }
-        var escTitle = selectorEscape(associationSet.title);
-            
-        
-        $('#additional-product-options-section').append(
-            '<div id="asd-id-'+escTitle+'" class="asd-container panel panel-default">'+
-                '<div class="asd-title panel-heading">'+associationSet.title+' ('+ associationSet.list.length +')</div>'+
-                '<div class="asd-content panel-body">'+
-                '<table id="table-'+escTitle+'" class="asd-table tstripe"> '+
-                    '<thead><tr>'+firstRowHTML+'</tr></thead>'+
-                    '<tbody>'+allRows+'</tbody>'+
-                '</table>'+
-                '</div>'+
-            '</div>'
-        );
-        
-        $('#asd-id-'+escTitle).data('associationSetlist', associationSet.list);
-        
-        $('#table-'+escTitle).find('tbody tr').each(function(ind){
-            $(this).data('linkobj',associationSet.list[ind]);
-            $(this).data('boxSel', $('#asd-id-'+escTitle));
-        });
-        
-
-        $('#table-'+ escTitle).find('tbody>tr').slice(perPage).hide();
-        if (associationSet.list.length > perPage){
-            addPageination(escTitle, associationSet.list.length);
-        }
-        addFilterAllForm($('#asd-id-'+escTitle), associationSet.viewAllLink, associationSet.list.length); //addback
-
-        var listlength = (associationSet.list.length >= perPage) ? perPage :associationSet.list.length;
-        for(var z=0; z<listlength; z++){
-            var associationSetData = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('linkobj');
-            var $boxSel = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('boxSel');
-            fillRow(associationSetData , $boxSel);
-        }
-
-    },
-
-    fillRow = function (itemData, $boxSel){
-        var rowSel = selectorEscape(itemData.manufacturerPartNumber);
-        var row = $('.'+rowSel);
-
-        for (var x=0; x<cLen; x++){
-            row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f(itemData));
-            if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+itemData.detailLink+'" />') ; }
-        }
-        row.addClass('filled');
-    },
-
-    addPageination = function (itemSel, listLen) {
-        $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
-                '<a href="#" class="first" data-action="first">&laquo;</a>'+
-                '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
-                '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
-                '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
-                '<a href="#" class="last" data-action="last">&raquo;</a>'+
-            '</div>');
-
-            $('.page-'+itemSel).jqPagination({
-                paged: function(page) {
-                    var $rows = $('#table-'+itemSel+' tbody > tr');
-                    $rows.hide()// do something with the page variable
-                    var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
-                    $showing.not('.filled').each(function(){
-                        var itemData = $(this).data('linkobj');
-                        var $boxSel = $(this).data('boxSel');
-                        fillRow(itemData, $boxSel)
-                        // getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
-                    })
-                }
-            });
-    },
-
-
-
-    buildRowHTML = function(item){
-        var row = "";
-        for (var i = 0; i < columnList.length; i++) {
-            row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
-        };
-        row = '<tr class="'+selectorEscape(item.manufacturerPartNumber)+'">' + row + '</tr>'
-        return row;
-    },
-
-    getAssociationListFromElem = function (parentElem){
-        var pnlinkarray = []
-        parentElem.find('.more-expander-item').each(function(){
-            pnlinkarray.push({
-                'href': $(this).find('a:first').attr('href'),
-                'pn': $(this).find('a:first').text()
-            });
-        });
-        console.log('>>>>>>>>>>>',pnlinkarray);
-        return pnlinkarray;
-    },
-
-    addFilterAllForm = function($boxSel,viewAllLink,listlength){
-        var pnlist = '';
-        // var itemlist = $boxSel.data('itemlist');
-        // itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
-        // console.log(pnlist);
-        var formHTML = '<div style="float:right;" id="'+$boxSel.attr('id')+'-link""><div style="clear:both; margin:0px 15px 1px 0px;">'+
-        '<a id="'+$boxSel.attr('id')+'-link"" href="'+viewAllLink+'" target="_blank">View All <span>'+listlength+'</span> </a>'+ '<input id="'+$boxSel.attr('id')+'-stock" type="checkbox" class="css-checkbox"><label class="css-label" for="'+$boxSel.attr('id')+'-stock">In Stock</label>'+
-            
-        '</div></div><div style="clear:both;"></div>';
-
-        $boxSel.find('.asd-content').append(formHTML);
-
-        $('#'+$boxSel.attr('id')+'-stock').data('allstocklink', viewAllLink)
-
-        $('#'+$boxSel.attr('id')+'-stock').click(function(){
-            if($(this).prop('checked') == true ){
-                console.log('ischecked')
-                $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink')+'&stock=1')
-            }else{
-                console.log('is not checked')
-                $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink'))
-            }
-            $(this).parent().parent().find('span').load($('#'+$boxSel.attr('id')+'-link a').attr('href')+' .matching-records:first', function(){
-                $(this).text($('.matching-records').text().split(':')[1])
-            })
-        });
-    },
-
-    addAssociatedImageHover = function(){
-        _log('associatedImageHover() Start',DLOG);
-
-       $('body').append('<img border="0/" src="" style="display: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
-
-        $('.asd-container').hoverIntent({
-            over: function () {
-                $('#pszoomie2').attr('src','');
-                $('#pszoomie2')
-                .attr('src', $(this).attr('src').replace('_tmb', '_sml'))
-                .show('fade', 200)
-                .position({
-                    my : 'right middle',
-                    at : 'left middle',
-                    of: $(this), 
-                    offset : '-10 0',
-                    collision : 'fit fit'
-                });
-            },
-            out: function () {
-                $('.pszoomie2').fadeOut(100);
-            },
-            'selector': '.col-Image img'
-        }
-        );
-        _log('associatedImageHover() End',DLOG);
-    },
-
-    addAssociatedProductViewer = function (){
-        var boxDataArray = [];
-        // $('.expander-div-10').each(function(){
-        //     boxDataArray.push({
-        //         'title': $(this).closest('tr').find('th').text(), 
-        //         'list':getAssociationListFromElem($(this))
-        //     });
-        //     $(this).closest('tr').hide()
-        // });
-
-        // $('.expander-div-5').each(function(){
-        //     if($(this).find('.product-details-also-evaluated').length < 1){
-        //         boxDataArray.push({
-        //             'title': $(this).parent().find('.beablocktitle').text().split('\n')[0], 
-        //             'list':getAssociationListFromElem($(this))
-        //         });
-        //     }
-        // });
-        // $('.attributes-optional-table .rd-extra-option').hide();
-
-
-
-        boxDataArray = getAllAssociations();
-        for (var i=0; i<boxDataArray.length; i++){
-            buildProductViewerBox(boxDataArray[i]);
-            console.log('**********************************', boxDataArray[i])
-        }
-        addAssociatedImageHover();
-        $('.additional-interested').insertAfter('#bottomhalf');
-        // handleExpanderDiv5();
-    };
-
-    return {'addAssociatedProductViewer': addAssociatedProductViewer};
-})();
-
-// function handleExpanderDiv5(){ //alternate package, direct subs, etc
-//     $('.expander-div-5').each(function(){
-//         // $(this).closest('.beablock').hide();
-//         getInfoFromExpanderDiv5($(this).closest('.bota'))
-//     });
-// }
-// function getInfoFromExpanderDiv5($beablock){
-//     var retval = {};
-
-//     retval['title'] = $beablock.find('.beablocktitle').text().split('|')[0].trim();
-//     $beablock.find('table.more-expander tbody>tr').gt(0).each(function(){
-//         retval['data'].push()
-//     });
-//     console.log('expander5 retval', retval)
-// }
-// function getInfoFromRow($tr){
-//     var rowInfo = {
-//         'Digi-Key Part Number': $tr.eq(0).text(),
-//         'link': $tr.eq(0).find('a').attr('href'),
-//         'Manufacturer': $tr.eq(1).text(),
-//         'Packaging': $tr.eq(1).text(),
-//         'packaging': $tr.eq(1).text(),
-//         'quantityavailable': $tr.eq(1).text(),
-//         'mpn': $tr.eq(1).text(),
+//     addAssociatedProductViewer = function (){
+//         var boxDataArray = [];
+//         // $('.expander-div-10').each(function(){
+//         //     boxDataArray.push({
+//         //         'title': $(this).closest('tr').find('th').text(), 
+//         //         'list':getAssociationListFromElem($(this))
+//         //     });
+//         //     $(this).closest('tr').hide()
+//         // });
+//         $('.expander-div-5').each(function(){
+//             if($(this).find('.product-details-also-evaluated').length < 1){
+//                 boxDataArray.push({
+//                     'title': $(this).parent().find('.bota-headline').text().split('\n')[0], 
+//                     'list':getAssociationListFromElem($(this))
+//                 });
+//             }
+//         });
+//         $('#additional-product-options-section .bota').hide();
+//         for (var i=0; i<boxDataArray.length; i++){
+//             buildProductViewerBox(boxDataArray[i]);
+//         }
+//         addAssociatedImageHover();
 //     };
-//     $tr.each(function(){
 
+//     return {'addAssociatedProductViewer': addAssociatedProductViewer};
+// })();
+
+// var ap= (function(){
+//     var columnList = [
+//         {'name':'Image', 'f': detailPageInfo2.getImage,},
+//         {'name':'Manufacturer Part Number', 'f':detailPageInfo2.getMPN},
+//         {'name':'Manufacturer', 'f':detailPageInfo2.getManufacturer},
+//         {'name':'Description', 'f':detailPageInfo2.getDescription},
+//         // {'name':'Packaging', 'f':detailPageInfo2.getPackaging},
+//         {'name':'Unit Price', 'f':detailPageInfo2.getUnitPrice},
+//         {'name':'Quantity Available', 'f':detailPageInfo2.getQuantityAvailable},
+//         // {'name':'Min Quantity', 'f':detailPageInfo2.getMinQuantity}
+//     ];
+//     var assTypes = [
+//         "MatingProducts",
+//         "AssociatedProduct"
+//     ];
+
+//     // reference: description, detailLink, imageLink, manufacturer, manufacturerPartNumber, minimumOrderQuantity, 
+//     // nonStock, packageType, quantityAvailable, reportPartNumber, unitPrice
+//     var cLen = columnList.length;
+//     var perPage = 5;
+
+
+
+//     var buildProductViewerBox = function(associationSet){
+//         var firstRowHTML = '';
+//         for (var z=0; z<columnList.length; z++){
+//             firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
+//         }
+//         var allRows = '';
+//         for(var z=0; z<associationSet.list.length; z++){
+//             allRows = allRows + buildRowHTML(associationSet.list[z]);
+//         }
+//         var escTitle = selectorEscape(associationSet.title);
+            
+        
+//         $('#additional-product-options-section').append(
+//             '<div id="asd-id-'+escTitle+'" class="asd-container panel panel-default">'+
+//                 '<div class="asd-title panel-heading">'+associationSet.title+' ('+ associationSet.list.length +')</div>'+
+//                 '<div class="asd-content panel-body">'+
+//                 '<table id="table-'+escTitle+'" class="asd-table tstripe"> '+
+//                     '<thead><tr>'+firstRowHTML+'</tr></thead>'+
+//                     '<tbody>'+allRows+'</tbody>'+
+//                 '</table>'+
+//                 '</div>'+
+//             '</div>'
+//         );
+        
+//         $('#asd-id-'+escTitle).data('associationSetlist', associationSet.list);
+        
+//         $('#table-'+escTitle).find('tbody tr').each(function(ind){
+//             $(this).data('linkobj',associationSet.list[ind]);
+//             $(this).data('boxSel', $('#asd-id-'+escTitle));
+//         });
+        
+
+//         $('#table-'+ escTitle).find('tbody>tr').slice(perPage).hide();
+//         if (associationSet.list.length > perPage){
+//             addPageination(escTitle, associationSet.list.length);
+//         }
+//         addFilterAllForm($('#asd-id-'+escTitle), associationSet.viewAllLink, associationSet.list.length); //addback
+
+//         var listlength = (associationSet.list.length >= perPage) ? perPage :associationSet.list.length;
+//         for(var z=0; z<listlength; z++){
+//             var associationSetData = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('linkobj');
+//             var $boxSel = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('boxSel');
+//             fillRow(associationSetData , $boxSel);
+//         }
+
+//     },
+
+//     fillRow = function (itemData, $boxSel){
+//         var rowSel = selectorEscape(itemData.manufacturerPartNumber);
+//         var row = $('.'+rowSel);
+
+//         for (var x=0; x<cLen; x++){
+//             row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f(itemData));
+//             if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+itemData.detailLink+'" />') ; }
+//         }
+//         row.addClass('filled');
+//     },
+
+//     addPageination = function (itemSel, listLen) {
+//         $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
+//                 '<a href="#" class="first" data-action="first">&laquo;</a>'+
+//                 '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
+//                 '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
+//                 '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
+//                 '<a href="#" class="last" data-action="last">&raquo;</a>'+
+//             '</div>');
+
+//             $('.page-'+itemSel).jqPagination({
+//                 paged: function(page) {
+//                     var $rows = $('#table-'+itemSel+' tbody > tr');
+//                     $rows.hide()// do something with the page variable
+//                     var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
+//                     $showing.not('.filled').each(function(){
+//                         var itemData = $(this).data('linkobj');
+//                         var $boxSel = $(this).data('boxSel');
+//                         fillRow(itemData, $boxSel)
+//                         // getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
+//                     })
+//                 }
+//             });
+//     },
+
+
+
+//     buildRowHTML = function(item){
+//         var row = "";
+//         for (var i = 0; i < columnList.length; i++) {
+//             row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
+//         };
+//         row = '<tr class="'+selectorEscape(item.manufacturerPartNumber)+'">' + row + '</tr>'
+//         return row;
+//     },
+
+//     getAssociationListFromElem = function (parentElem){
+//         var pnlinkarray = []
+//         parentElem.find('.more-expander-item').each(function(){
+//             pnlinkarray.push({
+//                 'href': $(this).find('a:first').attr('href'),
+//                 'pn': $(this).find('a:first').text()
+//             });
+//         });
+//         console.log('>>>>>>>>>>>',pnlinkarray);
+//         return pnlinkarray;
+//     },
+
+//     addFilterAllForm = function($boxSel,viewAllLink,listlength){
+//         var pnlist = '';
+//         // var itemlist = $boxSel.data('itemlist');
+//         // itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
+//         // console.log(pnlist);
+//         var formHTML = '<div style="float:right;" id="'+$boxSel.attr('id')+'-link""><div style="clear:both; margin:0px 15px 1px 0px;">'+
+//         '<a id="'+$boxSel.attr('id')+'-link"" href="'+viewAllLink+'" target="_blank">View All <span>'+listlength+'</span> </a>'+ '<input id="'+$boxSel.attr('id')+'-stock" type="checkbox" class="css-checkbox"><label class="css-label" for="'+$boxSel.attr('id')+'-stock">In Stock</label>'+
+            
+//         '</div></div><div style="clear:both;"></div>';
+
+//         $boxSel.find('.asd-content').append(formHTML);
+
+//         $('#'+$boxSel.attr('id')+'-stock').data('allstocklink', viewAllLink)
+
+//         $('#'+$boxSel.attr('id')+'-stock').click(function(){
+//             if($(this).prop('checked') == true ){
+//                 console.log('ischecked')
+//                 $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink')+'&stock=1')
+//             }else{
+//                 console.log('is not checked')
+//                 $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink'))
+//             }
+//             $(this).parent().parent().find('span').load($('#'+$boxSel.attr('id')+'-link a').attr('href')+' .matching-records:first', function(){
+//                 $(this).text($('.matching-records').text().split(':')[1])
+//             })
+//         });
+//     },
+
+//     addAssociatedImageHover = function(){
+//         _log('associatedImageHover() Start',DLOG);
+
+//        $('body').append('<img border="0/" src="" style="display: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
+
+//         $('.asd-container').hoverIntent({
+//             over: function () {
+//                 $('#pszoomie2').attr('src','');
+//                 $('#pszoomie2')
+//                 .attr('src', $(this).attr('src').replace('_tmb', '_sml'))
+//                 .show('fade', 200)
+//                 .position({
+//                     my : 'right middle',
+//                     at : 'left middle',
+//                     of: $(this), 
+//                     offset : '-10 0',
+//                     collision : 'fit fit'
+//                 });
+//             },
+//             out: function () {
+//                 $('.pszoomie2').fadeOut(100);
+//             },
+//             'selector': '.col-Image img'
+//         }
+//         );
+//         _log('associatedImageHover() End',DLOG);
+//     },
+
+//     addAssociatedProductViewer = function (){
+//         var boxDataArray = [];
+
+//         boxDataArray = getAllAssociations();
+//         for (var i=0; i<boxDataArray.length; i++){
+//             buildProductViewerBox(boxDataArray[i]);
+//             console.log('**********************************', boxDataArray[i])
+//         }
+//         addAssociatedImageHover();
+//         $('.additional-interested').insertAfter('#bottomhalf');
+//         // handleExpanderDiv5();
+//     };
+
+//     return {'addAssociatedProductViewer': addAssociatedProductViewer};
+// })();
+
+
+// function getAssociationNames(){
+//     var names = [];
+//     $('.expander-div-5').each(function(){
+//         if($(this).find('.product-details-suggested-subs').length == 1){
+//             names.push('Direct Subs')
+//             $(this).parent('.bota').detach();
+//         }else if ($(this).find('.product-details-alternate-packaging').length ==1){
+//             names.push('AlternatePackaging');
+//             $(this).parent('.bota').detach();
+//         }
+//     })
+//     $('.expander-div-10').each(function(){
+//         names.push($(this).closest('tr').find('th').text()); 
+//         $(this).closest('tr').hide();
 //     });
+//     return names;
 // }
-function getAssociationNames(){
-    var names = [];
-    $('.expander-div-5').each(function(){
-        if($(this).find('.product-details-suggested-subs').length == 1){
-            names.push('Direct Subs')
-            $(this).parent('.bota').detach();
-        }else if ($(this).find('.product-details-alternate-packaging').length ==1){
-            names.push('AlternatePackaging');
-            $(this).parent('.bota').detach();
-        }
-    })
-    $('.expander-div-10').each(function(){
-        names.push($(this).closest('tr').find('th').text()); 
-        $(this).closest('tr').hide();
-    });
-    return names;
-}
-function getAssociationDataFromPageByType(assType){
-    var escaped = selectorEscape(assType);
-    return (window.eval(escaped));
-}
-function getAllAssociations(){
-    var assocationData = [];
-    var names = getAssociationNames();
-    names.forEach(function(el,idx,arr){
-        var escaped = selectorEscape(el);
-        var alldata = window.eval(escaped);
-        console.log(escaped, 'escaped eval', alldata[0]);
-        assocationData.push({
-            'title': el,
-            'list': (alldata[0].showAllLink != undefined) ? alldata.slice(1) : alldata.slice(0),
-            'viewAllLink': (alldata[0].showAllLink != undefined) ? alldata[0].showAllLink : 'none'
-        }) ;
-    });
-    console.log('associatione data', assocationData);
-    return assocationData;
-}
+// function getAssociationDataFromPageByType(assType){
+//     var escaped = selectorEscape(assType);
+//     return (window.eval(escaped));
+// }
+// function getAllAssociations(){
+//     var assocationData = [];
+//     var names = getAssociationNames();
+//     names.forEach(function(el,idx,arr){
+//         var escaped = selectorEscape(el);
+//         var alldata = window.eval(escaped);
+//         console.log(escaped, 'escaped eval', alldata[0]);
+//         assocationData.push({
+//             'title': el,
+//             'list': (alldata[0].showAllLink != undefined) ? alldata.slice(1) : alldata.slice(0),
+//             'viewAllLink': (alldata[0].showAllLink != undefined) ? alldata[0].showAllLink : 'none'
+//         }) ;
+//     });
+//     console.log('associatione data', assocationData);
+//     return assocationData;
+// }
 
 
 //*************************** TODO fix collision events 
