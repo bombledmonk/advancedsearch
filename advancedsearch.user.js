@@ -38,15 +38,15 @@
 // @resource    tooltipster-shadowCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster-sideTip-shadow.min.css
 // @connect     self
 // @connect     digikey.com
-// @updateURL   https://goo.gl/vbjoi
-// @downloadURL https://bit.ly/advsearch-user-js
+// @updateURL   https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
+// @downloadURL https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 // @run-at      document-end
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.1.1
+// @version     4.3.1.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -220,6 +220,7 @@
 //4.3.0.1 	actually fixed floating apply
 //4.3.1 	added canonical link on detail page, moved mfg links on associations, dead code cull, switched resources to github links
 //4.3.1.1 	changed pure resource to github
+//4.3.1.2 	changed downloadURL to rawgit
 
 
 //TODO add copy info button  possibly on filter results page
@@ -247,7 +248,7 @@ var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '7/20/17';  // I usually forget this
-var downloadLink = 'https://dl.dropbox.com/u/26263360/advancedsearch.user.js';
+var downloadLink = 'https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js';
 var DLOG = false; //control detailed logging.
 // var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -356,7 +357,6 @@ function formatPagesPostReady() {
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
     tc(addBreadcrumbHover, 'addBreadcrumbHover');
-    tc(addCanonicalLinkToBreadCrumbs, 'addCanonicalLinkToBreadCrumbs');
     tc(formatComparePartsPage, 'formatComparePartsPage');
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
@@ -453,6 +453,7 @@ function formatPagesPreReady() {
         tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
         tc(addCartHover, 'addCartHover');
         tc(formatNoResultsFoundPage, 'formatNoResultsFoundPage');
+    	tc(addCanonicalLinkToBreadCrumbs, 'addCanonicalLinkToBreadCrumbs');
 
         // tc(preFormatDetailPage, 'preformatDetailPage');
 
@@ -789,7 +790,7 @@ function addControlWidget() {
 	            autoOpen: true,
 	            resizable: false,
 	            // draggable: false,
-	            height:600,
+	            height:650,
 	            width:800,
 	            modal: true,
 	            buttons: {
@@ -3845,8 +3846,19 @@ function addDataSheetLoader(){
             }else{
                 console.log('adding pdf datasheet', dslink, hidenav)
                 setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink.replace('http','https')+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
-                $('.lnkDatasheet:first').wrap('<div style="background:lightgrey; padding:3px;"/>').after('<a style="float:right;" href=#datasheetdiv><button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" ><i class="fa fa-arrow-circle-down fa-lg"></i></button></a>').parent().localScroll();
-                // $('tr:contains("Datasheet") td:first div').css({'white-space':'nowrap'});
+                $('.lnkDatasheet:first').wrap('<div style="background:lightgrey; padding:3px;"/>')
+                .after(`<a style="float:right;" href=#datasheetdiv>
+                	<button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" >
+                	<i class="fa fa-arrow-circle-down fa-lg"></i></button></a>`)
+                .parent().on('click',function(){
+                	$('html,body').animate(
+			            {scrollTop: $('#datasheetdiv').position().top},
+			            {       
+			                duration: 250,
+			                easing: 'swing'
+			            }
+			        );
+                });
             }
         }
         
