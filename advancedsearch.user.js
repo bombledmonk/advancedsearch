@@ -38,15 +38,15 @@
 // @resource    tooltipster-shadowCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster-sideTip-shadow.min.css
 // @connect     self
 // @connect     digikey.com
-// @updateURL   https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
-// @downloadURL https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
+// @updateURL   http://hest.pro/s/advancedupdate
+// @downloadURL http://hest.pro/s/advanceddownload
 // @run-at      document-end
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.1.2
+// @version     4.3.1.3
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -221,6 +221,7 @@
 //4.3.1 	added canonical link on detail page, moved mfg links on associations, dead code cull, switched resources to github links
 //4.3.1.1 	changed pure resource to github
 //4.3.1.2 	changed downloadURL to rawgit
+//4.3.1.3 	changed downloadURL and updateURL to hest.pro short url
 
 
 //TODO add copy info button  possibly on filter results page
@@ -247,8 +248,9 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '7/20/17';  // I usually forget this
-var downloadLink = 'https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js';
+var lastUpdate = '8/24/17';  // I usually forget this
+var downloadLink = 'http://hest.pro/s/advancedmanualupdate';  
+	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
 // var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
@@ -1297,7 +1299,7 @@ function addMorePartsToTable(){
             $('#addmoreparts').on('click', function(){
                 var method = window.eval('methodChooser(document.srform)')? 'POST':'GET'; // srform is the same as .quantity-form
                     
-                $('.showingparts').append('<img class="loadingicon" style="margin-left:10px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
+                $('.showingparts').append('<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>');
                 $('.quantity-form input[name=page]').val($('#productTable:first').data('pagetoloadnext'));
                 $.ajax({
                     method: method,
@@ -1328,7 +1330,7 @@ function addMorePartsToTable(){
         	$('#addmoreparts').on('click', function(){
 
                 // console.log($('#productTable:first').data('pagetoloadnext'));
-                $('.showingparts').append('<img class="loadingicon" style="margin-left:10px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
+                $('.showingparts').append('<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>');
                 $.ajax({
                     method: "GET",
                     url : $('#productTable:first').data('pagetoloadnext')
@@ -3907,61 +3909,61 @@ function getAllFilters($filtersPanel){
 
 //TODO fuzzy reverse filtering /similar to  Start with Opamps
 // find numeric values
-function addReverseFiltering($tableToFilter){
-    _log('addReverseFiltering() Start',DLOG);
-    var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
-    var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("Other Names")').not('tr:contains("Application Note")').eq(0);
-    var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());  //get the valid rows on which to add check boxes
-    formRowsTD.each(function(ind){
-        if (ind==0){
-            $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
-        }else if (ind==1){
-            $(this).append('<span style="float:right"><input id="familyfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="familyfilter"></label></span>');
-        }else{
-            $(this).append('<span style="float:right"><input type=checkbox class="css-checkbox" id="revcheck'+ind+'"><label class="css-label" for="revcheck'+ind+'"></label></span>');
-        }
-    });
+// function addReverseFiltering($tableToFilter){
+//     _log('addReverseFiltering() Start',DLOG);
+//     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
+//     var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("Other Names")').not('tr:contains("Application Note")').eq(0);
+//     var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());  //get the valid rows on which to add check boxes
+//     formRowsTD.each(function(ind){
+//         if (ind==0){
+//             $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
+//         }else if (ind==1){
+//             $(this).append('<span style="float:right"><input id="familyfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="familyfilter"></label></span>');
+//         }else{
+//             $(this).append('<span style="float:right"><input type=checkbox class="css-checkbox" id="revcheck'+ind+'"><label class="css-label" for="revcheck'+ind+'"></label></span>');
+//         }
+//     });
 
-    $('.product-info-section form:first').after(
-        '<a class="similarPartLink" target="_blank">'+
-        '<div style="float:right; cursor:pointer;" class="pure-button similarPartsButton">See <span></span> Similar Parts</div>'+
-        '</a>'
-    );
+//     $('.product-info-section form:first').after(
+//         '<a class="similarPartLink" target="_blank">'+
+//         '<div style="float:right; cursor:pointer;" class="pure-button similarPartsButton">See <span></span> Similar Parts</div>'+
+//         '</a>'
+//     );
 
-    formRowsTD.find('input').change(function(){
-        var i = getReverseFilterLink(formRowsTD);
-        _log('url is '+i);
-        $('.similarPartLink').attr('href', i);
-        $('.similarPartsButton span').html('<img src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
-        $('.similarPartsButton span').load(i + ' .matching-records', function() {
-            $(this).text($(this).text().split(':')[1]);
-        });
-    });
+//     formRowsTD.find('input').change(function(){
+//         var i = getReverseFilterLink(formRowsTD);
+//         _log('url is '+i);
+//         $('.similarPartLink').attr('href', i);
+//         $('.similarPartsButton span').html('<img src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
+//         $('.similarPartsButton span').load(i + ' .matching-records', function() {
+//             $(this).text($(this).text().split(':')[1]);
+//         });
+//     });
 
-    $('.product-info-section form:first').css({float:'left', 'margin-top': '5px'}).find('input').addClass('pure-button'); // move the Report an Error button to the left
-    _log('addReverseFiltering() End',DLOG);
-}
+//     $('.product-info-section form:first').css({float:'left', 'margin-top': '5px'}).find('input').addClass('pure-button'); // move the Report an Error button to the left
+//     _log('addReverseFiltering() End',DLOG);
+// }
 
-function getReverseFilterLink(formRowsTD){
-    _log('getReverseFilterLink() Start',DLOG);
-    var reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
-    if($('#familyfilter:checked').length){
-        // _log('familfilter '+ $('#familyfilter:checked').attr('checked') + $('#familyfilter').closest('td').find('a').attr('href'));
-        reverseFilterLink = $('#familyfilter').closest('td').find('a').attr('href')+'?k=';
-    }else if ($('#catfilter:checked').length){
-        // _log('catfilter '+ $('#catfilter:checked').closest('td').find('a').html());
-        reverseFilterLink = $('#catfilter:checked').closest('td').find('a').attr('href')+'?k=';
-    }else{
-        reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
-    }
-    formRowsTD.find('input:checked').not('#catfilter,#familyfilter').each(function(){
-        reverseFilterLink = reverseFilterLink +$(this).parent().parent().text().replace(/\s/g,'+')+ '+';
-    });
-    // _log('new reversefilterlink ' + reverseFilterLink);
-    reverseFilterLink = reverseFilterLink.replace('%','%25');
-    _log('getReverseFilterLink() End',DLOG);
-    return reverseFilterLink;
-}
+// function getReverseFilterLink(formRowsTD){
+//     _log('getReverseFilterLink() Start',DLOG);
+//     var reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
+//     if($('#familyfilter:checked').length){
+//         // _log('familfilter '+ $('#familyfilter:checked').attr('checked') + $('#familyfilter').closest('td').find('a').attr('href'));
+//         reverseFilterLink = $('#familyfilter').closest('td').find('a').attr('href')+'?k=';
+//     }else if ($('#catfilter:checked').length){
+//         // _log('catfilter '+ $('#catfilter:checked').closest('td').find('a').html());
+//         reverseFilterLink = $('#catfilter:checked').closest('td').find('a').attr('href')+'?k=';
+//     }else{
+//         reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
+//     }
+//     formRowsTD.find('input:checked').not('#catfilter,#familyfilter').each(function(){
+//         reverseFilterLink = reverseFilterLink +$(this).parent().parent().text().replace(/\s/g,'+')+ '+';
+//     });
+//     // _log('new reversefilterlink ' + reverseFilterLink);
+//     reverseFilterLink = reverseFilterLink.replace('%','%25');
+//     _log('getReverseFilterLink() End',DLOG);
+//     return reverseFilterLink;
+// }
 
 
 //TODO keep and maybe use other places
