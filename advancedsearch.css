@@ -1080,7 +1080,7 @@ input[type=checkbox].css-checkbox {
               background-position: 0 -16px;
             }
             label.css-label {
-        background-image:url(https://dl.dropboxusercontent.com/u/26263360/img/csscheckbox_red.png);
+        background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAABL0lEQVRIie2UvWoCQRSFv9WBlWQj+AyCWFj4CFZW9hZ2ooVaWttZWgj+gC/gI8i2gk9gM4JYbeOKKLJiUONMioQk4gaSWFjE0957vnu4zFxDSqm5QgIgHo//yTyZTAhcMx24A+6AO+BdAt5+1W0T/KN7oByHTTrNc6fze4Caz/EKBdRiwcG2/QGn2Yx9vw9KnZuXS7xiEeW6GJEIVrP5URNfG7flMsp1eRmPeazXQQj0es22VEI5DkY4zFOvRzAa9U9gZrMAHGybbbWKXq3wKhVO0ymGZWF1uwRjsbN0ZwlC+TyGabJrNDgOh2wyGfRuhxEKYbXbiETiYjcXSzRzOR5qNQgEPs2tFiKZvDADIKXUftoPBnqdSunDaORb11prKaX+FvATSSn17Z/y1ffgFVfq2s01wzTcAAAAAElFTkSuQmCC');
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         -khtml-user-select: none;
@@ -1404,7 +1404,7 @@ table .dragtable-col-placeholder:first{
 .semiconductormodules, .sensorstransducers, .solderingdesolderingreworkproducts, .staticcontrolesdcleanroomproducts, .switches, 
 .tapesadhesives, .testandmeasurement, .tools, .transformers, .uncategorized, 
 .undefinedcategory
-{ display: inline-block; background: url('https://dl.dropboxusercontent.com/u/26263360/img/caticons/catsprites.png') no-repeat; overflow: hidden; text-indent: -9999px; text-align: left; }
+{ display: inline-block; background: url(https://hest.pro/userscript/advancedsearch/catsprites.png) no-repeat; overflow: hidden; text-indent: -9999px; text-align: left; }
  
 .audioproducts { background-position: -0px -0px; width: 25px; height: 25px; }
 .batteryproducts { background-position: -25px -0px; width: 25px; height: 25px; }

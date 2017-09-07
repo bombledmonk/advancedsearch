@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.1.3
+// @version     4.3.1.4
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -222,6 +222,7 @@
 //4.3.1.1 	changed pure resource to github
 //4.3.1.2 	changed downloadURL to rawgit
 //4.3.1.3 	changed downloadURL and updateURL to hest.pro short url
+//4.3.1.4 	fixed checkboxes, limited canonical url, fixed sprites
 
 
 //TODO add copy info button  possibly on filter results page
@@ -241,7 +242,8 @@
 //TODO fuzzy similar to, start in opamps
 //TODO add a google like "advanced search" to the header
 //TODO impliment offscreen table wrap
-//TODO fix cannonical link on filter page
+//TODO add more voltage ranges
+//TODO check and possibly fix price break helper
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -380,10 +382,10 @@ function addClippy(){
 
 
      $('head')
-    .append('<link rel="stylesheet" type="text/css" href="https://dl.dropboxusercontent.com/u/26263360/script/lib/clippy.js-master/build/clippy.css" media="all">')
+    .append('<link rel="stylesheet" type="text/css" href="https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.css" media="all">')
 
  var script = document.createElement('script');
-    script.setAttribute('src', 'https://dl.dropboxusercontent.com/u/26263360/script/lib/clippy.js-master/build/clippy.js');
+    script.setAttribute('src', 'https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.min.js');
     script.setAttribute('async', 'async');
     script.setAttribute('type', 'text/javascript');
 
@@ -3653,7 +3655,7 @@ function addCOBLEDWizard(){
 
     $('#compatibleDriverWizzardButton').click(function(){
         console.log(driverLink);
-        $('#compatibleDriverWizzardButton').after('<img class="loadingicon" style="margin-left:10px" src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
+        $('#compatibleDriverWizzardButton').after('<i class="loadingicon fa fa-spinner fa-spin fa-3x fa-fw">');
         $('.hiddenLEDForm').load(driverLink+' [name=attform]', function(){
             $('form[name=attform]').attr('target', '_blank').hide();
             var vOptions = $(this).find('[name='+voltageOutput+'] option');
