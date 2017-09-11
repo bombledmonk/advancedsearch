@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.1.4
+// @version     4.3.1.5
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -222,7 +222,8 @@
 //4.3.1.1 	changed pure resource to github
 //4.3.1.2 	changed downloadURL to rawgit
 //4.3.1.3 	changed downloadURL and updateURL to hest.pro short url
-//4.3.1.4 	fixed checkboxes, limited canonical url, fixed sprites
+//4.3.1.4 	fixed checkboxes, limited canonical url, fixed sprites, remaining dropbox links
+//4.3.1.5 	fixed logo link
 
 
 //TODO add copy info button  possibly on filter results page
@@ -278,6 +279,7 @@ function preloadFormat(){
         #content>form:first-child {display:none} 
         #content>p {display:none;} 
         .content-keywordSearch-form{display:none;}
+        .ui-dialog-title{padding-left:60px;}
         `
     );
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
@@ -339,7 +341,7 @@ function tc(thefunc, name){ // tc = try catch
         console.log("%c edd of error", 'color:red;');
         alert('failed on '+ name + '\n' + err.message + 
             '\n\n If you are getting repeated errors try manually updating by clicking on the ++settings++ box in the upper right hand corner and then hit the manual update link.'+
-            '\n\n Alternatively, copy and paste this link into your browser:  https://bit.ly/advsearch-user-js'+
+            '\n\n Alternatively, copy and paste this link into your browser:  http://hest.pro/s/advanceddownload'+
             '\n\n Tampermonkey users, please make sure you go to Tampermonkey Settings and change the Externals Update Interval to "Always".'
             );
     }
@@ -725,7 +727,7 @@ function addControlWidget() {
             '<a href="'+downloadLink+'" class="button-small pure-button" style="float:right;"> click to manually update</a> ' +
             // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
             '<div class="settingscontainer" >'+
-                '<img src="http://goo.gl/53qn5g">'+
+                '<img src="http://hest.pro/s/logo">'+
                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
                 '<input type=checkbox id=qtydefault class="saveState css-checkbox " value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState css-checkbox" value="1" size="7" defval="1"><br>' +
                 '<input type=checkbox id="combinePN" class="saveState css-checkbox " value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
