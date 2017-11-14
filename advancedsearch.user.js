@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.1.5
+// @version     4.3.2
 // ==/UserScript==
 
 // Copyright (c) 2013, Ben Hest
@@ -224,6 +224,7 @@
 //4.3.1.3 	changed downloadURL and updateURL to hest.pro short url
 //4.3.1.4 	fixed checkboxes, limited canonical url, fixed sprites, remaining dropbox links
 //4.3.1.5 	fixed logo link
+//4.3.2 	Pushed warning message for FF57 update
 
 
 //TODO add copy info button  possibly on filter results page
@@ -245,6 +246,7 @@
 //TODO impliment offscreen table wrap
 //TODO add more voltage ranges
 //TODO check and possibly fix price break helper
+//TODO fix differentiation of 3d models and cad models in filter pages
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
@@ -268,6 +270,27 @@ var cacheflag = false;
 //loads before document status is ready
 function preloadFormat(){
     _log('preloadFormat() Start',DLOG);
+	try{
+		if(GM.info.version){
+		if(parseFloat(GM.info.version) >= 4  && GM.info.scriptHandler == "Greasemonkey"){
+		    alert(
+`Advancedsearch Userscript for Digikey.com Message:
+
+Firefox 57 has introduced compatability issues with Greasemonkey.
+
+If you would like to continue using this script please install Tampermonkey for Firefox.
+https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
+
+You will then need to install the advancedsearch userscript for digikey.com from 
+https://eewiki.net/display/Motley/advancedsearch+Greasemonkey+Userscript+for+Digikey.com
+
+FF version: ${navigator.userAgent} 
+greasemonkey version: ${GM.info.version}
+`);
+		  }
+		}
+	}
+	catch(e){}
     // $('#content').hide();
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
     $('.breadcrumbs').css({'margin': '0', 'padding': '5 0 0 0'});
@@ -319,12 +342,9 @@ function addResourceCSS(){
         "tooltipster-shadowCSS"
     ];
 
-    // console.log(GM_getResourceURL('buttonCSS'));
     for ( var x in cssNames){
-        // var thetext = GM_getResourceText(cssNames[x]);
         var thetext = GM_getResourceURL(cssNames[x]);
         _log('style tick 1'+ cssNames[x], DLOG);
-        // GM_addStyle(thetext);
         $('body').prepend('<link rel="stylesheet" href="'+thetext+'">');
          // $('body').prepend('<link rel="stylesheet" href="data:text/css;base64,'+thetext+'">')
         _log('style tick end'+ cssNames[x], DLOG);
@@ -3194,6 +3214,15 @@ function preFormatDetailPage(){
         _log('preformatDetailPage() End',DLOG);
     }
 }
+
+function detailPageSectionJump(){
+	// var $docs = $('#tophalf .leftdivs').eq(1);
+	// var $attr = $('.prod-attributes');
+	// var $relatedSection = 
+	var $sections = $('#tophalf>div').attr()
+}
+
+
 
 function detailPageManufacturerLogoHover(){
 	$('[itemprop=manufacturer] a')
