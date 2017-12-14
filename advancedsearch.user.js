@@ -46,10 +46,10 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2
+// @version     4.3.2.1
 // ==/UserScript==
 
-// Copyright (c) 2013, Ben Hest
+// Copyright (c) 2017, Ben Hest
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -225,6 +225,7 @@
 //4.3.1.4 	fixed checkboxes, limited canonical url, fixed sprites, remaining dropbox links
 //4.3.1.5 	fixed logo link
 //4.3.2 	Pushed warning message for FF57 update
+//4.3.2.1 	removed no search results found page from scope
 
 
 //TODO add copy info button  possibly on filter results page
@@ -316,14 +317,14 @@ greasemonkey version: ${GM.info.version}
 }
 
 
-preloadFormat();
+if($('#noResultsTable').length == 0){preloadFormat();}
 
 $(document).ready(function() {
     _log(`[ready] advanced search starts here. Jquery version ${jQuery.fn.jquery}`);
     _log('[ready] hostname is '+ window.location.hostname,DLOG);
     _log('[ready] pathname is '+ window.location.pathname,DLOG);
     _log('[ready] search is '+ window.location.search,DLOG);
-    formatPagesPostReady();
+    if($('#noResultsTable').length == 0){formatPagesPostReady();}
 
     _log('[ready] end of document ready function');
 });
@@ -478,7 +479,7 @@ function formatPagesPreReady() {
         tc(addCustomHeader, 'addCustomHeader');
         tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
         tc(addCartHover, 'addCartHover');
-        tc(formatNoResultsFoundPage, 'formatNoResultsFoundPage');
+        // tc(formatNoResultsFoundPage, 'formatNoResultsFoundPage');
     	tc(addCanonicalLinkToBreadCrumbs, 'addCanonicalLinkToBreadCrumbs');
 
         // tc(preFormatDetailPage, 'preformatDetailPage');
