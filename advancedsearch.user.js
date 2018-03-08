@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.1
+// @version     4.3.2.2
 // ==/UserScript==
 
 // Copyright (c) 2017, Ben Hest
@@ -226,6 +226,7 @@
 //4.3.1.5 	fixed logo link
 //4.3.2 	Pushed warning message for FF57 update
 //4.3.2.1 	removed no search results found page from scope
+//4.3.2.2 	updated family images
 
 
 //TODO add copy info button  possibly on filter results page
