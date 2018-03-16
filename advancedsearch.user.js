@@ -38,15 +38,15 @@
 // @resource    tooltipster-shadowCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster-sideTip-shadow.min.css
 // @connect     self
 // @connect     digikey.com
-// @updateURL   http://hest.pro/s/advancedupdate
-// @downloadURL http://hest.pro/s/advanceddownload
+// @updateURL   https://hest.pro/s/advancedupdate
+// @downloadURL https://hest.pro/s/advanceddownload
 // @run-at      document-end
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.2
+// @version     4.3.2.4
 // ==/UserScript==
 
 // Copyright (c) 2017, Ben Hest
@@ -256,7 +256,7 @@ var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '8/24/17';  // I usually forget this
-var downloadLink = 'http://hest.pro/s/advancedmanualupdate';  
+var downloadLink = 'https://hest.pro/s/advancedmanualupdate';  
 	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
 // var DLOG = true; //control detailed logging.
@@ -363,7 +363,7 @@ function tc(thefunc, name){ // tc = try catch
         console.log("%c edd of error", 'color:red;');
         alert('failed on '+ name + '\n' + err.message + 
             '\n\n If you are getting repeated errors try manually updating by clicking on the ++settings++ box in the upper right hand corner and then hit the manual update link.'+
-            '\n\n Alternatively, copy and paste this link into your browser:  http://hest.pro/s/advanceddownload'+
+            '\n\n Alternatively, copy and paste this link into your browser:  https://hest.pro/s/advanceddownload'+
             '\n\n Tampermonkey users, please make sure you go to Tampermonkey Settings and change the Externals Update Interval to "Always".'
             );
     }
@@ -409,13 +409,12 @@ function addClippy(){
     .append('<link rel="stylesheet" type="text/css" href="https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.css" media="all">')
 
  var script = document.createElement('script');
-    script.setAttribute('src', 'https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.min.js');
+    script.setAttribute('src', 'https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.js');
     script.setAttribute('async', 'async');
     script.setAttribute('type', 'text/javascript');
 
     var dochead = document.head || document.getElementsByTagName('head')[0];
     dochead.appendChild(script);
-
     setTimeout(function(){
         window.eval(`
                     var jokearray = [
@@ -749,7 +748,7 @@ function addControlWidget() {
             '<a href="'+downloadLink+'" class="button-small pure-button" style="float:right;"> click to manually update</a> ' +
             // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
             '<div class="settingscontainer" >'+
-                '<img src="http://hest.pro/s/logo">'+
+                '<img src="https://hest.pro/s/logo">'+
                 '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
                 '<input type=checkbox id=qtydefault class="saveState css-checkbox " value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState css-checkbox" value="1" size="7" defval="1"><br>' +
                 '<input type=checkbox id="combinePN" class="saveState css-checkbox " value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
@@ -2636,7 +2635,7 @@ function smoothScrollToCat(e){
     // $('.catfilteritem').not($(destinationHref).closest('.catfilteritem')).fadeTo('fast', .5);
     // $('.sideIndexContent a').css({'background': ''});
     // setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
-    $('html,body').animate(
+    $('body').animate(
         {scrollTop: dpos-0},
         {       
         duration: 250,
