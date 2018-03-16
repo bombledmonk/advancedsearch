@@ -5701,7 +5701,7 @@ function picsToAccel() {
         e.preventDefault();
         var thishref = $(this).attr('data-pop');
         var pos = $(thishref).position().top;
-        $(jQuery.browser.webkit ? "body": "html").animate({scrollTop:pos-200},{
+        $("html").animate({scrollTop:pos-200},{
             duration: 500,
             easing: 'swing', 
             complete: function(){
