@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.4
+// @version     4.3.2.5
 // ==/UserScript==
 
 // Copyright (c) 2017, Ben Hest
@@ -227,6 +227,9 @@
 //4.3.2 	Pushed warning message for FF57 update
 //4.3.2.1 	removed no search results found page from scope
 //4.3.2.2 	updated family images
+//4.3.2.3 	fixed jump to image on filterresultspage
+//4.3.2.4 	fixed clippy, all https
+//4.3.2.5 	put in clippy date detection
 
 
 //TODO add copy info button  possibly on filter results page
@@ -370,18 +373,18 @@ function tc(thefunc, name){ // tc = try catch
 }
 
 function formatPagesPostReady() {
-    _log('formatPagesPostReady() Start',DLOG);
-	formatPagesPreReady();
+    _log('formatPagesPostReady() Start', DLOG);
+    formatPagesPreReady();
     addResourceCSS();
     tc(replaceQuestionMark, 'replaceQuestionMark');
     // tc(updateCache, 'updateCache');
     // tc(addCustomHeader, 'addCustomHeader');
-    // tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
+    // tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader
     tc(preFormatDetailPage, 'preformatDetailPage');
     tc(formatFilterResultsPage, 'formatFilterResultsPage');
     // $('#content').show();
     tc(formatDetailPage, 'formatDetailPage');
-    tc(formatFastAddPage,'formatFastAddPage');
+    tc(formatFastAddPage, 'formatFastAddPage');
     tc(addEvents, 'addEvents');
     tc(formatIndexResultsPage, 'formatIndexResultsPage');
     tc(addBreadcrumbHover, 'addBreadcrumbHover');
@@ -389,33 +392,43 @@ function formatPagesPostReady() {
     // tc(addCartHover, 'addCartHover');
     // tc(lazyLoadFix, 'lazyLoadFix');
     cleanup();
+    tc(tryClippy, 'tryClippy');
 
 
-     if(localStorage.getItem('aprilf') == 1) {
-        setTimeout(function(){addClippy();}, 1);
-    }
 
 
-    _log('formatPagesPostReady() End',DLOG);
+    _log('formatPagesPostReady() End', DLOG);
 }
 
 
+function tryClippy() {
+    var force = localStorage.getItem('aprilf') == 1;
+    var date = new Date();
+    var options = { "day": 'numeric', "month": 'short' };
+    var today = date.toLocaleDateString('en-US', options);
+    var theAppointedTime = ('Apr 1' == today | 'Mar 31' == today | 'Apr 2' == today);
 
-function addClippy(){
-    _log('addClippy() Start',DLOG);
+    console.log(date.toLocaleDateString('en-US', options));
+    if (force | theAppointedTime) {
+        setTimeout(function () { addClippy(); }, 1);
+    }
+}
+
+function addClippy() {
+    _log('addClippy() Start', DLOG);
 
 
-     $('head')
-    .append('<link rel="stylesheet" type="text/css" href="https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.css" media="all">')
+    $('head')
+        .append('<link rel="stylesheet" type="text/css" href="https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.css" media="all">')
 
- var script = document.createElement('script');
+    var script = document.createElement('script');
     script.setAttribute('src', 'https://hest.pro/userscript/advancedsearch/clippy.js-master/build/clippy.js');
     script.setAttribute('async', 'async');
     script.setAttribute('type', 'text/javascript');
 
     var dochead = document.head || document.getElementsByTagName('head')[0];
     dochead.appendChild(script);
-    setTimeout(function(){
+    setTimeout(function () {
         window.eval(`
                     var jokearray = [
                         "If at first you don’t succeed; call it version 1.0.",
@@ -441,6 +454,9 @@ function addClippy(){
                         "Whiteboards are remarkable.",
                         "The dead batteries were given out free of charge.",
                         "Sixteen sodium atoms walk into a bar…followed by Batman. ",
+                        "Lost an Electron?  You really have to keep an ION them.",
+                        "I'd tell you chemistry jokes, but I'm afraid they wouldn't get a good reaction",
+                        "How many software engineers does it take to change a light bulb.  None, that's a hardware problem.",
 
 
                         ];
@@ -451,16 +467,16 @@ function addClippy(){
                         agent.speak("Hi, I'm Clippy.  I'll also work as a bodge wire in a pinch.");
                         setTimeout(function(){
                             agent.speak(jokearray[Math.floor(Math.random() * (jokearray.length - 0)) + 0]);
-                            
+
                         }, 5000)
                         // agent.speak(jokearray[0]);
 
                     });
-                        
+
         `);
     }, 2000);
 
-    _log('addClippy() End',DLOG);
+    _log('addClippy() End', DLOG);
 }
 
 
