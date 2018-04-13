@@ -46,10 +46,10 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.7
+// @version     4.3.2.8
 // ==/UserScript==
 
-// Copyright (c) 2017, Ben Hest
+// Copyright (c) 2018, Ben Hest
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -231,9 +231,10 @@
 //4.3.2.4 	fixed clippy, all https
 //4.3.2.5 	put in clippy date detection
 //4.3.2.6 	fixed col math and chart errors
-//4.3.2.7 	fixed price break helper
+//4.3.2.7 	fixed price break helper, fixed carthover bug
+//4.3.2.8 	fixed associated product hover, hacked cart count
 
-
+//TODO explore easy voltage search when there is a min and max column
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
 //TODO offer no reload, infinite scroll? at end of product index page.
@@ -252,7 +253,6 @@
 //TODO add a google like "advanced search" to the header
 //TODO impliment offscreen table wrap
 //TODO add more voltage ranges
-//TODO check and possibly fix price break helper
 //TODO fix differentiation of 3d models and cad models in filter pages
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
@@ -3170,7 +3170,7 @@ function formatDetailPage(){
         addClipboardCopyToDetail();
 
         // newAssociatedProducts();
-
+        addViewMoreNumOnHover();
         // addFootprintSearch()
 
         addManufacturerDirectLink();
@@ -3242,6 +3242,24 @@ function detailPageSectionJump(){
 }
 
 
+function addViewMoreNumOnHover(){
+    //adds a number to associated product boxes when user hovers that box.
+    $('#additional-product-options-section').on('hover',function(){
+        $(this).unbind('hover');
+        $('.lnkViewMoreUseWith').each(function () {
+            var $morelink = $(this)
+            $.get(
+                this.href,
+                function (data) {
+                    var d = $(data).find('#matching-records-count');
+                    $morelink.append(' (' + d.text() + ')');
+                }
+            );
+        });
+    });
+
+}
+
 
 function detailPageManufacturerLogoHover(){
 	$('[itemprop=manufacturer] a')
@@ -3254,7 +3272,10 @@ function detailPageManufacturerLogoHover(){
 }
 
 function detailPageAssociationHover(){
-    $('.list-item-img a, [itemprop=name] a')
+    $('.list-item-img>img').each(function() {
+        $(this).wrap('<a href="'+$(this).closest('ul').find('.list-item-number a').attr('href')+'"/>')
+    })
+    $('.list-item-img a, .list-item-number a')
     .data('elementToLoad', '#prod-att-table, #product-photo-wrapper img:first')
     .tooltipster({
         distance: 30,
@@ -3420,7 +3441,7 @@ function removeCompareItem(item){
 
 
 
-function easyHoverAndLoad(instance,helper){
+function easyHoverAndLoad(instance,helper, ecallback){
     //This function loads an element from a separate page into a tooltip.
     //This function needs a data object called elementToLoad set on any tooltipster object
     //The data should contain the jquery selector of the item to load from the hovered link.
@@ -3435,6 +3456,7 @@ function easyHoverAndLoad(instance,helper){
                 instance.content($(data).find($origin.data('elementToLoad')))
                 instance.reposition();
                 $origin.data('loaded',true)
+                ecallback();
             }
         
         );
@@ -6388,7 +6410,7 @@ function addCartHover(){
         .tooltipster({
             side:'left',
             content:'...loading',
-            functionReady: easyHoverAndLoad,
+            functionReady: function (instance, helper) { easyHoverAndLoad(instance, helper, loadCartCount)},
             functionPosition: function(instance,helper,position){
                 position.coord.top += 20;
                 position.coord.left -= 20;
@@ -6401,18 +6423,23 @@ function addCartHover(){
 
 }
 
-function loadCartDetails(instance, helper){
-    _log('loadCartDetails() Start',DLOG);
-    if(serialstring == undefined){serialstring = '';}
-    var ordet = ' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
-    $('.cartHoverContent').gmload('https://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
-        // console.log('hi here this is cool', $('img[src*="close-x"]').length)
-        $('#cartquant').text( ' ('+($('img[src*="close-x"]').length)+')');
-        _log('loadCartDetails() loaded',DLOG);
-        _log('cart details loaded'+$(this).text())
-    });
-    _log('loadCartDetails() End',DLOG);
+function loadCartCount() { 
+    $('#cartquant').text(' (' + ($('img[src*="close-x"]').length) + ')');
 }
+
+
+// function loadCartDetails(instance, helper){
+//     _log('loadCartDetails() Start',DLOG);
+//     if(serialstring == undefined){serialstring = '';}
+//     var ordet = ' #ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails';
+//     $('.cartHoverContent').gmload('https://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?'+serialstring+ordet, function(a){
+//         // console.log('hi here this is cool', $('img[src*="close-x"]').length)
+//         $('#cartquant').text( ' ('+($('img[src*="close-x"]').length)+')');
+//         _log('loadCartDetails() loaded',DLOG);
+//         _log('cart details loaded'+$(this).text())
+//     });
+//     _log('loadCartDetails() End',DLOG);
+// }
 
 
 
