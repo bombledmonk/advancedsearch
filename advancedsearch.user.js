@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.5
+// @version     4.3.2.6
 // ==/UserScript==
 
 // Copyright (c) 2017, Ben Hest
@@ -230,6 +230,7 @@
 //4.3.2.3 	fixed jump to image on filterresultspage
 //4.3.2.4 	fixed clippy, all https
 //4.3.2.5 	put in clippy date detection
+//4.3.2.6 	fixed col math and chart errors
 
 
 //TODO add copy info button  possibly on filter results page
