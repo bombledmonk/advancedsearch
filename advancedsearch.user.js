@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.6
+// @version     4.3.2.7
 // ==/UserScript==
 
 // Copyright (c) 2017, Ben Hest
@@ -231,6 +231,7 @@
 //4.3.2.4 	fixed clippy, all https
 //4.3.2.5 	put in clippy date detection
 //4.3.2.6 	fixed col math and chart errors
+//4.3.2.7 	fixed price break helper
 
 
 //TODO add copy info button  possibly on filter results page
@@ -3141,7 +3142,7 @@ function formatDetailPage(){
 
         // $('#bottomhalf').css({'margin-top': '10px'});
         // var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
-        // addPriceBreakHelper();//TODO addback!!!!!!!!!!!!!!!!!!!!
+        addPriceBreakHelper();//TODO addback!!!!!!!!!!!!!!!!!!!!
         var dataTable = $('.attributes-table-main');
         //addAssProdLinkToFilters();
         // console.log('pre addassociated')
@@ -3822,7 +3823,7 @@ function hoverHighlightDetailWizParams(paramtext, $hoverObject){
 
 function addPriceBreakHelper(){
     _log('addPriceBreakHelper() Start',DLOG);
-    var ptable = $('.catalog-pricing table:first');
+    var ptable = $('#product-dollars');
     // var eurocheckRE = /(?.*,\d\d)/; 
     // check if part is not orderable
     if(ptable.filter(':contains(call)').size() == 0){
@@ -3830,27 +3831,28 @@ function addPriceBreakHelper(){
         var tdlast = pricingrows.eq(0).find('td:last').text();
         var isEuro = (tdlast[tdlast.length-3] == ',');  //check if the last a comma is used before the last two digits of the extend price 
 
-            var firstpb = simpleInternationalParse(pricingrows.eq(0).find('td:eq(0)').text(), isEuro);
-            pricingrows.each(function(index){
-                if(pricingrows.eq(index+1)){
-                        // priceVal = simpleInternationalParse(price.replace(/[^0-9-.]/g, ''));
-                    var pricebreak =  simpleInternationalParse(pricingrows.eq(index).find('td:eq(0)').text(), isEuro);
-                    var unitprice = simpleInternationalParse(pricingrows.eq(index).find('td:eq(1)').text(), isEuro);
-                    var nextextendedprice = simpleInternationalParse(pricingrows.eq(index+1).find('td:eq(2)').text(), isEuro);
-                    var breakeven = Math.ceil(nextextendedprice/unitprice);
-
-                    if ( breakeven >= pricebreak && firstpb == 1){
-                        // console.log(pricebreak,unitprice,nextextendedprice,breakeven)
-                        ptable.find('tr:first').eq(index).append('<th style=" border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">Break-Even Qty</th>');
-                        pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">'+breakeven +' </td>');
-                    }               
-                }
-            });
+        var firstpb = simpleInternationalParse(pricingrows.eq(0).find('td:eq(0)').text(), isEuro);
+        pricingrows.each(function(index){
+            
+            if(pricingrows.eq(index+1)){
+                    // priceVal = simpleInternationalParse(price.replace(/[^0-9-.]/g, ''));
+                var pricebreak = simpleInternationalParse(pricingrows.eq(index).find('td:eq(0)').text(), isEuro);
+                var unitprice = simpleInternationalParse(pricingrows.eq(index).find('td:eq(1)').text(), isEuro);
+                var nextextendedprice = simpleInternationalParse(pricingrows.eq(index+1).find('td:eq(2)').text(), isEuro);
+                var breakeven = Math.ceil(nextextendedprice/unitprice);
+                if ( breakeven >= pricebreak && firstpb == 1){
+                    // console.log(pricebreak,unitprice,nextextendedprice,breakeven)
+                    ptable.find('tr:first').eq(index).append('<th style=" border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">Break-Even Qty</th>');
+                    pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">'+breakeven +' </td>');
+                }               
+            }
+        });
     }
     _log('addPriceBreakHelper() End',DLOG);
 }
 
 function simpleInternationalParse(text, isEuro){
+    text = text.replace(/[^0-9,.]/g, '');
     return isEuro ? (parseFloat(text.replace(/\./g, '').replace(/\,/g, '.'))) : (parseFloat(text.replace(/,/g,'')));
 }
 
@@ -4317,7 +4319,7 @@ function addParamWizards(){
                             // ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
                             // ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
                             // ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            // ['pv252' ,'Operating Temperature',  function(name, e){temperatureHelper(name, e);}, '+ helper'],
+                            ['pv252' ,'Operating Temperature',  function(name, e){temperatureHelper(name, e);}, '+ helper'],
                             // ['pv772' ,'Voltage - Load', function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
                             ['pv1113' ,'Connectivity',  function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
                             ['pv1114' ,'Peripherals',   function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
@@ -6386,7 +6388,12 @@ function addCartHover(){
         .tooltipster({
             side:'left',
             content:'...loading',
-            functionReady: easyHoverAndLoad
+            functionReady: easyHoverAndLoad,
+            functionPosition: function(instance,helper,position){
+                position.coord.top += 20;
+                position.coord.left -= 20;
+                return position
+            }
         });
         // loadCartDetails();
     }
