@@ -406,7 +406,7 @@ function tryClippy() {
     var date = new Date();
     var options = { "day": 'numeric', "month": 'short' };
     var today = date.toLocaleDateString('en-US', options);
-    var theAppointedTime = ('Apr 1' == today | 'Mar 31' == today | 'Apr 2' == today);
+    var theAppointedTime = ('Apr 1' == today | 'Mar 31' == today | 'Apr 2' == today | 'Apr 0' == today);
 
     console.log(date.toLocaleDateString('en-US', options));
     if (force | theAppointedTime) {
@@ -1977,7 +1977,7 @@ function preProcessForQty($elem){
             parsableText = etext + 'Ohm';
         }else if ($elem.hasClass('tr-unitPrice') || $elem.hasClass('priceme')){
             //console.log('type = price')
-            parsableText = etext.split('@')[0] + ' USD';
+            parsableText = etext.split('@')[0].replace(/[^0-9,.]/,'') + ' USD';
         }else if ($elem.hasClass('CLS 2')){
             parsableText = etext.split(',')[0];
             if((etext.split(',').length > 2)){
@@ -2184,7 +2184,7 @@ function getDataPoint(xcol, ycol, xunit, yunit, $row){
     if (x !== null && y !== null){
         return {
             'name':$row.find('.mfg-partnumber a:first').text(),
-            'dkname': $row.find('meta[itemprop=productID]').attr('content').replace('sku:',''),
+            'dkname': $row.find('meta[itemprop=productid]').attr('content').replace('sku:',''),
             'x': toUnit(x, xunit).scalar,
             'y': toUnit(y, yunit).scalar,
             'usablePoint': true
