@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.8
+// @version     4.3.2.9
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
@@ -233,6 +233,7 @@
 //4.3.2.6 	fixed col math and chart errors
 //4.3.2.7 	fixed price break helper, fixed carthover bug
 //4.3.2.8 	fixed associated product hover, hacked cart count
+//4.3.2.9 	fixed rounding error on col math, css tweaks
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO add copy info button  possibly on filter results page
@@ -260,7 +261,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '8/24/17';  // I usually forget this
+var lastUpdate = '4/16/18';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';  
 	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -666,7 +667,7 @@ function addCustomHeader(){
     $('.mainFlexWrapper').append($('#content'));
     // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
     // $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
-
+    $('.dk-url-shortener').css({'position':'relative', top:'10px'});
     // var thebody = document.querySelector('body');
     // var wrapper =  document.createElement('div');
     // var content = document.querySelector('#content')
@@ -1928,11 +1929,12 @@ function addMathCol(){
             var firstNum = parseElemForQty($(this).find('td').eq(fcol));
             var secondNum = parseElemForQty($(this).find('td').eq(scol));
             var finalNum = null;
-                //console.log('firstnum', firstNum, 'secondNum', secondNum, ' sntext ', $(this).find('td').eq(scol).text());
+                // console.log('firstnum', firstNum, 'secondNum', secondNum, ' sntext ', $(this).find('td').eq(scol).text());
             
             if(firstNum !== null && secondNum !== null){
                 firstNum = toUnit(firstNum, funit);
                 secondNum = toUnit(secondNum, sunit);
+                // console.log(firstNum.div(secondNum).toString())
                 try{
                     if (operator == 'div'){
                         finalNum = firstNum.div(secondNum);
@@ -1946,11 +1948,13 @@ function addMathCol(){
                     if(operator == 'sub'){
                         finalNum = firstNum.sub(secondNum);
                     }
-                        finalNum = finalNum.toPrec(0.000001);
+                    // finalNum = finalNum.toPrec(0.000001);
+                    // finalNum = finalNum.toPrec(0.000001);
                 }catch(err){
                     console.log(err, "not compatible with ", operator);
                     finalNum = 'NaN';
-                } 
+                }
+                // console.log(finalNum.toString(), firstNum.toString(), secondNum.toString()) 
                 $(this).find('td').eq(scol).after('<td class="mathcol">'+finalNum +'</td>');
             }
             else{
@@ -5599,8 +5603,6 @@ function fillComparePreview(){
         .append($(this).closest('tr').find('.pszoomer').clone())
         .data('urldata', urldata)
         .data('descdata',descdata)
-        
-
     })
 }
 
