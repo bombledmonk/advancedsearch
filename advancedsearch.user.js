@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.2.9
+// @version     4.3.3
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
@@ -234,6 +234,7 @@
 //4.3.2.7 	fixed price break helper, fixed carthover bug
 //4.3.2.8 	fixed associated product hover, hacked cart count
 //4.3.2.9 	fixed rounding error on col math, css tweaks
+//4.3.3 	fixed col math styling, cut cruff
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO add copy info button  possibly on filter results page
@@ -261,7 +262,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '4/16/18';  // I usually forget this
+var lastUpdate = '4/17/18';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';  
 	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -314,7 +315,10 @@ greasemonkey version: ${GM.info.version}
         `
     );
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
-    $('#header').detach();
+    // $('#header').detach();
+    $('#header').hide();
+    $('body').css('background-image','none');
+
     $('#footer').before('<div style="height:10px;"></div>');
     $('#content').append('<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">')
     tc(addNightMode, 'addNightMode');
@@ -397,7 +401,7 @@ function formatPagesPostReady() {
     cleanup();
     tc(tryClippy, 'tryClippy');
 
-
+    // $('.dk-sharelink').addClass('pure-button');
 
 
     _log('formatPagesPostReady() End', DLOG);
@@ -667,7 +671,6 @@ function addCustomHeader(){
     $('.mainFlexWrapper').append($('#content'));
     // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
     // $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
-    $('.dk-url-shortener').css({'position':'relative', top:'10px'});
     // var thebody = document.querySelector('body');
     // var wrapper =  document.createElement('div');
     // var content = document.querySelector('#content')
@@ -1034,6 +1037,8 @@ compactRows()
         $('.page-slector').css({'width': '1%'});
         $('.qty-form').css({'width': '1%'});
         _log('formatFilterResultsPage() tick',DLOG);
+        $('.dk-url-shortener').css({ 'position': 'relative', top: '10px' , right:"30px"});
+
         // $('#appliedFilterHeaderRow').closest('div').css({'overflow':''});
         // $('#filters-panel').css({'display':''});
 
@@ -1558,24 +1563,7 @@ function pickerOptionClick(){
         console.log('pickerOptionClick finished')
 }
 
-// function openVisualPickerOLD(){
-//         // _log('clicked on .pickeritem', true);
-//         var p = $('.pickerbody');
-//         var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
-//         console.log(colIndex);
-//         p.data('selectval', $(this).parent().find('select').attr('name'));
-//         var $options = $(this).parent().find('select option');
 
-
-//         p.data('optioncount', $options.length);
-//         p.data('optionsvisible', 0);
-//         p.data('currentfilter', filtername);
-//         p.data('theoptions', $options);
-
-//         $( "#visualpickerdiv" ).dialog('open');
-//         $('.addmoreoptions').show();
-//         addImagesToVisualPicker();
-// }
 
 function openVisualPickerNoWrap(){
         // _log('clicked on .pickeritem', true);
@@ -1696,65 +1684,7 @@ function getSingleOptionImageSet($option, filtername){
         }
 }
 
-// function getSingleOptionImageSetOLD($option, filtername){
-//     //special cases replace - and * with descriptive names
-//     //fix special case when it goes to detail page, should not need to worry about no search results found
-//     //add clear this filter button
-//     //add extra data on hover
-//     //give choice to see unrestricted examples of filters. 
-//     //add (no images available message)   
 
-//         var selectname = $option.parent().attr('name');
-//         var optionval = $option.val();
-//         $option.parent().attr('disabled', true);
-//         var serialform = $('#mainform').serialize();
-//         $option.parent().attr('disabled', false);
-
-//         var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
-//         // console.log(mylink)
-//         // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
-//         var ddclass = 'store-'+optionval;
-//         if ($('.'+ddclass).length === 0){
-//             $('#content').after('<div  class="'+ddclass+'" />');
-//             var dd = $('.'+ddclass);
-
-//             $('.pickerbody').append('<div id="pickerid'+optionval+'" class="pickerItem pickerItemNotSelected" />');
-//             $('#pickerid'+optionval).append(
-//                 '<div class="pickercheckboxholder" >'+
-//                     '<input type=checkbox value="'+optionval+'" class="css-checkbox" id="check'+optionval+'" style="z-index:2005;">'+
-//                     '<label class="css-label" for="check'+optionval+'"></label>'+
-//                 '</div>'+
-//                 '<div class="imageholder imgholder'+optionval+'">'+
-//                     '<div style="font-weight:bold; font-size:1.2em;">'+$option.text()+' (<span class="matchnum">loading</span>) </div>'+
-//                 ' </div>'
-//             );
-
-//             dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],.matching-records,#reportPartNumber', function(){
-//                 var matching = (dd.find('.matching-records').length > 0 ) ? dd.find('.matching-records').text().split(':')[1].trim() : '1';
-//                 var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
-
-//                 // $('#pickerid'+optionval).append(
-//                 //     '<div style="width:40px; display:flex; align-items:center;">'+
-//                 //     '<input type=checkbox value="'+optionval+'" class="css-checkbox" id="check'+optionval+'" style="z-index:2005;">'+
-//                 //     '<label class="css-label" for="check'+optionval+'"></label></div>'+
-//                 //     '<div class="imgholder'+optionval+'">'+
-//                 //         '<div style="font-weight:bold; font-size:1.2em;">'+$option.text()+' ('+matching+') </div>'+
-//                 //     ' </div>'
-//                 // );
-//                 $('#pickerid'+optionval).find('.matchnum').text(matching);
-
-//                  $images.css({'height':'50px', 'width':'50px'});
-//                 $('.imgholder'+optionval).append(deDuplicateCollection($images, 'src').slice(0,20));
-
-//                 if($(this).find('.beablock-image').length == 1){
-//                     $(this).find('img').css({'height':'50px', 'width':'50px'}).appendTo($('.imgholder'+optionval)).addClass('pszoomervp');
-//                 }
-
-//                 dd.detach();
-//                 presetSelections(selectname);
-//             });
-//         }
-// }
 
 function presetSelections(selectname){
     //grabs he highlighted options from the main form and selects them in the visual picker body.
@@ -1916,10 +1846,15 @@ function addMathCol(){
     var sunit = getNormalization(scol);
     var operator = $('#mathOperator').val();
     // console.log('operator', operator);
+    var operatormap = { 'div': ' / ',
+                        'mul': ' x ',
+                        'add': ' + ',
+                        'sub': ' - '
+}
     console.log('fcol', fcol, ' scol ', scol);
     console.log('funit', funit, ' sunit ', sunit);
-    $('#productTable>thead>tr:eq(0)').find('th').eq(scol).after('<th>'+ftitle + operator + stitle +'</th>');
-    $('#productTable>thead>tr:eq(1)').find('td').eq(scol).after('<td><div class="sortme">asc</div><div class="sortme">desc</div></td>');
+    $('#productTable>thead>tr:eq(0)').find('th').eq(scol).after('<th style="background:#607663; color:white;">' + ftitle + '<br>' + operatormap[operator] + '<br>' + stitle +'</th>');
+    $('#productTable>thead>tr:eq(1)').find('td').eq(scol).after('<td style="background:#607663; color:white;"><div class="sortme"><i class="fa fa-sort-asc" aria-hidden="true"></i></div><div class="sortme" style="float:right; margin-right:8px;"><i class="fa fa-sort-desc" aria-hidden="true"></i></div></td>');
     $('.sortme').click(sortStuff);
     // _log('fcol'+ fcol + ' scol ' + scol);
     $('#productTable>tbody>tr').each(function(ind){
@@ -2005,6 +1940,8 @@ function preProcessForQty($elem){
             parsableText = etext.split('-')[0].replace(/,/g, '');
         }else if ($elem.hasClass('CLS 17')){//Temperature coefficient
             parsableText = etext.replace('±', '').replace('°C','degC');
+        }else if (etext.indexOf('@') != -1){
+            parsableText =  etext.split('@')[0];
         }
         else{
             parsableText = etext;
@@ -2501,33 +2438,7 @@ function wrapFilterTable(){
     _log('wrapFilterTable() End',DLOG);
 }
 
-// function setupAttForm() {
-// 	//ripped right from digikey
-//     var f = $('[name="attform"]');
-//     var summaryUrl='/product-search/summary/en';
-//     f.contextId = 0;
-//     f.updateEnabled = true;
-//     f.oldRecordCount = $('.matching-records').html();
-//     f.resetRecordCount = function () { $('.matching-records').html(f.oldRecordCount); f.find(":submit").each(function () { this.disabled = false; }); };
-//     f.updateRecordCount = function () {
-//         if (this.updateEnabled) {
-//             this.contextId++;
-//             $.ajax({
-//                 type: 'POST',
-//                 url: summaryUrl,
-//                 data: $(this).serialize() + "&contextId=" + this.contextId,
-//                 timeout: 3000,
-//                 success: function (data, status) { if (data.contextId == f.contextId) $('.matching-records').html(data.msg); f.find(":submit").each(function(){this.disabled = !data.nMatches;}); },
-//                 error: function () { f.resetRecordCount(); f.updateEnabled = false; }
-//             });
-//         }
-//     };
-//     f.bind('reset', function () { f.resetRecordCount(); });
-//     f.find('input:not(:reset)').click(function () { f.updateRecordCount(); });
-//     //f.find('select').change(function () { f.updateRecordCount(); });
-//     f.find('select').each(function () { this.onchange = function () { f.updateRecordCount(); }; });
-//     f.updateRecordCount();
-// }
+
 
 function setupAttForm() {
 //TODO doublecheck to see if this new rip has any problems... 
@@ -2826,23 +2737,6 @@ function addIndexLazyLoad(){
 
 
 
-// function buildCategoryItem(catItem, exampleFamilyImages){
-//     var catSelector = selectorEscape(catItem.category.replace(/\s/g, ''));
-//     $('#productIndexDiv').append('<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
-//         '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a></div>'+
-//         '<div id="cat-'+catSelector+'" class="familiesContainer"></div>'+
-//         '</div> ');
-
-//     // _log('newprod1'+catItem.category)
-//     var fams = catItem.families;
-//     var htmltext = '';
-//     for(var i in fams){
-//         htmltext += buildFamilyItemHTML(fams[i], catSelector, exampleFamilyImages);
-//     }
-//     $('#cat-'+catSelector).append(htmltext);
-//     // _log('newprod2')
-
-// }
 function buildCategoryItem(catItem, exampleFamilyImages){
     var catSelector = selectorEscape(catItem.category.replace(/\s/g, ''));
     // $('#productIndexDiv').append('<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
@@ -3987,62 +3881,7 @@ function getAllFilters($filtersPanel){
 // }
 
 //TODO fuzzy reverse filtering /similar to  Start with Opamps
-// find numeric values
-// function addReverseFiltering($tableToFilter){
-//     _log('addReverseFiltering() Start',DLOG);
-//     var categoryRow = $tableToFilter.find('th:contains("Category")').parent();
-//     var lastFilterRow = $tableToFilter.find('tr:contains("Note"),tr:contains("Online Catalog"),tr:contains("Mating Products"),tr:contains("For Use With"),tr:contains("Associated Product"),tr:contains("Other Names")').not('tr:contains("Application Note")').eq(0);
-//     var formRowsTD = $tableToFilter.find('tr>td').slice(categoryRow.index(),lastFilterRow.index());  //get the valid rows on which to add check boxes
-//     formRowsTD.each(function(ind){
-//         if (ind==0){
-//             $(this).append('<span style="float:right"><input id="catfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="catfilter"></label></span>');
-//         }else if (ind==1){
-//             $(this).append('<span style="float:right"><input id="familyfilter" class="css-checkbox" type=checkbox checked=true><label class="css-label" for="familyfilter"></label></span>');
-//         }else{
-//             $(this).append('<span style="float:right"><input type=checkbox class="css-checkbox" id="revcheck'+ind+'"><label class="css-label" for="revcheck'+ind+'"></label></span>');
-//         }
-//     });
 
-//     $('.product-info-section form:first').after(
-//         '<a class="similarPartLink" target="_blank">'+
-//         '<div style="float:right; cursor:pointer;" class="pure-button similarPartsButton">See <span></span> Similar Parts</div>'+
-//         '</a>'
-//     );
-
-//     formRowsTD.find('input').change(function(){
-//         var i = getReverseFilterLink(formRowsTD);
-//         _log('url is '+i);
-//         $('.similarPartLink').attr('href', i);
-//         $('.similarPartsButton span').html('<img src="https://dl.dropboxusercontent.com/u/26263360/img/loading.gif">');
-//         $('.similarPartsButton span').load(i + ' .matching-records', function() {
-//             $(this).text($(this).text().split(':')[1]);
-//         });
-//     });
-
-//     $('.product-info-section form:first').css({float:'left', 'margin-top': '5px'}).find('input').addClass('pure-button'); // move the Report an Error button to the left
-//     _log('addReverseFiltering() End',DLOG);
-// }
-
-// function getReverseFilterLink(formRowsTD){
-//     _log('getReverseFilterLink() Start',DLOG);
-//     var reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
-//     if($('#familyfilter:checked').length){
-//         // _log('familfilter '+ $('#familyfilter:checked').attr('checked') + $('#familyfilter').closest('td').find('a').attr('href'));
-//         reverseFilterLink = $('#familyfilter').closest('td').find('a').attr('href')+'?k=';
-//     }else if ($('#catfilter:checked').length){
-//         // _log('catfilter '+ $('#catfilter:checked').closest('td').find('a').html());
-//         reverseFilterLink = $('#catfilter:checked').closest('td').find('a').attr('href')+'?k=';
-//     }else{
-//         reverseFilterLink = '/scripts/DkSearch/dksus.dll?k=';
-//     }
-//     formRowsTD.find('input:checked').not('#catfilter,#familyfilter').each(function(){
-//         reverseFilterLink = reverseFilterLink +$(this).parent().parent().text().replace(/\s/g,'+')+ '+';
-//     });
-//     // _log('new reversefilterlink ' + reverseFilterLink);
-//     reverseFilterLink = reverseFilterLink.replace('%','%25');
-//     _log('getReverseFilterLink() End',DLOG);
-//     return reverseFilterLink;
-// }
 
 
 //TODO keep and maybe use other places
@@ -4827,34 +4666,6 @@ function isInRange(userinput, teststring){
     }
 }
 
-// function applyRangeSelect(name, $selectElem){
-//     //The odd squiggly is support for the .jp website
-//     $selectElem.find('option').prop('selected', false);
-//     var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
-//     _log(userinputvalue, DLOG);
-
-//     $selectElem.find('option:contains(~),option:contains(～)').not(':contains(,)').not(':contains("&#x2213;")').each(function(index) {
-//         selectInRange($(this), userinputvalue);
-
-//     });
-
-//     $selectElem.find('option:contains("Up to")').each(function(index) {
-//         if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-//             $(this).prop('selected', true);
-//         }
-//     });
-//     $selectElem.find('option:contains("Down to")').each(function(index) {
-//         if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
-//             $(this).prop('selected', true);
-//         }
-//     });
-//     $selectElem.find('option').not(':contains(~),:contains(～)').not(':contains("Down to")').not(':contains("Up to")').not(':contains("&#x2213;")').each(function(index) {
-//         if(parseFloat($(this).text()) == userinputvalue) {
-//             $(this).prop('selected', true);
-//         }
-//     });
-
-// }
 
 function selectInRange(optElem, input) {
     var rangeSplit = optElem.text().split(/[\~\～]/);
@@ -5096,21 +4907,6 @@ function getQFAlts(searchterm) {
 }
 
 
-//TODO remove not sure if used or needed.
-// function checkCategoryQF(keywordArray) {
-//     for(var x = 0; x < keywordArray.length; x++) {
-//         $('h1:contains("' + keywordArray[x] + '")').each(function() {
-//             $(this).next().find('a.catfilterlink').css({
-//                 'fontSize': ((parseInt($(this).css('fontSize'),10) < 17) ? (parseInt($(this).css('fontSize'),10) + 2) : (parseInt($(this).css('fontSize'),10))),
-//                 "font-weight": 'bold'
-//             });
-//             $(this).next().find('a.catfilterlink').addClass('quickpick');
-//             $(this).next().find('a.catfilterlink').each(function() {
-//                 $('#qpDivCont').append( '<div class="clearfix">'+ $(this).parent('li').html() + ' ' + $(this).parent('li').prev('.catfiltertopitem').text() + ' in ' + $(this).closest('ul').prev().text() + '<div style="float:right;" class="'+$(this).closest('ul').prev().text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase()+'"></div></div>');
-//             });
-//         });
-//     }
-// }
 
 // for the common word replace stemming, spell checking and expansion
 function processInput(elem) {
@@ -5414,73 +5210,7 @@ function hideIdenticalColumns(){
     });
 }
 
-// function addPartCompare(){
-//     _log('addPartCompare() Start',DLOG);
-//     $('form[name=compform]').attr('id','compareForm');
-//     $('#content').append('<div style="height:150px;"></div>');
-//     addBottomCompare();
-//     $('#compareForm').change(function(){
-//             if($('#compareForm input:checked').length > 0 && $('#bottomCompare:hidden').length == 1){
-//                 $('#bottomCompare').show('slide', {'direction':'down'}, 500);
-//                 populateCompare($('#compareForm input:checked'));
-//             }
-//             else if($('#compareForm input:checked').length===0){
-//                 $('#bottomCompare').hide('slide', {'direction':'down'}, 500);
-//             }else{
-//                 populateCompare($('#compareForm input:checked'));
-//             }           
-//         });
-//     _log('addPartCompare() End',DLOG);
-// }
 
-// function populateCompare($checkedItems){
-//     $('#bottomCompareCont').empty();
-//     $('#bottomCompareCont').append('<table style="height:100%"><tbody><tr></tr></tbody></table>');
-//     $checkedItems.removeClass();
-//     $checkedItems.each(function(i){
-//         var mytr = $(this).closest('tr');
-//         $('#bottomCompareCont>table tr:first').append('<td class="compdivs" valign=top align=center>'+
-//             '<span class=clickcheck style="float:right; cursor:pointer; color:red;">x</span>'+
-//             mytr.find('a[href*="-ND"]:first').html()+'<br>' +mytr.find('a[href*="-ND"]:eq(2)').html()+'</td>');
-//         $('.clickcheck:last').data('mycheck',$(this));
-//     });
-
-//     $('#complink').attr('href','http://www.digikey.'+theTLD+'/scripts/DkSearch/dksus.dll?'+$('#compareForm').serialize().replace('=',''));
-//     $('#compcount').text($checkedItems.length);
-//     $('.clickcheck').click(function(){
-//         $($(this).data('mycheck')).prop('checked','');
-//         populateCompare($('#compareForm input:checked'));
-//     });
-// }
-
-// function addBottomCompare(){
-//     _log('addBottomCompare() Start',DLOG);
-//     $('#content').after('<div id=bottomCompare class="gray-grad">'+
-//         '<div style="float:left; margin:1px 5px 0px 1px; width:100px; height:110px;" class=clearfix>'+
-//         '<button class="minimal close" style="margin:4px; float:left; padding:2px;">hide</button><br>'+
-//         '<a style="margin:2px;" href="" id="complink" target="_blank"></a>'+
-//         '<br><span><span id=compcount>0</span> items selected</span></div>'+
-//         '<button class="close minimal" >hide</button>'+
-//         '<div id=bottomCompareCont style="height:100%">bottom world</div></div>');
-
-//     $('#bottomCompare').css({
-//         'position': 'fixed',
-//         'bottom' : '0px',
-//         'width': '100%',
-//         'height': '110px',
-//         //'background': 'white',
-//         'border-top': '3px solid red',
-//         'box-shadow': '0px -1px 2px 2px #888',
-//         'z-index': '10'
-//     }).hide();
-
-//     $('#bottomCompare .close').click(function(){
-//         $('#bottomCompare').hide('slide', {'direction':'down'}, 500);
-//     });
-
-//     $('#complink').after($('#compare-button').attr('value','Compare\n Now').addClass('minimal').css('height','50px'));
-//     _log('addBottomCompare() End',DLOG);
-// }
 
 function augmentCompareParts(){
     GM_addStyle(`
@@ -5934,435 +5664,7 @@ var detailPageInfo2 = (function(){
     };
 })();
 
-// // associated parts function.
-// var apOld = (function(){
-//     var columnList = [
-//         {'name':'Image', 'f': detailPageInfo.getImage,},
-//         {'name':'Manufacturer Part Number', 'f':detailPageInfo.getMPN},
-//         {'name':'Manufacturer', 'f':detailPageInfo.getManufacturer},
-//         {'name':'Description', 'f':detailPageInfo.getDescription},
-//         {'name':'Packaging', 'f':detailPageInfo.getPackaging},
-//         {'name':'Unit Price', 'f':detailPageInfo.getUnitPrice},
-//         {'name':'Quantity Available', 'f':detailPageInfo.getQuantityAvailable},
-//         {'name':'Min Quantity', 'f':detailPageInfo.getMinQuantity}
-//     ];
-//     var cLen = columnList.length;
-//     var perPage = 5;
 
-//     var buildProductViewerBox = function(item){
-
-//         var firstRowHTML = '';
-//         for (var z=0; z<columnList.length; z++){
-//             firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
-//         }
-//         var allRows = ''
-//         for(var z=0; z<item.list.length; z++){
-//             allRows = allRows + buildRowHTML(item.list[z]);
-//         }
-//         var itemSel = selectorEscape(item.title)
-        
-//         $('#additional-product-options-section').append(
-//             '<div id="asd-id-'+itemSel+'" class="asd-containerOld panel panel-default">'+
-//                 '<div class="asd-title panel-heading">'+item.title+' ('+ item.list.length +')</div>'+
-//                 '<div class="asd-content panel-body">'+
-//                 '<table id="table-'+itemSel+'" class="asd-table tstripe"> '+
-//                     '<thead><tr>'+firstRowHTML+'</tr></thead>'+
-//                     '<tbody>'+allRows+'</tbody>'+
-//                 '</table>'+
-//                 '</div>'+
-//             '</div>'
-//         );
-        
-//         $('#asd-id-'+itemSel).data('itemlist', item.list);
-        
-//         $('#table-'+itemSel).find('tbody tr').each(function(ind){
-//             $(this).data('linkobj',item.list[ind]);
-//             $(this).data('boxSel', $('#asd-id-'+itemSel));
-//         });
-        
-//         $('#table-'+ itemSel).find('tbody>tr').slice(perPage).hide();
-
-//         if (item.list.length > perPage){
-//             addPageination(itemSel, item.list.length);
-//         }
-
-//         addFilterAllForm($('#asd-id-'+itemSel));
-
-//         var listlength = (item.list.length >= perPage) ? perPage :item.list.length;
-//         for(var z=0; z<listlength; z++){
-//             getDetailPage(item.list[z], $('#asd-id-'+itemSel));
-//         }
-
-//     },
-
-//     addPageination = function (itemSel, listLen) {
-//         $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
-//                 '<a href="#" class="first" data-action="first">&laquo;</a>'+
-//                 '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
-//                 '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
-//                 '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
-//                 '<a href="#" class="last" data-action="last">&raquo;</a>'+
-//             '</div>');
-
-//             $('.page-'+itemSel).jqPagination({
-//                 paged: function(page) {
-//                     var $rows = $('#table-'+itemSel+' tbody > tr')
-//                     $rows.hide()// do something with the page variable
-//                     var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
-//                     $showing.not('.filled').each(function(){
-//                         getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
-//                     })
-//                 }
-//             });
-//     }
-
-//     buildRowHTML = function(pnlinkobj){
-//         var row = "";
-//         for (var i = 0; i < columnList.length; i++) {
-//             row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
-//         };
-//         row = '<tr class="'+selectorEscape(pnlinkobj.pn)+'">' + row + '</tr>'
-//         return row;
-//     },
-
-//     getDetailPage =    function (pnlinkobj, $boxSel){
-//         var jqxhr = $.get(pnlinkobj.href)
-//                 .done(function(data){
-//                     var $d = $(data);
-//                     fillRow($d, pnlinkobj, $boxSel)
-//                 })
-//                 .fail(function(){console.log(pnlinkobj, ' failed');})
-//                 .always(function(){});
-//     },
-//     fillRow = function ($DetailPageContent, pnlinkobj, $boxSel){
-//         var rowSel = selectorEscape(pnlinkobj.pn);
-//         var row = $('.'+rowSel);
-
-//         for (var x=0; x<cLen; x++){
-//             row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f($DetailPageContent));
-//             if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+pnlinkobj.href+'" />') ; }
-//         }
-//         row.addClass('filled');
-//         console.log('addrowdone');
-//     },
-
-//     getAssociationListFromElem = function (parentElem){
-//         var pnlinkarray = []
-//         parentElem.find('.more-expander-item').each(function(){
-//             pnlinkarray.push({
-//                 'href': $(this).find('a:first').attr('href'),
-//                 'pn': $(this).find('a:first').text()
-//             });
-//         });
-//         //console.log(pnlinkarray);
-//         return pnlinkarray;
-//     },
-
-//     addFilterAllForm = function($boxSel){
-//         var pnlist = '';
-//         var itemlist = $boxSel.data('itemlist');
-//         itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
-//         console.log(pnlist);
-//         var formHTML = '<div style="float:right;"><div style="clear:both; margin:0px 15px 1px 0px;"><form  action="/scripts/DkSearch/dksus.dll" method=get>'+
-//         '<input type=submit value="View All '+itemlist.length+'">'+ '<input id="associatedInStock" type="checkbox" class="css-checkbox"><label class="css-label" for="associatedInStock">In Stock</label>'+
-//             pnlist+
-//         '</form></div></div><div style="clear:both;"></div>';
-//         $boxSel.find('.asd-content').append(formHTML);
-//     },
-
-//     addAssociatedImageHover = function(){
-//         _log('associatedImageHover() Start',DLOG);
-
-//        $('body').append('<img border="0/" src="" style="heightdisplay: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
-
-//         $('.asd-containerOld').hoverIntent({
-//             over: function () {
-//                 $('#pszoomie2').attr('src','');
-//                 $('#pszoomie2')
-//                 .attr('src', $(this).attr('src'))
-//                 .show('fade', 200)
-//                 .position({
-//                     my : 'right middle',
-//                     at : 'left middle',
-//                     of: $(this), 
-//                     offset : '-10 0',
-//                     collision : 'fit fit'
-//                 });
-//             },
-//             out: function () {
-//                 $('.pszoomie2').fadeOut(100);
-//             },
-//             'selector': '.col-Image img'
-//         }
-//         );
-//         _log('associatedImageHover() End',DLOG);
-//     },
-
-//     addAssociatedProductViewer = function (){
-//         var boxDataArray = [];
-//         // $('.expander-div-10').each(function(){
-//         //     boxDataArray.push({
-//         //         'title': $(this).closest('tr').find('th').text(), 
-//         //         'list':getAssociationListFromElem($(this))
-//         //     });
-//         //     $(this).closest('tr').hide()
-//         // });
-//         $('.expander-div-5').each(function(){
-//             if($(this).find('.product-details-also-evaluated').length < 1){
-//                 boxDataArray.push({
-//                     'title': $(this).parent().find('.bota-headline').text().split('\n')[0], 
-//                     'list':getAssociationListFromElem($(this))
-//                 });
-//             }
-//         });
-//         $('#additional-product-options-section .bota').hide();
-//         for (var i=0; i<boxDataArray.length; i++){
-//             buildProductViewerBox(boxDataArray[i]);
-//         }
-//         addAssociatedImageHover();
-//     };
-
-//     return {'addAssociatedProductViewer': addAssociatedProductViewer};
-// })();
-
-// var ap= (function(){
-//     var columnList = [
-//         {'name':'Image', 'f': detailPageInfo2.getImage,},
-//         {'name':'Manufacturer Part Number', 'f':detailPageInfo2.getMPN},
-//         {'name':'Manufacturer', 'f':detailPageInfo2.getManufacturer},
-//         {'name':'Description', 'f':detailPageInfo2.getDescription},
-//         // {'name':'Packaging', 'f':detailPageInfo2.getPackaging},
-//         {'name':'Unit Price', 'f':detailPageInfo2.getUnitPrice},
-//         {'name':'Quantity Available', 'f':detailPageInfo2.getQuantityAvailable},
-//         // {'name':'Min Quantity', 'f':detailPageInfo2.getMinQuantity}
-//     ];
-//     var assTypes = [
-//         "MatingProducts",
-//         "AssociatedProduct"
-//     ];
-
-//     // reference: description, detailLink, imageLink, manufacturer, manufacturerPartNumber, minimumOrderQuantity, 
-//     // nonStock, packageType, quantityAvailable, reportPartNumber, unitPrice
-//     var cLen = columnList.length;
-//     var perPage = 5;
-
-
-
-//     var buildProductViewerBox = function(associationSet){
-//         var firstRowHTML = '';
-//         for (var z=0; z<columnList.length; z++){
-//             firstRowHTML = firstRowHTML+ '<th>' + columnList[z].name + '</th>';
-//         }
-//         var allRows = '';
-//         for(var z=0; z<associationSet.list.length; z++){
-//             allRows = allRows + buildRowHTML(associationSet.list[z]);
-//         }
-//         var escTitle = selectorEscape(associationSet.title);
-            
-        
-//         $('#additional-product-options-section').append(
-//             '<div id="asd-id-'+escTitle+'" class="asd-container panel panel-default">'+
-//                 '<div class="asd-title panel-heading">'+associationSet.title+' ('+ associationSet.list.length +')</div>'+
-//                 '<div class="asd-content panel-body">'+
-//                 '<table id="table-'+escTitle+'" class="asd-table tstripe"> '+
-//                     '<thead><tr>'+firstRowHTML+'</tr></thead>'+
-//                     '<tbody>'+allRows+'</tbody>'+
-//                 '</table>'+
-//                 '</div>'+
-//             '</div>'
-//         );
-        
-//         $('#asd-id-'+escTitle).data('associationSetlist', associationSet.list);
-        
-//         $('#table-'+escTitle).find('tbody tr').each(function(ind){
-//             $(this).data('linkobj',associationSet.list[ind]);
-//             $(this).data('boxSel', $('#asd-id-'+escTitle));
-//         });
-        
-
-//         $('#table-'+ escTitle).find('tbody>tr').slice(perPage).hide();
-//         if (associationSet.list.length > perPage){
-//             addPageination(escTitle, associationSet.list.length);
-//         }
-//         addFilterAllForm($('#asd-id-'+escTitle), associationSet.viewAllLink, associationSet.list.length); //addback
-
-//         var listlength = (associationSet.list.length >= perPage) ? perPage :associationSet.list.length;
-//         for(var z=0; z<listlength; z++){
-//             var associationSetData = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('linkobj');
-//             var $boxSel = $('#table-'+escTitle).find('.'+selectorEscape(associationSet.list[z].manufacturerPartNumber)).data('boxSel');
-//             fillRow(associationSetData , $boxSel);
-//         }
-
-//     },
-
-//     fillRow = function (itemData, $boxSel){
-//         var rowSel = selectorEscape(itemData.manufacturerPartNumber);
-//         var row = $('.'+rowSel);
-
-//         for (var x=0; x<cLen; x++){
-//             row.not('.filled').find('.col-'+selectorEscape(columnList[x].name)).append(columnList[x].f(itemData));
-//             if (x < 2){ row.find('.col-'+selectorEscape(columnList[x].name)).contents().wrap('<a href="'+itemData.detailLink+'" />') ; }
-//         }
-//         row.addClass('filled');
-//     },
-
-//     addPageination = function (itemSel, listLen) {
-//         $('#asd-id-'+itemSel).find('.asd-content').append('<div class="pagination page-'+itemSel+'">'+
-//                 '<a href="#" class="first" data-action="first">&laquo;</a>'+
-//                 '<a href="#" class="previous" data-action="previous">&lsaquo;</a>'+
-//                 '<input type="text" readonly="readonly" data-max-page="'+Math.ceil(listLen/perPage)+'" />'+
-//                 '<a href="#" class="next" data-action="next">&rsaquo;</a>'+
-//                 '<a href="#" class="last" data-action="last">&raquo;</a>'+
-//             '</div>');
-
-//             $('.page-'+itemSel).jqPagination({
-//                 paged: function(page) {
-//                     var $rows = $('#table-'+itemSel+' tbody > tr');
-//                     $rows.hide()// do something with the page variable
-//                     var $showing = $rows.slice((page*5 - 5),(page * 5)).show()// do something with the page variable
-//                     $showing.not('.filled').each(function(){
-//                         var itemData = $(this).data('linkobj');
-//                         var $boxSel = $(this).data('boxSel');
-//                         fillRow(itemData, $boxSel)
-//                         // getDetailPage($(this).data('linkobj'), $(this).data('boxSel'));
-//                     })
-//                 }
-//             });
-//     },
-
-
-
-//     buildRowHTML = function(item){
-//         var row = "";
-//         for (var i = 0; i < columnList.length; i++) {
-//             row = row + '<td class="col-'+selectorEscape(columnList[i].name)+'"></td>';
-//         };
-//         row = '<tr class="'+selectorEscape(item.manufacturerPartNumber)+'">' + row + '</tr>'
-//         return row;
-//     },
-
-//     getAssociationListFromElem = function (parentElem){
-//         var pnlinkarray = []
-//         parentElem.find('.more-expander-item').each(function(){
-//             pnlinkarray.push({
-//                 'href': $(this).find('a:first').attr('href'),
-//                 'pn': $(this).find('a:first').text()
-//             });
-//         });
-//         console.log('>>>>>>>>>>>',pnlinkarray);
-//         return pnlinkarray;
-//     },
-
-//     addFilterAllForm = function($boxSel,viewAllLink,listlength){
-//         var pnlist = '';
-//         // var itemlist = $boxSel.data('itemlist');
-//         // itemlist.forEach(function(x){ pnlist = pnlist+'<input type=hidden name="part" value="'+x.pn+'">'});
-//         // console.log(pnlist);
-//         var formHTML = '<div style="float:right;" id="'+$boxSel.attr('id')+'-link""><div style="clear:both; margin:0px 15px 1px 0px;">'+
-//         '<a id="'+$boxSel.attr('id')+'-link"" href="'+viewAllLink+'" target="_blank">View All <span>'+listlength+'</span> </a>'+ '<input id="'+$boxSel.attr('id')+'-stock" type="checkbox" class="css-checkbox"><label class="css-label" for="'+$boxSel.attr('id')+'-stock">In Stock</label>'+
-            
-//         '</div></div><div style="clear:both;"></div>';
-
-//         $boxSel.find('.asd-content').append(formHTML);
-
-//         $('#'+$boxSel.attr('id')+'-stock').data('allstocklink', viewAllLink)
-
-//         $('#'+$boxSel.attr('id')+'-stock').click(function(){
-//             if($(this).prop('checked') == true ){
-//                 console.log('ischecked')
-//                 $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink')+'&stock=1')
-//             }else{
-//                 console.log('is not checked')
-//                 $('#'+$boxSel.attr('id')+'-link a').attr('href', $(this).data('allstocklink'))
-//             }
-//             $(this).parent().parent().find('span').load($('#'+$boxSel.attr('id')+'-link a').attr('href')+' .matching-records:first', function(){
-//                 $(this).text($('.matching-records').text().split(':')[1])
-//             })
-//         });
-//     },
-
-//     addAssociatedImageHover = function(){
-//         _log('associatedImageHover() Start',DLOG);
-
-//        $('body').append('<img border="0/" src="" style="display: none; height:200px; width:200px; box-shadow: 0 0 10px 5px #888; position:absolute;" class="pszoomie2 psshadow" id="pszoomie2">');
-
-//         $('.asd-container').hoverIntent({
-//             over: function () {
-//                 $('#pszoomie2').attr('src','');
-//                 $('#pszoomie2')
-//                 .attr('src', $(this).attr('src').replace('_tmb', '_sml'))
-//                 .show('fade', 200)
-//                 .position({
-//                     my : 'right middle',
-//                     at : 'left middle',
-//                     of: $(this), 
-//                     offset : '-10 0',
-//                     collision : 'fit fit'
-//                 });
-//             },
-//             out: function () {
-//                 $('.pszoomie2').fadeOut(100);
-//             },
-//             'selector': '.col-Image img'
-//         }
-//         );
-//         _log('associatedImageHover() End',DLOG);
-//     },
-
-//     addAssociatedProductViewer = function (){
-//         var boxDataArray = [];
-
-//         boxDataArray = getAllAssociations();
-//         for (var i=0; i<boxDataArray.length; i++){
-//             buildProductViewerBox(boxDataArray[i]);
-//             console.log('**********************************', boxDataArray[i])
-//         }
-//         addAssociatedImageHover();
-//         $('.additional-interested').insertAfter('#bottomhalf');
-//         // handleExpanderDiv5();
-//     };
-
-//     return {'addAssociatedProductViewer': addAssociatedProductViewer};
-// })();
-
-
-// function getAssociationNames(){
-//     var names = [];
-//     $('.expander-div-5').each(function(){
-//         if($(this).find('.product-details-suggested-subs').length == 1){
-//             names.push('Direct Subs')
-//             $(this).parent('.bota').detach();
-//         }else if ($(this).find('.product-details-alternate-packaging').length ==1){
-//             names.push('AlternatePackaging');
-//             $(this).parent('.bota').detach();
-//         }
-//     })
-//     $('.expander-div-10').each(function(){
-//         names.push($(this).closest('tr').find('th').text()); 
-//         $(this).closest('tr').hide();
-//     });
-//     return names;
-// }
-// function getAssociationDataFromPageByType(assType){
-//     var escaped = selectorEscape(assType);
-//     return (window.eval(escaped));
-// }
-// function getAllAssociations(){
-//     var assocationData = [];
-//     var names = getAssociationNames();
-//     names.forEach(function(el,idx,arr){
-//         var escaped = selectorEscape(el);
-//         var alldata = window.eval(escaped);
-//         console.log(escaped, 'escaped eval', alldata[0]);
-//         assocationData.push({
-//             'title': el,
-//             'list': (alldata[0].showAllLink != undefined) ? alldata.slice(1) : alldata.slice(0),
-//             'viewAllLink': (alldata[0].showAllLink != undefined) ? alldata[0].showAllLink : 'none'
-//         }) ;
-//     });
-//     console.log('associatione data', assocationData);
-//     return assocationData;
-// }
 
 
 //*************************** TODO fix collision events 
