@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.3
+// @version     4.3.3.1
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
@@ -235,8 +235,10 @@
 //4.3.2.8 	fixed associated product hover, hacked cart count
 //4.3.2.9 	fixed rounding error on col math, css tweaks
 //4.3.3 	fixed col math styling, cut cruff
+//4.3.3.1 	fixed shortlink bug
 
 //TODO explore easy voltage search when there is a min and max column
+//TODO fix colmath sorting isues
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
 //TODO offer no reload, infinite scroll? at end of product index page.
@@ -328,14 +330,14 @@ greasemonkey version: ${GM.info.version}
 }
 
 
-if($('#noResultsTable').length == 0){preloadFormat();}
+if ($('#ctl00_ctl00_topContentPlaceHolder_lblWebIDTitle').length == 0){preloadFormat();}
 
 $(document).ready(function() {
     _log(`[ready] advanced search starts here. Jquery version ${jQuery.fn.jquery}`);
     _log('[ready] hostname is '+ window.location.hostname,DLOG);
     _log('[ready] pathname is '+ window.location.pathname,DLOG);
     _log('[ready] search is '+ window.location.search,DLOG);
-    if($('#noResultsTable').length == 0){formatPagesPostReady();}
+    if ($('#ctl00_ctl00_topContentPlaceHolder_lblWebIDTitle').length == 0){formatPagesPostReady();}
 
     _log('[ready] end of document ready function');
 });
