@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.3.1
+// @version     4.3.3.2
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
@@ -236,6 +236,7 @@
 //4.3.2.9 	fixed rounding error on col math, css tweaks
 //4.3.3 	fixed col math styling, cut cruff
 //4.3.3.1 	fixed shortlink bug
+//4.3.3.2 	removed copyPN button from detail page, officially part of DK website now
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
@@ -255,7 +256,7 @@
 //TODO add obsolete product direct subs to top of page PCC101CQCT-ND
 //TODO fuzzy similar to, start in opamps
 //TODO add a google like "advanced search" to the header
-//TODO impliment offscreen table wrap
+//TODO implement offscreen table wrap
 //TODO add more voltage ranges
 //TODO fix differentiation of 3d models and cad models in filter pages
 
@@ -264,7 +265,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '4/17/18';  // I usually forget this
+var lastUpdate = '7/05/18';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';  
 	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -3067,7 +3068,7 @@ function formatDetailPage(){
         detailPageAssociationHover();
         detailPageMoveManufacturerLink();
         // detailPageAssociationImageHover();
-        addClipboardCopyToDetail();
+        // addClipboardCopyToDetail();
 
         // newAssociatedProducts();
         addViewMoreNumOnHover();
@@ -4395,8 +4396,8 @@ function voltageHelperOLD(name, $selectElem) {
     createHelperBox(name,$selectElem,'150px','200px');
 
     $('#helperBoxContent').html('<label><b>desired ' + name + 
-        ':</b> <br><input id=voltin type="text" size="5"><b>Volts</b> <br>(enter key or apply)</label><br>'+
-        '<button id=helperbutton class="clean-gray clearfix">apply</button><span id=voltmess></span>');
+        ':</b> <br><input id=voltin type="text" size="5"><b>Volts</b> <br>(enter key or select)</label><br>'+
+        '<button id=helperbutton class="clean-gray clearfix">select</button><span id=voltmess></span>');
     $('#helperbutton').css({
         'float':'right',
         'padding':'3px',
@@ -4428,8 +4429,8 @@ function temperatureHelper(name, $selectElem) {
     createHelperBox(name,$selectElem,'150px','200px');
 
     $('#helperBoxContent').html('<label><b>desired ' + name + 
-        ':</b> <br><input id=voltin type="text" size="5"><b>C</b> <br>(enter key or apply)</label><br>'+
-        '<button id=helperbutton class="clean-gray clearfix">apply</button><span id=voltmess></span>');
+        ':</b> <br><input id=voltin type="text" size="5"><b>C</b> <br>(enter key or select)</label><br>'+
+        '<button id=helperbutton class="clean-gray clearfix">select</button><span id=voltmess></span>');
     $('#helperbutton').css({
         'float':'right',
         'padding':'3px',
