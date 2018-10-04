@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.3.2
+// @version     4.3.4
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
@@ -237,6 +237,7 @@
 //4.3.3 	fixed col math styling, cut cruff
 //4.3.3.1 	fixed shortlink bug
 //4.3.3.2 	removed copyPN button from detail page, officially part of DK website now
+//4.3.4 	slectable filter layout, minor fixes
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
@@ -265,7 +266,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '7/05/18';  // I usually forget this
+var lastUpdate = '10/04/18';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';  
 	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -606,6 +607,101 @@ function addNightMode(){
         // $('.mainFlexWrapper').css({'top':'50px'});
         
     }
+}
+
+function addCustomFiltersPanel(){
+
+    GM_addStyle(`
+    .filters-group-2{ 
+        flex-wrap: unset !important; 
+        overflow: visible !important; 
+    }
+    .filters-group-2>div{ 
+        align-self: flex-end !important; 
+    }
+    .filters-group-2>div>div{
+        display:inline-flex;
+    }
+    .filter-selectors2{
+        max-width: 100%;
+        min-width: 100%;
+    }
+    .filters-panel-2 .filters-group-more-less{
+        display:none !important;
+    }
+    #wrap-nowrap-container{
+        display:inline-flex;
+        margin-left:10px;
+    }
+    .filters-panel-2{
+        display:inline-block;
+    }
+    #nowrap-filters i{font-size:8px;}
+    #nowrap-filters {width:60px;}
+    #default-filters {width: 60px;}
+    `)
+
+    
+    $('#search-within-results')
+        .after(`
+        <div id=wrap-nowrap-container title="Filter Layout">
+            <input id=wrapfilterschooser name=wrapfilterschooser value=1 class="saveState" type='hidden'>
+            <button id=nowrap-filters value=0 class="button pure-button button-small">
+                <i class="fa fa-stop fa-sm"></i> <i class="fa fa-stop fa-sm"></i> 
+                <i class="fa fa-stop fa-sm"></i>
+            </button>
+            <button id=default-filters value=1 class="button pure-button button-small">
+                <i class="fa fa-th"></i>
+            </button>
+        </div>`);
+
+        
+    $('#nowrap-filters').on('click', function (e) {
+        e.preventDefault();
+        setHorizontalFilterLayout()
+        localStorage.setItem('wrapfilterschooser', 0)
+    });
+    $('#default-filters').on('click', function (e) {
+        e.preventDefault();
+        setWrappingFilterLayout()
+        localStorage.setItem('wrapfilterschooser', 1)
+    });
+
+    restoreInputState($('#wrapfilterschooser'));
+    if ($('#wrapfilterschooser').val() == 0){ 
+        setHorizontalFilterLayout();
+    }else{
+        setWrappingFilterLayout();
+        //do nothing because you have default page layout
+    }
+}
+
+function setHorizontalFilterLayout(){
+    $('#nowrap-filters').addClass('pure-button-active')
+    $('#default-filters').removeClass('pure-button-active')
+    $('.filters-group').addClass('filters-group-2')
+    $('.filter-selectors').removeClass('filter-selectors').addClass('filter-selectors2');
+    $('#filters-panel').addClass('filters-panel-2')
+}
+
+function setWrappingFilterLayout(){
+    $('#default-filters').addClass('pure-button-active')
+    $('#nowrap-filters').removeClass('pure-button-active')
+    console.log('do something')
+    $('.filters-group').removeClass('filters-group-2')
+    $('#filters-panel').removeClass('filters-panel-2')
+    $('.filter-selectors2').removeClass('filter-selectors2').addClass('filter-selectors')
+}
+
+function removeTableScrolling(){
+    //kills the scrolling product table
+    GM_addStyle(`
+        .noscrolltable{
+            overflow-x:visible !important;
+        }
+        .fl-scrolls{ display: none!important; }
+    `)
+    $('form[name=compform]').addClass('noscrolltable')
 }
 
 function addCustomHeader(){
@@ -1029,6 +1125,10 @@ function styleCheckboxes(){
 
 }
 
+function fixMidWrapper(){
+    $('.paging').css({'flex-grow':'0'})
+}
+
 function formatFilterResultsPage(){
     if ( $('#productTable').length){
         _log('formatFilterResultsPage() Start',DLOG);
@@ -1036,16 +1136,17 @@ function formatFilterResultsPage(){
 compactRows()
         // $('a.altpkglink').hide();
         GM_addStyle(`a.altpkglink{display:none;}`)
-        $('.dload-btn').css({'text-align':'left', 'width':'1%'});
-        $('.page-slector').css({'width': '1%'});
-        $('.qty-form').css({'width': '1%'});
+        // $('.dload-btn').css({'text-align':'left', 'width':'1%'});
+        // $('.page-slector').css({'width': '1%'});
+        // $('.qty-form').css({'width': '1%'});
         _log('formatFilterResultsPage() tick',DLOG);
         $('.dk-url-shortener').css({ 'position': 'relative', top: '10px' , right:"30px"});
 
         // $('#appliedFilterHeaderRow').closest('div').css({'overflow':''});
         // $('#filters-panel').css({'display':''});
 
-
+        addCustomFiltersPanel();
+        removeTableScrolling();
         // $('#search-within-results').css({'display':'inline'}).insertAfter($('.filters-group-chkbxs'))
         // $('#search-within-results input').css({'margin-bottom': 0});
         $('#deapplied-filters').css({'padding': '10px 0', 'display': 'inline'}).insertAfter($('#search-within-results').css({'display':'inline-block'}));
@@ -1072,7 +1173,7 @@ compactRows()
         setTimeout(function(){addStickyHeader();}, 2500);  // wait for the page native javascript to load then reapply modified code
         // alert('hi')
 
-        // formatQtyBox();  //TODO addback?
+        formatQtyBox();  //TODO addback?
         addColumnHider();
         // updateTableHeaders();
         // addApplyFiltersButtonHighlight();
@@ -1088,7 +1189,7 @@ compactRows()
         // }
 
         fixImageHover();
-
+        fixMidWrapper();
 
 
         // $('input[value=Reset]').addClass('button-small pure-button').click(function(){
@@ -1759,7 +1860,7 @@ function mediumImageHover(){
 
 function addColumnMath(){
     _log('addColumnMath() Start',DLOG);
-    $('.mid-wrapper').append('<button id="doMath" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-calculator"></i> Column Math</button>');
+    $('.page-slector').append('<button id="doMath" style="margin:2px 5px; display:inline-block;"class="button-small pure-button"><i class="fa fa-calculator"></i> Column Math</button>');
     setTimeout(addColumnMathDialog, 3000);
     $('#doMath').click(function(e){
         _log('ready to do math', true);
@@ -2051,7 +2152,7 @@ function addGraphInterface(){
     },3000);
 
     
-    $('.mid-wrapper').append('<button id="buildChart" style="margin:2px 5px;"class="button-small pure-button"><i class="fa fa-line-chart"></i> Build Chart</button>');
+    $('.page-slector').append('<button id="buildChart" style="margin:2px 5px;display:inline-block;"class="button-small pure-button"><i class="fa fa-line-chart"></i> Build Chart</button>');
     
     $('#graphDialog').append(
         '<form><select id="yGraphColumn"></select>'+
@@ -2233,15 +2334,7 @@ function drawChart(xcol, ycol){
 
 function formatQtyBox(){
     _log('formatQtyBox() Start',DLOG);
-    var $srform = $('.quantity-form');
-    // $srform.find('[type=submit]:first').val('See Price @ qty');
-    // $srform.find('[type=submit]:last').val('x');
-
-    // $srform.attr('title', $srform.find('p').text());
-    // _log('formatQtyBox() tick1',DLOG);
-    // $('.paging').after($srform);
-    // $srform.css({'margin':'0px 15px'});
-    $('input[name*="quantity"]').attr('size','9').attr('placeholder','set qty');
+    $('#f2>.filters-group-chkbxs').append($('.filters-quantity').css('display','inline'));
 
     _log('formatQtyBox() End',DLOG);
 }
@@ -2321,7 +2414,17 @@ function getParamList(){
     //return somearray
 }
 
-function wrapFilterClickFunc(somespan, buttonval){
+// function wrapFilterClickFunc(somespan, buttonval){
+//     if(buttonval == 0){
+//         $('#selectboxdiv').addClass('wsnowrap').removeClass('morefilters lessfilters');
+//         $('#morefiltersbutton').hide();
+//     }
+//     else if( buttonval == 1){
+//         $('#selectboxdiv').removeClass('wsnowrap').addClass('morefilters');
+//         $('#morefiltersbutton').show();
+//     }
+// }
+function wrapFilterClickFunc2(somespan, buttonval){
     if(buttonval == 0){
         $('#selectboxdiv').addClass('wsnowrap').removeClass('morefilters lessfilters');
         $('#morefiltersbutton').hide();
@@ -5154,7 +5257,7 @@ function addEvents(){
 
 function addColumnHider(){
     _log('addColumnHider() Start',DLOG);
-    $('.mid-wrapper').append('<button id=showCols style="margin:2px 5px;"class="button-small pure-button">Show hidden Columns</button>');
+    $('.page-slector').append('<button id=showCols style="margin:2px 5px; display:inline-block;"class="button-small pure-button">Show hidden Columns</button>');
     $('#showCols').click(function(e){
         e.preventDefault();
         $('.hiddenCol').fadeIn(800);
@@ -5183,7 +5286,7 @@ function addColumnHider(){
 function addDashedColumnsHider(){
     //dev
     _log('addDashedColumnsHider() Start',DLOG);    
-    $('.mid-wrapper').append('<button id=identCols style="margin:2px 5px;"class="button-small pure-button">Hide Identical Columns</button>');
+    $('.page-slector').append('<button id=identCols style="margin:2px 5px; display:inline-block;"class="button-small pure-button">Hide Identical Columns</button>');
     $('#identCols').click(function(e){
         e.preventDefault();
         hideIdenticalColumns();
