@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.4.1
+// @version     4.3.4.2
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
@@ -239,6 +239,7 @@
 //4.3.3.2 	removed copyPN button from detail page, officially part of DK website now
 //4.3.4 	slectable filter layout, minor fixes
 //4.3.4.1 	fixed pick with images
+//4.3.4.2 	pick with images tweek
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
@@ -1688,7 +1689,7 @@ function openVisualPickerNoWrap(){
 
         var p = $('.pickerbody');
         // var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
-        var filtername = $(this).closest('th').text(); //for non wrapping function
+        var filtername = $(this).closest('span').text(); //for non wrapping function
         var colIndex = $(this).closest('th').index();
         var colDiv = $(this).closest('div');
         p.data('selectval', colDiv.find('select').attr('name'));
