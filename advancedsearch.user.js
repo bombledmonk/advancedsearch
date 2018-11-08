@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.4
+// @version     4.3.4.1
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
@@ -238,6 +238,7 @@
 //4.3.3.1 	fixed shortlink bug
 //4.3.3.2 	removed copyPN button from detail page, officially part of DK website now
 //4.3.4 	slectable filter layout, minor fixes
+//4.3.4.1 	fixed pick with images
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
@@ -266,7 +267,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '10/04/18';  // I usually forget this
+var lastUpdate = '11/7/18';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';  
 	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -1587,7 +1588,7 @@ function addVisualPicker(){
     var dialogWidth = window.innerWidth * 0.8;
 
     // $('.selectboxdivclass>b').after('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
-    $('#appliedFilterHeaderRow th').append('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
+    $('.filters-headline').append('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
     $('#content').after(
         '<div id="visualpickerdiv" class="firstopen" style="display:none;">'+
             '<div class="pickerbody" style="overflow-y:scroll; height:'+(dialogHeight-90)+'px;"></div>'+
@@ -1688,10 +1689,12 @@ function openVisualPickerNoWrap(){
         var p = $('.pickerbody');
         // var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
         var filtername = $(this).closest('th').text(); //for non wrapping function
-        var colIndex = $(this).closest('th').index()
-        p.data('selectval', $('#appliedFilterOptions td').eq(colIndex).find('select').attr('name'));
+        var colIndex = $(this).closest('th').index();
+        var colDiv = $(this).closest('div');
+        p.data('selectval', colDiv.find('select').attr('name'));
+        // p.data('selectval', $('#appliedFilterOptions td').eq(colIndex).find('select').attr('name'));
         // p.data('selectval', $(this).parent().find('select').attr('name'));
-        var $options = $('#appliedFilterOptions td').eq(colIndex).find('select option');
+        var $options = colDiv.find('select option');
         // console.log($options);
 
         p.attr('data-selectval', p.data('selectval'))
