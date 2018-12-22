@@ -3853,7 +3853,7 @@ function hoverHighlightDetailWizParams(paramtext, $hoverObject){
 
 function addPriceBreakHelper(){
     _log('addPriceBreakHelper() Start',DLOG);
-    var ptable = $('#product-dollars');
+    var ptable = $('.product-dollars');
     // var eurocheckRE = /(?.*,\d\d)/; 
     // check if part is not orderable
     if(ptable.filter(':contains(call)').size() == 0){
