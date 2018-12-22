@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.4.2
+// @version     4.3.4.3
 // ==/UserScript==
 
 // Copyright (c) 2018, Ben Hest
