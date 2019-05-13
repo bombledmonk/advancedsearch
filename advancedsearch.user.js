@@ -46,20 +46,20 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.4.3
+// @version     4.3.4.4
 // ==/UserScript==
 
-// Copyright (c) 2018, Ben Hest
+// Copyright (c) 2019, Ben Hest
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met: 
+// modification, are permitted provided that the following conditions are met:
 
 // 1. Redistributions of source code must retain the above copyright notice, this
-//    list of conditions and the following disclaimer. 
+//    list of conditions and the following disclaimer.
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution. 
+//    and/or other materials provided with the distribution.
 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -73,7 +73,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // The views and conclusions contained in the software and documentation are those
-// of the authors and should not be interpreted as representing official policies, 
+// of the authors and should not be interpreted as representing official policies,
 // either expressed or implied, of the FreeBSD Project.
 
 //author can be emailed at gmail.com   bombledmonk@
@@ -82,15 +82,15 @@
 //1.7.3     gave the detail page a softer look, changed the text voltage input helper to be more user friendly
 //1.7.6     Download link changed to bit.ly to keep track of downloads. https://dl.dropbox.com/u/26263360/advancedsearch.user.js
 //1.7.7     Userscripts.org release http://userscripts.org/scripts/show/157205
-//1.7.8     Added more alternate highlighting terms.  ie search for "10k" and all the resistors and pots will be highlighted, 
+//1.7.8     Added more alternate highlighting terms.  ie search for "10k" and all the resistors and pots will be highlighted,
 //          started checkboxes feature, changed the "initially sort by price" feature to re-filter on desired quantity when changed
 //1.7.9     Added indexInstantFilter function.  Instantly filter down product families as user types in search box. Disabled by default.
-//1.8.0     Added Cart Hover and item count in header.  
+//1.8.0     Added Cart Hover and item count in header.
 //1.8.1     Fixed sort by price @ Qty bug. Improved cart hover. Added price break popup when hovering over prices.
 //1.8.2     Added simple column hiding. Refactored code, bug fixes.
 //1.8.2.1   Added some error catching code
 //1.8.3     Added Hover function to Associated Products Links, For Use With Links, and added a browse and filter function to both spots on the Product detail page.
-//1.8.3.1   Fixed Chrome problems by using runat document-end instead of document-start. 
+//1.8.3.1   Fixed Chrome problems by using runat document-end instead of document-start.
 //          Fixed breadcrumbs to include sort order/in stock/lead free/rohs and quantity modifiers
 //1.8.4     Added Breadcrumb Category Hover. Made Jump to Category scrollable. Fixed some bugs introduced by styling changes made by DK.
 //1.8.5     Added Associated Product Carousel on product detail pages.  Fixed the chrome auto scrolling bug.  Added jquery plugins as "at require".
@@ -101,7 +101,7 @@
 //1.8.7     Started bringing in CSS externally, Added wrapping feature for Parameter Multiselect Boxes, Added accordion select box tech demo
 //          Added show hidden columns button
 //1.8.7.1   New version of compare, pops up from bottom, no more hoverover.
-//1.8.7.2   Fixed annoying headers not lining up, 
+//1.8.7.2   Fixed annoying headers not lining up,
 //1.8.8     Added icons in jump to area
 //1.8.8.1   Turned Icons into sprites.  Fixed bugs with carousel. Rearranged some of the Controls menu
 //1.8.9     Revamped the cart quantity changing.  Added the main cart page to the script added functionality.
@@ -116,7 +116,7 @@
 //2.0.3     First Attempt at Internationalizing the script.  In theory it should work on all English digikey websites from now on.
 //2.0.3.1   Fixed Sorting bugs
 //2.0.4     Fixed the bloated sequential timing to get script loadtime down to 10%, Introduced applied filters removal
-//2.0.4.1   Fixed cart bug, added some more speed optimizations. 
+//2.0.4.1   Fixed cart bug, added some more speed optimizations.
 //2.0.4.2   Tuned some of the hover over timings.
 //2.0.4.3   Fixed No records matching bug.
 //2.0.5     Added index column feature, fixed category highlighting with Jump To Category feature
@@ -143,7 +143,7 @@
 //2.1.2     fixed errors where filters cannot be removed
 //2.1.3     added back caching for the removable filters
 //2.1.4     hopefully fixed errors associated with foreign languages
-//2.2       Added query term highlighting on the filter results page, fixed formatting errors introduced by new defualt font. 
+//2.2       Added query term highlighting on the filter results page, fixed formatting errors introduced by new defualt font.
 //          Changed color of help icon, changes also in CSS
 //2.2.1     added null string check to fix bug with query term highlighting
 //2.2.2     made the header respond better to different size windows
@@ -166,9 +166,9 @@
 //2.7.3     fixed the uniqueness of the checkbox helper
 //2.7.4     fix for new header on dk website.
 //2.7.5     fixed bug in the Search Within feature
-//2.8       added a more functional associated parts filtering mechanism, 
+//2.8       added a more functional associated parts filtering mechanism,
 //          added Hide Identical Columns feature, tweaked instant filter with wildcard search
-//2.9       added Column Math and picture carousel 
+//2.9       added Column Math and picture carousel
 //2.9.1     added graphing/charting, fixed picture carousel, refining value parser
 //2.9.2     refactored associated product, fixed header link bugs, removed beablock blue, various other bug fixes
 //2.9.3     hid customers who evaluated box
@@ -239,14 +239,15 @@
 //4.3.3.2 	removed copyPN button from detail page, officially part of DK website now
 //4.3.4 	slectable filter layout, minor fixes
 //4.3.4.1 	fixed pick with images
-//4.3.4.2 	pick with images tweek
+//4.3.4.2 	pick with images tweak
+//4.3.4.4   fixed more filters button.
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
 //TODO add copy info button  possibly on filter results page
 //TODO add a messages/update
 //TODO offer no reload, infinite scroll? at end of product index page.
-//TODO display percentage of parameter on page, possibly graph  
+//TODO display percentage of parameter on page, possibly graph
 //TODO think about logging lib, global vars
 //TODO Make graphs into filter inputs. look in drawChart function
 //TODO Add graphs to the show pricing curve, call all packaging types and plot in different colors.
@@ -269,13 +270,13 @@ var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
 var lastUpdate = '11/7/18';  // I usually forget this
-var downloadLink = 'https://hest.pro/s/advancedmanualupdate';  
-	// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
+var downloadLink = 'https://hest.pro/s/advancedmanualupdate';
+// redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
 // var DLOG = true; //control detailed logging.
 // var MAX_PAGE_LOAD = 20;
 // var selectReset = null;
-var theTLD = window.location.hostname.replace('digikey.','').replace('www.', '');
+var theTLD = window.location.hostname.replace('digikey.', '').replace('www.', '');
 var sitemaplink = $('#header').find('a:contains("Site Map"):first').attr('href');
 var mydklink = getMyDigiKeyLink();
 var gIndexLink = getIndexLink();
@@ -283,71 +284,72 @@ var cacheflag = false;
 
 
 //loads before document status is ready
-function preloadFormat(){
-    _log('preloadFormat() Start',DLOG);
-	try{
-		if(GM.info.version){
-		if(parseFloat(GM.info.version) >= 4  && GM.info.scriptHandler == "Greasemonkey"){
-		    alert(
-`Advancedsearch Userscript for Digikey.com Message:
+function preloadFormat() {
+    _log('preloadFormat() Start', DLOG);
+    try {
+        if (GM.info.version) {
+            if (parseFloat(GM.info.version) >= 4 && GM.info.scriptHandler == "Greasemonkey") {
+                alert(
+                    `Advancedsearch Userscript for Digikey.com Message:
 
 Firefox 57 has introduced compatability issues with Greasemonkey.
 
 If you would like to continue using this script please install Tampermonkey for Firefox.
 https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
 
-You will then need to install the advancedsearch userscript for digikey.com from 
+You will then need to install the advancedsearch userscript for digikey.com from
 https://eewiki.net/display/Motley/advancedsearch+Greasemonkey+Userscript+for+Digikey.com
 
-FF version: ${navigator.userAgent} 
+FF version: ${navigator.userAgent}
 greasemonkey version: ${GM.info.version}
 `);
-		  }
-		}
-	}
-	catch(e){}
+            }
+        }
+    }
+    catch (e) { }
     // $('#content').hide();
     $('#content form[name="attform"]').attr('id', 'mainform'); // this form is only on filter page
-    $('.breadcrumbs').css({'margin': '0', 'padding': '5 0 0 0'});
+    $('.breadcrumbs').css({ 'margin': '0', 'padding': '5 0 0 0' });
 
     GM_addStyle(
-        `#header {display: none;} 
-        #content hr {display:none;} 
-        #footer{position:relative; top:45px;} 
-        #content>form:first-child {display:none} 
-        #content>p {display:none;} 
+        `#header {display: none;}
+        #content hr {display:none;}
+        #footer{position:relative; top:45px;}
+        #content>form:first-child {display:none}
+        #content>p {display:none;}
         .content-keywordSearch-form{display:none;}
         .ui-dialog-title{padding-left:60px;}
+        #content{box-sizing:border-box;}
         `
     );
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
     // $('#header').detach();
     $('#header').hide();
-    $('body').css('background-image','none');
+    $('body').css('background-image', 'none');
 
     $('#footer').before('<div style="height:10px;"></div>');
     $('#content').append('<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">')
     tc(addNightMode, 'addNightMode');
     // $('#footer').css({'position':'absolute', 'bottom':'0px', 'left': '0px', 'width':'100%'});
     // formatPagesPreReady();
-    _log('preloadFormat() End',DLOG);
+    _log('preloadFormat() End', DLOG);
 }
 
 
-if ($('#ctl00_ctl00_topContentPlaceHolder_lblWebIDTitle').length == 0){preloadFormat();}
+if ($('#ctl00_ctl00_topContentPlaceHolder_lblWebIDTitle').length == 0) { preloadFormat(); }
 
-$(document).ready(function() {
+$(document).ready(function () {
     _log(`[ready] advanced search starts here. Jquery version ${jQuery.fn.jquery}`);
-    _log('[ready] hostname is '+ window.location.hostname,DLOG);
-    _log('[ready] pathname is '+ window.location.pathname,DLOG);
-    _log('[ready] search is '+ window.location.search,DLOG);
-    if ($('#ctl00_ctl00_topContentPlaceHolder_lblWebIDTitle').length == 0){formatPagesPostReady();}
+    _log('[ready] hostname is ' + window.location.hostname, DLOG);
+    _log('[ready] pathname is ' + window.location.pathname, DLOG);
+    _log('[ready] search is ' + window.location.search, DLOG);
+    if ($('#ctl00_ctl00_topContentPlaceHolder_lblWebIDTitle').length == 0) { formatPagesPostReady(); }  // No idea why #TODO document
 
     _log('[ready] end of document ready function');
 });
-// 
+//
 
-function addResourceCSS(){
+function addResourceCSS() {
     var cssNames = [
         "buttonCSS",
         "advCSS",
@@ -360,28 +362,28 @@ function addResourceCSS(){
         "tooltipster-shadowCSS"
     ];
 
-    for ( var x in cssNames){
+    for (var x in cssNames) {
         var thetext = GM_getResourceURL(cssNames[x]);
-        _log('style tick 1'+ cssNames[x], DLOG);
-        $('body').prepend('<link rel="stylesheet" href="'+thetext+'">');
-         // $('body').prepend('<link rel="stylesheet" href="data:text/css;base64,'+thetext+'">')
-        _log('style tick end'+ cssNames[x], DLOG);
+        _log('style tick 1' + cssNames[x], DLOG);
+        $('body').prepend('<link rel="stylesheet" href="' + thetext + '">');
+        // $('body').prepend('<link rel="stylesheet" href="data:text/css;base64,'+thetext+'">')
+        _log('style tick end' + cssNames[x], DLOG);
         // _log('style tick start '+cssNames[x], DLOG);
     }
 }
 
-function tc(thefunc, name){ // tc = try catch
-    try{
+function tc(thefunc, name) { // tc = try catch
+    try {
         thefunc();
-    }catch(err){
-        console.log("%c"+err.message, 'color:red;');
-        console.log( err);
+    } catch (err) {
+        console.log("%c" + err.message, 'color:red;');
+        console.log(err);
         console.log("%c edd of error", 'color:red;');
-        alert('failed on '+ name + '\n' + err.message + 
-            '\n\n If you are getting repeated errors try manually updating by clicking on the ++settings++ box in the upper right hand corner and then hit the manual update link.'+
-            '\n\n Alternatively, copy and paste this link into your browser:  https://hest.pro/s/advanceddownload'+
+        alert('failed on ' + name + '\n' + err.message +
+            '\n\n If you are getting repeated errors try manually updating by clicking on the ++settings++ box in the upper right hand corner and then hit the manual update link.' +
+            '\n\n Alternatively, copy and paste this link into your browser:  https://hest.pro/s/advanceddownload' +
             '\n\n Tampermonkey users, please make sure you go to Tampermonkey Settings and change the Externals Update Interval to "Always".'
-            );
+        );
     }
 }
 
@@ -494,65 +496,65 @@ function addClippy() {
 
 
 function formatPagesPreReady() {
-    _log('formatPagesPreReady() Start',DLOG);
-        $.tooltipster.setDefaults({
-            content: '...loading',
-            trigger: 'hover',
-            delay: 350,
-            interactive: true,
-            side: 'bottom',
-            updateAnimation: null,
-            animation: 'fade',
-            theme: 'tooltipster-shadow',
-        });
-        tc(addCustomHeader, 'addCustomHeader');
-        tc(addControlWidget,'addControlWidget');  // TODO FIX function order dependence on addCustomHeader      
-        tc(addCartHover, 'addCartHover');
-        // tc(formatNoResultsFoundPage, 'formatNoResultsFoundPage');
-    	tc(addCanonicalLinkToBreadCrumbs, 'addCanonicalLinkToBreadCrumbs');
+    _log('formatPagesPreReady() Start', DLOG);
+    $.tooltipster.setDefaults({
+        content: '...loading',
+        trigger: 'hover',
+        delay: 350,
+        interactive: true,
+        side: 'bottom',
+        updateAnimation: null,
+        animation: 'fade',
+        theme: 'tooltipster-shadow',
+    });
+    tc(addCustomHeader, 'addCustomHeader');
+    tc(addControlWidget, 'addControlWidget');  // TODO FIX function order dependence on addCustomHeader
+    tc(addCartHover, 'addCartHover');
+    // tc(formatNoResultsFoundPage, 'formatNoResultsFoundPage');
+    tc(addCanonicalLinkToBreadCrumbs, 'addCanonicalLinkToBreadCrumbs');
 
-        // tc(preFormatDetailPage, 'preformatDetailPage');
+    // tc(preFormatDetailPage, 'preformatDetailPage');
 
-    _log('formatPagesPreReady() End',DLOG);
-} 
+    _log('formatPagesPreReady() End', DLOG);
+}
 
-function formatNoResultsFoundPage(){
-    _log('formatNoResultsFoundPage() Start',DLOG);
-    if($('#noResultsTable').length){
+function formatNoResultsFoundPage() {
+    _log('formatNoResultsFoundPage() Start', DLOG);
+    if ($('#noResultsTable').length) {
         $('p').show();
-        $('#noResultsTable').parent().parent().parent().css({'position':'relative', 'top':'35px'})
+        $('#noResultsTable').parent().parent().parent().css({ 'position': 'relative', 'top': '35px' })
         var loc = window.location.href;
-        var fixedLoc = loc.replace(/(stock|rohs|pbfree|new|has3d)\=1\&?/g,'');
+        var fixedLoc = loc.replace(/(stock|rohs|pbfree|new|has3d)\=1\&?/g, '');
 
-        $.get(fixedLoc, function(data){
+        $.get(fixedLoc, function (data) {
             var resultCount = parseInt($(data).find('#matching-records-count').text());
-            if(resultCount>0){
-                $('#noResultsTable p:first').html('There were 0 results using the In Stock, Lead Free, or RoHS provided. '+
-                    '<br><br><a style="font-size:16pt; color:blue; " href="'+fixedLoc+'">Click to see ' + resultCount +' results which may be out of stock.</a>');                
+            if (resultCount > 0) {
+                $('#noResultsTable p:first').html('There were 0 results using the In Stock, Lead Free, or RoHS provided. ' +
+                    '<br><br><a style="font-size:16pt; color:blue; " href="' + fixedLoc + '">Click to see ' + resultCount + ' results which may be out of stock.</a>');
             }
         })
     }
-    _log('formatNoResultsFoundPage() End',DLOG);
+    _log('formatNoResultsFoundPage() End', DLOG);
 }
 
-function getMyDigiKeyLink(){
-    var retval ='';
-    tc(function(){
-        if ($('.header-dropdown-content').length){
-            retval =$('#header-login').find('.header-dropdown-content a:first').attr('href');
+function getMyDigiKeyLink() {
+    var retval = '';
+    tc(function () {
+        if ($('.header-dropdown-content').length) {
+            retval = $('#header-login').find('.header-dropdown-content a:first').attr('href');
         }
     }, 'getMyDigiKeyLink');
-    if (retval == undefined){ retval = 'https://www.digikey.com/classic/RegisteredUser/Login.aspx';}
+    if (retval == undefined) { retval = 'https://www.digikey.com/classic/RegisteredUser/Login.aspx'; }
     return retval;
 }
 
-function getIndexLink(){
-    var ret = $('#header-middle').find('.header-resource').attr('href'); 
-    return (ret == undefined)? 'http://www.digikey.com/products/en' : ret;
+function getIndexLink() {
+    var ret = $('#header-middle').find('.header-resource').attr('href');
+    return (ret == undefined) ? 'http://www.digikey.com/products/en' : ret;
 }
 
-function replaceQuestionMark(){
-    _log('replaceQuestionMark() Start',DLOG);
+function replaceQuestionMark() {
+    _log('replaceQuestionMark() Start', DLOG);
     GM_addStyle(`img[src$="help.png"]{
     	-webkit-filter: grayscale(100%);
     	filter: grayscale(100%);
@@ -562,41 +564,41 @@ function replaceQuestionMark(){
     // // $img.addClass('qmark').hide();
     // $img.hide();
     // $img.after('<i class="fa fa-question-circle fa-lg" style="color:#999;"></i>');// css used to replace image as a background image
-    _log('replaceQuestionMark() End',DLOG);
+    _log('replaceQuestionMark() End', DLOG);
 }
 
-function cleanup () {
-    _log('cleanup() Start',DLOG);
+function cleanup() {
+    _log('cleanup() Start', DLOG);
 
     askpermission(version);
 
     $('input[type=submit],input[type=reset],input[type=button]').addClass('button-small pure-button')
-    .css({
-        // 'margin': '2px',
-        'background-image': ''
-    });
+        .css({
+            // 'margin': '2px',
+            'background-image': ''
+        });
     $('.button').css({
-        'background-image': 'none', 
+        'background-image': 'none',
         // margin:'2px'
     });
     $('p:contains("No records match your")').show();
     $('.alert').show();
-    _log('cleanup() End',DLOG);
+    _log('cleanup() End', DLOG);
 }
 
 //TODO FINISH  UNUSED
-function updateCache(){
-    if(Date.now() > parseInt(localStorage.getItem('lastCacheRefresh')) + 604800000){
+function updateCache() {
+    if (Date.now() > parseInt(localStorage.getItem('lastCacheRefresh')) + 604800000) {
         cacheflag = true;
     }
-    else{
+    else {
         localStorage.setItem('lastCacheRefresh', 604800000);
         cacheflag = false;
     }
 }
 
-function addNightMode(){
-    if(localStorage.getItem('nightMode') == 1){
+function addNightMode() {
+    if (localStorage.getItem('nightMode') == 1) {
         GM_addStyle(`
                 #content {filter: invert(100%);-webkit-filter: invert(100%);}
                 body {background-color:white;}
@@ -607,19 +609,19 @@ function addNightMode(){
             `
         );
         // $('.mainFlexWrapper').css({'top':'50px'});
-        
+
     }
 }
 
-function addCustomFiltersPanel(){
+function addCustomFiltersPanel() {
 
     GM_addStyle(`
-    .filters-group-2{ 
-        flex-wrap: unset !important; 
-        overflow: visible !important; 
+    .filters-group-2{
+        flex-wrap: unset !important;
+        overflow: visible !important;
     }
-    .filters-group-2>div{ 
-        align-self: flex-end !important; 
+    .filters-group-2>div{
+        align-self: flex-end !important;
     }
     .filters-group-2>div>div{
         display:inline-flex;
@@ -638,47 +640,68 @@ function addCustomFiltersPanel(){
     .filters-panel-2{
         display:inline-block;
     }
+    .scroll-group{
+        width: 110%;
+    }
     #nowrap-filters i{font-size:8px;}
     #nowrap-filters {width:60px;}
     #default-filters {width: 60px;}
     `)
 
-    
-    $('#search-within-results')
-        .after(`
-        <div id=wrap-nowrap-container title="Filter Layout">
-            <input id=wrapfilterschooser name=wrapfilterschooser value=1 class="saveState" type='hidden'>
-            <button id=nowrap-filters value=0 class="button pure-button button-small">
-                <i class="fa fa-stop fa-sm"></i> <i class="fa fa-stop fa-sm"></i> 
-                <i class="fa fa-stop fa-sm"></i>
-            </button>
-            <button id=default-filters value=1 class="button pure-button button-small">
-                <i class="fa fa-th"></i>
-            </button>
-        </div>`);
 
-        
-    $('#nowrap-filters').on('click', function (e) {
+    // $('#search-within-results')
+    //     .after(`
+    //     <div id=wrap-nowrap-container title="Filter Layout">
+    //         <input id=wrapfilterschooser name=wrapfilterschooser value=1 class="saveState" type='hidden'>
+    //         <button id=nowrap-filters value=0 class="button pure-button button-small">
+    //             <i class="fa fa-stop fa-sm"></i> <i class="fa fa-stop fa-sm"></i>
+    //             <i class="fa fa-stop fa-sm"></i>
+    //         </button>
+    //         <button id=default-filters value=1 class="button pure-button button-small">
+    //             <i class="fa fa-th"></i>
+    //         </button>
+    //     </div>`);
+
+
+    $('#scrolling').on('click', function (e) {
         e.preventDefault();
         setHorizontalFilterLayout()
         localStorage.setItem('wrapfilterschooser', 0)
     });
-    $('#default-filters').on('click', function (e) {
+    $('#stacked').on('click', function (e) {
         e.preventDefault();
         setWrappingFilterLayout()
         localStorage.setItem('wrapfilterschooser', 1)
     });
 
     restoreInputState($('#wrapfilterschooser'));
-    if ($('#wrapfilterschooser').val() == 0){ 
+    if ($('#wrapfilterschooser').val() == 0) {
         setHorizontalFilterLayout();
-    }else{
+    } else {
         setWrappingFilterLayout();
         //do nothing because you have default page layout
     }
+    // $('#nowrap-filters').on('click', function (e) {
+    //     e.preventDefault();
+    //     setHorizontalFilterLayout()
+    //     localStorage.setItem('wrapfilterschooser', 0)
+    // });
+    // $('#default-filters').on('click', function (e) {
+    //     e.preventDefault();
+    //     setWrappingFilterLayout()
+    //     localStorage.setItem('wrapfilterschooser', 1)
+    // });
+
+    // restoreInputState($('#wrapfilterschooser'));
+    // if ($('#wrapfilterschooser').val() == 0) {
+    //     setHorizontalFilterLayout();
+    // } else {
+    //     setWrappingFilterLayout();
+    //     //do nothing because you have default page layout
+    // }
 }
 
-function setHorizontalFilterLayout(){
+function setHorizontalFilterLayout() {
     $('#nowrap-filters').addClass('pure-button-active')
     $('#default-filters').removeClass('pure-button-active')
     $('.filters-group').addClass('filters-group-2')
@@ -686,7 +709,7 @@ function setHorizontalFilterLayout(){
     $('#filters-panel').addClass('filters-panel-2')
 }
 
-function setWrappingFilterLayout(){
+function setWrappingFilterLayout() {
     $('#default-filters').addClass('pure-button-active')
     $('#nowrap-filters').removeClass('pure-button-active')
     console.log('do something')
@@ -695,7 +718,7 @@ function setWrappingFilterLayout(){
     $('.filter-selectors2').removeClass('filter-selectors2').addClass('filter-selectors')
 }
 
-function removeTableScrolling(){
+function removeTableScrolling() {
     //kills the scrolling product table
     GM_addStyle(`
         .noscrolltable{
@@ -706,222 +729,222 @@ function removeTableScrolling(){
     $('form[name=compform]').addClass('noscrolltable')
 }
 
-function addCustomHeader(){
-	try{
-	_log('addCustomHeader() Start',DLOG);
-    //TODO style the form with purecss
-    var mydklink2 = 'https://www.digikey.com/classic/RegisteredUser/Login.aspx';
-    gIndexLink = 'http://www.digikey.com/products/en';
-    theTLD = 'com';
+function addCustomHeader() {
+    try {
+        _log('addCustomHeader() Start', DLOG);
+        //TODO style the form with purecss
+        var mydklink2 = 'https://www.digikey.com/classic/RegisteredUser/Login.aspx';
+        gIndexLink = 'http://www.digikey.com/products/en';
+        theTLD = 'com';
 
-    var customform = '<div id="cHeader" style="display:block; background:black; color:white;"><a href="http://digikey.'+theTLD+'">'+
-        '<img align=left top="50px" height=50 src="https://www.digikey.com/Web%20Export/hp/common/logo_black.jpg"></a>'+
-        '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">'+
-        '<a href="http://dkc1.digikey.com/us/en/help/help10.html">'+
-        '<b>Keywords:</b></a> <input type="search" value="" style="padding:3px; margin:3px 3px 1px 3px;" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">'+
-        '<input align=right type="submit" value="New Search" id="searchbutton">'+
-        ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>'+
-        ' <input type="checkbox" style="margin:0 2px;" value="0" name="nstock" id="activePart" class="saveState css-checkbox"><label for="activePart" class="css-label">Normally Stocking</label>'+
-        // ' <input type="hidden" style="margin:0 2px;" value="5" name="pv1989" id="shadowNew" disabled=true class="css-checkbox" >'+
-        // ' <input type="hidden" style="margin:0 2px;" value="0" name="pv1989" id="shadowNew2" disabled=true class="css-checkbox" >'+
-        ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>'+
-        ' <input type="checkbox" style="padding-left:5px;" value="1" name="newproducts" id="newproducts" class="css-checkbox"><label style="margin-left:8px;" for="newproducts" class="css-label" title="Added in the last 90 days.">New</label>'+
-        // '<span id="resnum"></span>'+
-        '<a id="advancedsearchlink" style="margin-left:20px; cursor:pointer;">search help</a>'+
-        '<span id=quicklinks><a href="'+gIndexLink+'">Product Index</a> | '+
-        '<a href="'+mydklink2+'">My Digi-Key</a> | '+
-        '<a id="cartlink" href="https://www.digikey.'+theTLD+'/classic/Ordering/AddPart.aspx?"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | '+
-        // '<a href="'+sitemaplink+'">Site Map</a></span>'+
-        '<div class="dropShadow" />'+
-    '</div>';
+        var customform = '<div id="cHeader" style="display:block; background:black; color:white;"><a href="http://digikey.' + theTLD + '">' +
+            '<img align=left top="50px" height=50 src="https://www.digikey.com/Web%20Export/hp/common/logo_black.jpg"></a>' +
+            '<form id="headForm" method="get" action="/scripts/dksearch/dksus.dll?KeywordSearch">' +
+            '<a href="http://dkc1.digikey.com/us/en/help/help10.html">' +
+            '<b>Keywords:</b></a> <input type="search" value="" style="padding:3px; margin:3px 3px 1px 3px;" id="headKeySearch" maxlength="250" size="35" class="dkdirchanger2" name="keywords">' +
+            '<input align=right type="submit" value="New Search" id="searchbutton">' +
+            ' <input type="checkbox" style="margin:0 2px;" value="1" name="stock" id="hstock" class="saveState css-checkbox"><label for="hstock" class="css-label">In stock </label>' +
+            ' <input type="checkbox" style="margin:0 2px;" value="0" name="nstock" id="activePart" class="saveState css-checkbox"><label for="activePart" class="css-label">Normally Stocking</label>' +
+            // ' <input type="hidden" style="margin:0 2px;" value="5" name="pv1989" id="shadowNew" disabled=true class="css-checkbox" >'+
+            // ' <input type="hidden" style="margin:0 2px;" value="0" name="pv1989" id="shadowNew2" disabled=true class="css-checkbox" >'+
+            ' <input type="checkbox" style="padding-left:5px;" value="1" name="has3d" id="has3d" class="css-checkbox"><label style="margin-left:8px;" for="has3d" class="css-label">Has 3D Model</label>' +
+            ' <input type="checkbox" style="padding-left:5px;" value="1" name="newproducts" id="newproducts" class="css-checkbox"><label style="margin-left:8px;" for="newproducts" class="css-label" title="Added in the last 90 days.">New</label>' +
+            // '<span id="resnum"></span>'+
+            '<a id="advancedsearchlink" style="margin-left:20px; cursor:pointer;">search help</a>' +
+            '<span id=quicklinks><a href="' + gIndexLink + '">Product Index</a> | ' +
+            '<a href="' + mydklink2 + '">My Digi-Key</a> | ' +
+            '<a id="cartlink" href="https://www.digikey.' + theTLD + '/ordering/shoppingcart"><i class="fa fa-shopping-cart fa-lg" style="color:red;"></i> Cart<span id=cartquant></span> <i class="fa fa-caret-down fa-lg" style="color:red;"></i></a> | ' +
+            // '<a href="'+sitemaplink+'">Site Map</a></span>'+
+            '<div class="dropShadow" />' +
+            '</div>';
 
-    var keywordval = '';
-    var stockval = $('#stock').prop('checked');
-    var pbfreeval = $('#pbfree').prop('checked');
-    var rohsval = $('#rohs').prop('checked');
+        var keywordval = '';
+        var stockval = $('#stock').prop('checked');
+        var pbfreeval = $('#pbfree').prop('checked');
+        var rohsval = $('#rohs').prop('checked');
 
-    $('.deapplied-filters').not('#deapplyFilter').find('.deapply-form').each(function(){
-        keywordval += $(this).find('#deapply-text-link').text()+' ';
-    })
-    _log('stockval is'+ stockval+ ' checked status is '+ $('#stock').prop('checked'),DLOG);
-    $('#content').after(customform);
-    if($('#noResultsTable').length){
-        $('#_body').append(customform)   
-    }
-    // $('.dkdirchanger2').val(keywordval).focus();
-    $('.dkdirchanger2').val(keywordval);
-    $('#stock').prop('checked', stockval);
-
-    $('#content p.matching-records').show();
-    $('.content-keywordSearch-form').detach();
-
-    $('#headForm').on('submit', function(data){
-        console.log('#headForm submit data: ', data)
-        if($('#activePart:checked').length == 1){
-            $('input[name=pv1989]').removeAttr('disabled');
+        $('.deapplied-filters').not('#deapplyFilter').find('.deapply-form').each(function () {
+            keywordval += $(this).find('#deapply-text-link').text() + ' ';
+        })
+        _log('stockval is' + stockval + ' checked status is ' + $('#stock').prop('checked'), DLOG);
+        $('#content').after(customform);
+        if ($('#noResultsTable').length) {
+            $('#_body').append(customform)
         }
-        // console.log($(this).serializeArray())
-        // alert(data);
-        return true;
+        // $('.dkdirchanger2').val(keywordval).focus();
+        $('.dkdirchanger2').val(keywordval);
+        $('#stock').prop('checked', stockval);
 
-    })
+        $('#content p.matching-records').show();
+        $('.content-keywordSearch-form').detach();
 
-    // console.log('>>>>>>>>>>>>>>>>>tld', theTLD, ' gIndexLink ', gIndexLink, ' mydklink2 ', mydklink2);
-    // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
-    $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:50px;"></div>');
-    $('.mainFlexWrapper').append($('#content'));
-    // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
-    // $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
-    // var thebody = document.querySelector('body');
-    // var wrapper =  document.createElement('div');
-    // var content = document.querySelector('#content')
-    // wrapper.classList.add("mainFlexWrapper");
-    // wrapper.style.position = 'relative';
-    // wrapper.style.top = '50px';
-    // thebody.insertBefore(wrapper, thebody.firstChild)
-    // wrapper.appendChild(content)
-    _log('custome header tick',DLOG);
+        $('#headForm').on('submit', function (data) {
+            console.log('#headForm submit data: ', data)
+            if ($('#activePart:checked').length == 1) {
+                $('input[name=pv1989]').removeAttr('disabled');
+            }
+            // console.log($(this).serializeArray())
+            // alert(data);
+            return true;
 
-    tc(searchButtonHighlight, 'searchButtonHighlight');
+        })
 
-    keywordSearchWizard()
-    _log('addCustomHeader() End',DLOG);
-	}catch(e){
-		console.log('addCustomHeader failed',e);
-		alert(e);
-	}
+        // console.log('>>>>>>>>>>>>>>>>>tld', theTLD, ' gIndexLink ', gIndexLink, ' mydklink2 ', mydklink2);
+        // $('#content').wrap('<div class="mainFlexWrapper" style="position:relative; top:65px;"></div>');
+        $('body').prepend('<div class="mainFlexWrapper" style="position:relative; top:50px;"></div>');
+        $('.mainFlexWrapper').append($('#content'));
+        // $('.dk-url-shortener').css({position:'fixed', right: '135px', top:'18px','z-index':'30'}); //move url shortener
+        // $('.dk-url-shortener').css({position:'relative', left: '-43px','z-index':'30'}); //move url shortener
+        // var thebody = document.querySelector('body');
+        // var wrapper =  document.createElement('div');
+        // var content = document.querySelector('#content')
+        // wrapper.classList.add("mainFlexWrapper");
+        // wrapper.style.position = 'relative';
+        // wrapper.style.top = '50px';
+        // thebody.insertBefore(wrapper, thebody.firstChild)
+        // wrapper.appendChild(content)
+        _log('custome header tick', DLOG);
+
+        tc(searchButtonHighlight, 'searchButtonHighlight');
+
+        keywordSearchWizard()
+        _log('addCustomHeader() End', DLOG);
+    } catch (e) {
+        console.log('addCustomHeader failed', e);
+        alert(e);
+    }
 }
 
-function keywordSearchWizard(){
-    var searchForm = '<div id="advancedsearchdiv" style="display:none; ">'+
-        '<div>'+
-            '<table class="advancedsearchtable">'+
-                '<tbody>'+
-                    '<tr>'+
-                        '<td>Function</td>'+
-                        '<td>Operator</td>'+
-                        '<td>Usage</td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>NOT</td>'+
-                        '<td><span style="font-weight:bold; font-size:1.2em;">~</span> or <span style="font-weight:bold;">.not.</span> </td>'+
-                        '<td> <span style="font-weight:bold;">mcu ~dip</span> (removes all instances of dip from results) <br> <span style="font-weight:bold;">mcu .not. dip</span></td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>AND</td>'+
-                        '<td><span style="font-weight:bold;">&lt;space&gt;</span> or <span style="font-weight:bold;">.and.</span> </td>'+
-                        '<td> <span style="font-weight:bold;">mcu 32bit</span><br> <span style="font-weight:bold;">mcu .and. 32bit</span></td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>OR</td>'+
-                        '<td><span style="font-weight:bold;">|</span> or <span style="font-weight:bold;">.or.</span> </td>'+
-                        '<td> <span style="font-weight:bold;">mcu atmel | mcu microchip</span><br> <span style="font-weight:bold;">mcu atmel .or. mcu microchip</span></td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>"exact phrase"</td>'+
-                        '<td><span style="font-weight:bold;">&quot; &quot;</span>'+
-                        '<td> <span style="font-weight:bold;">&quot;DC DC&quot;</span></td>'+
-                    '</tr>'+
-                '</tbody>'+
-            '</table>'+            
-            '<table class="advancedsearchtable" style="margin-top:20px;">'+
-                '<tbody>'+
-                    '<tr>'+
-                        '<td>Search Tips</td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>All keywords are case insensitive and treated as substring matches (also known as wildcards).  '+
-                        'The keyword <b style="color:red;">LED</b> will match control<b style="color:red;">led</b>,'+' O<b style="color:red;">LED</b> and LTC3458<b style="color:red;">LED</b>E#PBF </td>'+
-                    '</tr>'+
-                    '<tr>'+
-                        '<td>Using keywords with too much specificity may artificially limit results. It&#39s best to treat keyword searches as a guide to help find where product is hiding rather than expect ALL results to be spoonfed.'+
-                        '  It&#39s often better to find the families of interest and then filter and browse the full contents of that family unless you are sure'+
-                        ' there there is an exact keyword found in product listing pages. </td>'+
-                    '</tr>'+
-                '</tbody>'+
-            '</table>'+
-        '</div>'+
-    '</div>';
+function keywordSearchWizard() {
+    var searchForm = '<div id="advancedsearchdiv" style="display:none; ">' +
+        '<div>' +
+        '<table class="advancedsearchtable">' +
+        '<tbody>' +
+        '<tr>' +
+        '<td>Function</td>' +
+        '<td>Operator</td>' +
+        '<td>Usage</td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td>NOT</td>' +
+        '<td><span style="font-weight:bold; font-size:1.2em;">~</span> or <span style="font-weight:bold;">.not.</span> </td>' +
+        '<td> <span style="font-weight:bold;">mcu ~dip</span> (removes all instances of dip from results) <br> <span style="font-weight:bold;">mcu .not. dip</span></td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td>AND</td>' +
+        '<td><span style="font-weight:bold;">&lt;space&gt;</span> or <span style="font-weight:bold;">.and.</span> </td>' +
+        '<td> <span style="font-weight:bold;">mcu 32bit</span><br> <span style="font-weight:bold;">mcu .and. 32bit</span></td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td>OR</td>' +
+        '<td><span style="font-weight:bold;">|</span> or <span style="font-weight:bold;">.or.</span> </td>' +
+        '<td> <span style="font-weight:bold;">mcu atmel | mcu microchip</span><br> <span style="font-weight:bold;">mcu atmel .or. mcu microchip</span></td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td>"exact phrase"</td>' +
+        '<td><span style="font-weight:bold;">&quot; &quot;</span>' +
+        '<td> <span style="font-weight:bold;">&quot;DC DC&quot;</span></td>' +
+        '</tr>' +
+        '</tbody>' +
+        '</table>' +
+        '<table class="advancedsearchtable" style="margin-top:20px;">' +
+        '<tbody>' +
+        '<tr>' +
+        '<td>Search Tips</td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td>All keywords are case insensitive and treated as substring matches (also known as wildcards).  ' +
+        'The keyword <b style="color:red;">LED</b> will match control<b style="color:red;">led</b>,' + ' O<b style="color:red;">LED</b> and LTC3458<b style="color:red;">LED</b>E#PBF </td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td>Using keywords with too much specificity may artificially limit results. It&#39s best to treat keyword searches as a guide to help find where product is hiding rather than expect ALL results to be spoonfed.' +
+        '  It&#39s often better to find the families of interest and then filter and browse the full contents of that family unless you are sure' +
+        ' there there is an exact keyword found in product listing pages. </td>' +
+        '</tr>' +
+        '</tbody>' +
+        '</table>' +
+        '</div>' +
+        '</div>';
     $('#content').append(searchForm);
 
-    $('#advancedsearchlink').click(function(){
+    $('#advancedsearchlink').click(function () {
         _log('advanced wizard opening', DLOG)
         $('#advancedsearchdiv').dialog({
-                autoOpen: true,
-                resizable: true,
-                // draggable: false,
-                height:600,
-                width:800,
-                modal: false,
-                buttons: {
-                    "Close": function() {
-                        // $(this).css('color', 'lightgrey');
-                        $( this ).dialog( "close" );
-                    },
-                }
-            });
+            autoOpen: true,
+            resizable: true,
+            // draggable: false,
+            height: 600,
+            width: 800,
+            modal: false,
+            buttons: {
+                "Close": function () {
+                    // $(this).css('color', 'lightgrey');
+                    $(this).dialog("close");
+                },
+            }
+        });
     })
 }
 
 function addControlWidget() {
-    _log('addControlWidget() Start',DLOG);
+    _log('addControlWidget() Start', DLOG);
     // setTimeout(function(){
 
-    $('#content').after('<div id="controlDiv" class="gray-grad firstopen" style="display:none;" title="settings for advancedsearch v'+version+'">'+
-            '<a href="'+downloadLink+'" class="button-small pure-button" style="float:right;"> click to manually update</a> ' +
-            // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
-            '<div class="settingscontainer" >'+
-                '<img src="https://hest.pro/s/logo">'+
-                '<br><span style="font-weight:bold">Filter Results Page</span><br>'+
-                '<input type=checkbox id=qtydefault class="saveState css-checkbox " value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState css-checkbox" value="1" size="7" defval="1"><br>' +
-                '<input type=checkbox id="combinePN" class="saveState css-checkbox " value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
-                '<input type=checkbox id=pricehoverControl class="saveState css-checkbox " value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' + 
-                '<input type=checkbox id=queryHighlight class="saveState css-checkbox " value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +   
-                '<input type=checkbox id=hideShowTRFlag class="saveState css-checkbox " value="0"><label class="css-label" for="hideShowTRFlag">Automatically Hide Tape & Reel and Digi-Reel rows in the filter results page</label><br>' +   
-                '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>'+
-                '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>'+
-                '<label><input type=checkbox id=picPrevControl class="saveState css-checkbox " value="1"> <label class="css-label" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
-                // '<label><input type=checkbox id=qfControl class="saveState css-checkbox " value="1"> <label class="css-label" for="qfControl">Turn on Quick Pick Box</label><br>' +
-                '<label><input type=checkbox id=familyHighlight class="saveState css-checkbox " value="1"> <label class="css-label" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
-                '<label><input type=checkbox id=instantfilter class="saveState css-checkbox " value="1"><label class="css-label" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
-                '<br><span style="font-weight:bold">Experimental</span><br>'+
-                '<input type=checkbox id=nightMode class="saveState css-checkbox " value="0"> <label class="css-label" for="nightMode">Night Mode </label><br>' +
-                '<input type=checkbox id=analytics class="saveState css-checkbox " value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. Only used by author to help with the search experience. </label><br>' +
-                '<input type=checkbox id=spellcheck class="saveState css-checkbox " value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
-                '<input type=checkbox id=stickyfilters class="saveState css-checkbox " value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
-                '<input type=checkbox id=squishedFilters class="saveState css-checkbox " value="0"><label class="css-label" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +  
-                '<input type=checkbox id=aprilf class="saveState css-checkbox " value="0"><label class="css-label" for="aprilf">April fools joke.</label><br>' +  
-            '</div><br><br>'+
-            '<button id=restoredefaults class="button-small pure-button" style="margin-left:20px"> restore defaults </button>'+
-            '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>'+
+    $('#content').after('<div id="controlDiv" class="gray-grad firstopen" style="display:none;" title="settings for advancedsearch v' + version + '">' +
+        '<a href="' + downloadLink + '" class="button-small pure-button" style="float:right;"> click to manually update</a> ' +
+        // '<button  id="closeControlDiv" class="clean-gray close">X</button>' +
+        '<div class="settingscontainer" >' +
+        '<img src="https://hest.pro/s/logo">' +
+        '<br><span style="font-weight:bold">Filter Results Page</span><br>' +
+        '<input type=checkbox id=qtydefault class="saveState css-checkbox " value="1"><label class="css-label" for="qtydefault">Always initially sort by price @ Qty</label> <input type="text" id="qtydefaulttext" class="saveState css-checkbox" value="1" size="7" defval="1"><br>' +
+        '<input type=checkbox id="combinePN" class="saveState css-checkbox " value="1"> <label class="css-label" for="combinePN">Combine Manufacturer PN, DK PN, and Manufacturer into one column to save horizontal space</label> (breaks hover headers in chrome)<br>' +
+        '<input type=checkbox id=pricehoverControl class="saveState css-checkbox " value="1"><label class="css-label" for="pricehoverControl">Turn on price break popup on hovering over prices</label><br>' +
+        '<input type=checkbox id=queryHighlight class="saveState css-checkbox " value="1"><label class="css-label" for="queryHighlight">Turn on query term highlighting in on filter pages</label><br>' +
+        '<input type=checkbox id=hideShowTRFlag class="saveState css-checkbox " value="0"><label class="css-label" for="hideShowTRFlag">Automatically Hide Tape & Reel and Digi-Reel rows in the filter results page</label><br>' +
+        '<label>Explore Mode Popup Delay time <input type="text" id="exploreModeDelay" class="saveState" value="300" size="7" defval="300">ms</label><br>' +
+        '<br><span style="font-weight:bold">Index/Keyword Results Page</span><br>' +
+        '<label><input type=checkbox id=picPrevControl class="saveState css-checkbox " value="1"> <label class="css-label" for="picPrevControl">Turn on picture previews when hovering over Family links on the Index/Keyword Results page</label><br>' +
+        // '<label><input type=checkbox id=qfControl class="saveState css-checkbox " value="1"> <label class="css-label" for="qfControl">Turn on Quick Pick Box</label><br>' +
+        '<label><input type=checkbox id=familyHighlight class="saveState css-checkbox " value="1"> <label class="css-label" for="familyHighlight">Turn on the bolding and text size increase of matched family names on index results page</label><br>' +
+        '<label><input type=checkbox id=instantfilter class="saveState css-checkbox " value="1"><label class="css-label" for="instantfilter">Turn on the Product Index Instant Filter to immediately show matching search box keywords</label><br>' +
+        '<br><span style="font-weight:bold">Experimental</span><br>' +
+        '<input type=checkbox id=nightMode class="saveState css-checkbox " value="0"> <label class="css-label" for="nightMode">Night Mode </label><br>' +
+        '<input type=checkbox id=analytics class="saveState css-checkbox " value="0"> <label class="css-label" for="analytics">Help improve this script with analytics. Only used by author to help with the search experience. </label><br>' +
+        '<input type=checkbox id=spellcheck class="saveState css-checkbox " value="0"> <label class="css-label" for="spellcheck">Turn on rudimentary spell check and suggested search terms</label><br>' +
+        '<input type=checkbox id=stickyfilters class="saveState css-checkbox " value="0"><label class="css-label" for="stickyfilters">Turn on sticky filter selections on filter page to elminate the need for ctrl+click (known shift click bug)</label><br>' +
+        '<input type=checkbox id=squishedFilters class="saveState css-checkbox " value="0"><label class="css-label" for="squishedFilters">Turn on expandemonium feature (squished multiselect filters) ...only a tech demo...</label><br>' +
+        '<input type=checkbox id=aprilf class="saveState css-checkbox " value="0"><label class="css-label" for="aprilf">April fools joke.</label><br>' +
+        '</div><br><br>' +
+        '<button id=restoredefaults class="button-small pure-button" style="margin-left:20px"> restore defaults </button>' +
+        '<br><br><div class="centerme">Have questions or comments? email my <b>gmail.com</b> account <br> <b>bombledmonk@</b></div>' +
         '</div>'
     );
-    $('.settingscontainer .css-checkbox').css('z-index',2005);
+    $('.settingscontainer .css-checkbox').css('z-index', 2005);
 
 
     $('#content').after('<div id="controlSpan" class="pure-button"><i class="fa fa-cog"></i> settings v' + version + '</div>');
     _log('control dialog tick start ', DLOG);
 
 
-            // $('#controlDiv').dialog({
-            //     autoOpen: false,
-            //     resizable: false,
-            //     // draggable: false,
-            //     height:600,
-            //     width:800,
-            //     modal: true,
-            //     buttons: {
-            //         "Apply & Refesh Page": function() {
-            //             $(this).css('color', 'lightgrey');
-            //             $( this ).dialog( "close" );
-            //             document.location.reload();
-            //         },
-            //         Cancel: function() {
-            //             $( this ).dialog( "close" );
-            //         }
-            //     }
-            // });
-            // $('#controlspan')
+    // $('#controlDiv').dialog({
+    //     autoOpen: false,
+    //     resizable: false,
+    //     // draggable: false,
+    //     height:600,
+    //     width:800,
+    //     modal: true,
+    //     buttons: {
+    //         "Apply & Refesh Page": function() {
+    //             $(this).css('color', 'lightgrey');
+    //             $( this ).dialog( "close" );
+    //             document.location.reload();
+    //         },
+    //         Cancel: function() {
+    //             $( this ).dialog( "close" );
+    //         }
+    //     }
+    // });
+    // $('#controlspan')
 
 
 
@@ -933,65 +956,65 @@ function addControlWidget() {
     //     hoveringHelpHighlighter();
 
     // });
-    $('#controlSpan').click(function(){
-	    if($('#controlDiv.firstopen')){
+    $('#controlSpan').click(function () {
+        if ($('#controlDiv.firstopen')) {
 
-	        $('#controlDiv').dialog({
-	            autoOpen: true,
-	            resizable: false,
-	            // draggable: false,
-	            height:650,
-	            width:800,
-	            modal: true,
-	            buttons: {
-	                "Apply & Refesh Page": function() {
-	                    $(this).css('color', 'lightgrey');
-	                    $( this ).dialog( "close" );
-	                    document.location.reload();
-	                },
-	                Cancel: function() {
-	                    $( this ).dialog( "close" );
-	                }
-	            }
-	        });
-	        $('#controlDiv').removeClass('firstopen')
-	    }else{
-	        $('#controlDiv').dialog('open');
-	        hoveringHelpHighlighter();
+            $('#controlDiv').dialog({
+                autoOpen: true,
+                resizable: false,
+                // draggable: false,
+                height: 650,
+                width: 800,
+                modal: true,
+                buttons: {
+                    "Apply & Refesh Page": function () {
+                        $(this).css('color', 'lightgrey');
+                        $(this).dialog("close");
+                        document.location.reload();
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+            $('#controlDiv').removeClass('firstopen')
+        } else {
+            $('#controlDiv').dialog('open');
+            hoveringHelpHighlighter();
 
-	    }
+        }
 
     });
 
     _log(encodeURIComponent(window.location), true);
 
-    $('#applyControls').click(function(){
+    $('#applyControls').click(function () {
         $(this).css('color', 'lightgrey');
         document.location.reload();
     });
 
-    $('#restoredefaults').click(function(){
+    $('#restoredefaults').click(function () {
         $(this).css('color', 'lightgrey');
         _log(Object.keys(localStorage));
         localStorage.clear();
         _log(Object.keys(localStorage));
     });
-    
+
     $('#controlSpan').css({
         'position': 'fixed',
         'right': '10px',
         'top': '20px',
         'z-index': '19',
-        'cursor':'pointer'
+        'cursor': 'pointer'
     });
 
     addControlWidgetActions2();
-        // },1500);
-    _log('addControlWidget() End',DLOG);
+    // },1500);
+    _log('addControlWidget() End', DLOG);
 }
 
-function hoveringHelpHighlighter(){
-    _log('hoveringHelpHighlighter() Start',DLOG);
+function hoveringHelpHighlighter() {
+    _log('hoveringHelpHighlighter() Start', DLOG);
     // var hlarray = [
     // [$('#exploremodecheckbox').parent(), $('select[multiple]')],
     // [$('#qtydefault').parent(), $('select[multiple]')],
@@ -999,180 +1022,180 @@ function hoveringHelpHighlighter(){
     var zind = $('#headKeySearch').css('z-index');
 
     $('#picPrevControl, [for=picPrevControl]').hoverIntent({
-        over: function(){$('.catfilterlink').addClass('zlevelhhl'); },
-        out: function(){$('.catfilterlink').removeClass('zlevelhhl'); },
+        over: function () { $('.catfilterlink').addClass('zlevelhhl'); },
+        out: function () { $('.catfilterlink').removeClass('zlevelhhl'); },
         interval: 2,
-    }); 
+    });
     // $('#columnchooser>button').hoverIntent({
     //  over: function(){$('#content').addClass('cwhhl'); },
     //  out: function(){$('#content').removeClass('cwhhl'); },
     //  interval: 2,
     // });
     $('#instantfilter, [for=instantfilter], #spellcheck, [for=spellcheck]').hoverIntent({
-        over: function(){$('#cHeader').addClass('zlevelhhl'); },
-        out: function(){$('#cHeader').removeClass('zlevelhhl');},
+        over: function () { $('#cHeader').addClass('zlevelhhl'); },
+        out: function () { $('#cHeader').removeClass('zlevelhhl'); },
         interval: 2,
-    });     
+    });
     // $('#qfControl').parent().hoverIntent({
     //     over: function(){$('#qpDiv').addClass('zlevelhhl');},
     //     out: function(){$('#qpDiv').removeClass('zlevelhhl');},
     //     interval: 2,
-    // }); 
+    // });
     $('#combinePN, [for=combinePN]').hoverIntent({
-        over: function(){$('.mfg-partnumber').addClass('zlevelhhl');},
-        out: function(){ $('.mfg-partnumber').removeClass('zlevelhhl');},
+        over: function () { $('.mfg-partnumber').addClass('zlevelhhl'); },
+        out: function () { $('.mfg-partnumber').removeClass('zlevelhhl'); },
         interval: 2,
-    }); 
+    });
     $('#pricehoverControl, [for=pricehoverControl]').hoverIntent({
-        over: function(){$('a:contains(.)').addClass('zlevelhhl');},
-        out: function(){$('a:contains(.)').removeClass('zlevelhhl');},
+        over: function () { $('a:contains(.)').addClass('zlevelhhl'); },
+        out: function () { $('a:contains(.)').removeClass('zlevelhhl'); },
         interval: 2,
     });
     $('#qtydefault, [for=qtydefault]').hoverIntent({
-        over: function(){$('input[name=quantity]').addClass('zlevelhhl');},
-        out: function(){$('input[name=quantity]').removeClass('zlevelhhl');},
+        over: function () { $('input[name=quantity]').addClass('zlevelhhl'); },
+        out: function () { $('input[name=quantity]').removeClass('zlevelhhl'); },
         interval: 2,
     });
     $('#exploremodecheckbox, [for=exploremodecheckbox], #stickyfilters, [for=stickyfilters], #wrapFilters, [for=wrapFilters], #squishedFilters, [for=squishedFilters]').hoverIntent({
-        over: function(){$('select[multiple]').addClass('explorehhl');},
-        out: function(){$('select[multiple]').removeClass('explorehhl');},
+        over: function () { $('select[multiple]').addClass('explorehhl'); },
+        out: function () { $('select[multiple]').removeClass('explorehhl'); },
         interval: 100,
     });
-    _log('hoveringHelpHighlighter() End',DLOG);
+    _log('hoveringHelpHighlighter() End', DLOG);
 
 }
 
-function addControlWidgetActions2(){
-    _log('addControlWidgetActions2() Start',DLOG);
-    $('.saveState').each(function(){
+function addControlWidgetActions2() {
+    _log('addControlWidgetActions2() Start', DLOG);
+    $('.saveState').each(function () {
         restoreInputState($(this));
     });
 
-    if($('#qtydefault').is(':checked')){
-        if($('#mainform').find('input[name=ColumnSort]') == 0){// leave alone if a sort isn't already selected
+    if ($('#qtydefault').is(':checked')) {
+        if ($('#mainform').find('input[name=ColumnSort]') == 0) {// leave alone if a sort isn't already selected
             $('#mainform').find('input[name=ColumnSort]').val('100001');
             $('#mainform').find('input[name=qantity]').val($('#qtydefaulttext').val());
         }
     }
 
-    $('#exploreModeDelay').change(function() {  
+    $('#exploreModeDelay').change(function () {
         localStorage.setItem('exploreModeDelay', $('#exploreModeDelay').val());
     });
-    $('#qtydefaulttext').change(function() {
+    $('#qtydefaulttext').change(function () {
         localStorage.setItem('qtydefaulttext', $('#qtydefaulttext').val());
         _log('quantity storage set to ' + localStorage.getItem('qtydefaulttext'));
         $('.engquan').val($('#qtydefaulttext').val());
-        $('a.catfilterlink').each(function() {
+        $('a.catfilterlink').each(function () {
             $(this).attr('href', $(this).attr('href').replace(/&ColumnSort=1000011&quantity=[\d]+/i, '&ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val()));
         });
-        if (document.location.href.search('quantity')){
-            document.location.href = document.location.href.replace(/quantity=\d+/i,'quantity='+$('#qtydefaulttext').val());
+        if (document.location.href.search('quantity')) {
+            document.location.href = document.location.href.replace(/quantity=\d+/i, 'quantity=' + $('#qtydefaulttext').val());
             $('#applyControls').off('click');
         }
     });
 
-    $('#qtydefault').on('click',function() {
-        if($(this).prop('checked') != 'checked') {
+    $('#qtydefault').on('click', function () {
+        if ($(this).prop('checked') != 'checked') {
             localStorage.setItem($(this).attr('id'), 0);
             $('.engquan').attr('disabled', 'disabled');
             $('.colsort').attr('disabled', 'disabled');
         }
-        if($(this).prop('checked') == 'checked') {
+        if ($(this).prop('checked') == 'checked') {
             $('.engquan').removeAttr('disabled');
             $('.colsort').removeAttr('disabled');
         }
     });
-    _log('addControlWidgetActions2() End',DLOG);
+    _log('addControlWidgetActions2() End', DLOG);
 }
 
-function restoreInputState($singleFormElem){
+function restoreInputState($singleFormElem) {
     // _log('restoreInputState($singleFormElem) Start',DLOG);
     $singleFormElem.val(((localStorage.getItem($singleFormElem.attr('id'))) == null) ? $singleFormElem.val() : localStorage.getItem($singleFormElem.attr('id')));
     localStorage.setItem($singleFormElem.attr('id'), $singleFormElem.val());
-    if($singleFormElem.attr('type') == 'text'){
+    if ($singleFormElem.attr('type') == 'text') {
 
     }
-     else if($singleFormElem.attr('type') == 'checkbox'){
-            $singleFormElem.prop('checked', parseInt($singleFormElem.val()));
+    else if ($singleFormElem.attr('type') == 'checkbox') {
+        $singleFormElem.prop('checked', parseInt($singleFormElem.val()));
     }
 
-    $singleFormElem.change(function(){
-        if($(this).attr('type') == 'checkbox'){
+    $singleFormElem.change(function () {
+        if ($(this).attr('type') == 'checkbox') {
             $(this).val($(this).prop('checked') ? 1 : 0);
         }
         localStorage.setItem($(this).attr('id'), $(this).val());
-        _log('[restoreInputState()] setting '+ $(this).attr('id') + ' from session storage to '+  localStorage.getItem($(this).attr('id')),DLOG);
+        _log('[restoreInputState()] setting ' + $(this).attr('id') + ' from session storage to ' + localStorage.getItem($(this).attr('id')), DLOG);
     });
     // _log('restoreInputState($singleFormElem) Start',DLOG);
 }
 
-function styleCheckboxes(){
-    _log('styleCheckboxes() Start',DLOG);
+function styleCheckboxes() {
+    _log('styleCheckboxes() Start', DLOG);
 
-    $('.filters-group input[type=checkbox]').not('.css-checkbox').each(function(){
+    $('.filters-group input[type=checkbox]').not('.css-checkbox').each(function () {
         $(this).parent().wrap('<div style="display:inline-block; margin-right:10px;" />');
-        $(this).parent().attr('for',$(this).attr('id'));
+        $(this).parent().attr('for', $(this).attr('id'));
         $(this).insertBefore($(this).parent());
     });
     $('.filters-group input[type=checkbox]').not('.css-checkbox').addClass('css-checkbox');
-    
 
-    $('.filters-group label[for]').not('.css-label').each(function(){
+
+    $('.filters-group label[for]').not('.css-label').each(function () {
         $(this).html($(this).text());
     });
     $('.filters-group label[for]').not('.css-label').addClass('css-label');
 
-    $('.filters-group').css({'padding-top':'3px'});
-    _log('styleCheckboxes() End',DLOG);
+    $('.filters-group').css({ 'padding-top': '3px' });
+    _log('styleCheckboxes() End', DLOG);
 
 }
 
-function fixMidWrapper(){
-    $('.paging').css({'flex-grow':'0'})
+function fixMidWrapper() {
+    $('.paging').css({ 'flex-grow': '0' })
 }
 
-function formatFilterResultsPage(){
-    if ( $('#productTable').length){
-        _log('formatFilterResultsPage() Start',DLOG);
+function formatFilterResultsPage() {
+    if ($('#productTable').length) {
+        _log('formatFilterResultsPage() Start', DLOG);
         // $('.quantity-form br').add('#mainform br').remove();
-compactRows()
+        compactRows()
         // $('a.altpkglink').hide();
         GM_addStyle(`a.altpkglink{display:none;}`)
         // $('.dload-btn').css({'text-align':'left', 'width':'1%'});
         // $('.page-slector').css({'width': '1%'});
         // $('.qty-form').css({'width': '1%'});
-        _log('formatFilterResultsPage() tick',DLOG);
-        $('.dk-url-shortener').css({ 'position': 'relative', top: '10px' , right:"30px"});
+        _log('formatFilterResultsPage() tick', DLOG);
+        $('.dk-url-shortener').css({ 'position': 'relative', top: '10px', right: "30px" });
 
         // $('#appliedFilterHeaderRow').closest('div').css({'overflow':''});
         // $('#filters-panel').css({'display':''});
 
-        addCustomFiltersPanel();
+        // addCustomFiltersPanel();
         removeTableScrolling();
         // $('#search-within-results').css({'display':'inline'}).insertAfter($('.filters-group-chkbxs'))
         // $('#search-within-results input').css({'margin-bottom': 0});
-        $('#deapplied-filters').css({'padding': '10px 0', 'display': 'inline'}).insertAfter($('#search-within-results').css({'display':'inline-block'}));
+        $('#deapplied-filters').css({ 'padding': '10px 0', 'display': 'inline' }).insertAfter($('#search-within-results').css({ 'display': 'inline-block' }));
         $('.deapply-filter-selection').addClass('button-small pure-button primary');
         // $('#filters-buttons').css({'background-image':'none'})
         addToTopButton();
         setTimeout(floatApplyFilters, 1);// redo or add back
         //TODO fix dependencies of if statements below
-        
+
         addImageBar();
         picsToAccel(); //add the thumnails to picture accelerator block
-        if(localStorage.getItem('combinePN') == 1) {
-            setTimeout(function(){combinePN();addClipboardCopyToResultsTable();}, 1);
-        }else{addClipboardCopyToResultsTable();}
+        if (localStorage.getItem('combinePN') == 1) {
+            setTimeout(function () { combinePN(); addClipboardCopyToResultsTable(); }, 1);
+        } else { addClipboardCopyToResultsTable(); }
 
         // setTimeout(function(){addPartCompare();}, 150);
 
         augmentCompareParts();
-        if(localStorage.getItem('pricehoverControl') == 1) {
-            setTimeout(function(){addPriceHover();}, 3000);
+        if (localStorage.getItem('pricehoverControl') == 1) {
+            setTimeout(function () { addPriceHover(); }, 3000);
             // addAddToCart();
         }
 
-        setTimeout(function(){addStickyHeader();}, 2500);  // wait for the page native javascript to load then reapply modified code
+        setTimeout(function () { addStickyHeader(); }, 2500);  // wait for the page native javascript to load then reapply modified code
         // alert('hi')
 
         formatQtyBox();  //TODO addback?
@@ -1193,7 +1216,7 @@ compactRows()
         fixImageHover();
         fixMidWrapper();
 
-
+        //addTableHighlighting();
         // $('input[value=Reset]').addClass('button-small pure-button').click(function(){
 
         //     addApplyFiltersButtonHighlight();
@@ -1203,11 +1226,11 @@ compactRows()
         $('input[value*="Download Table"]').addClass('button-small pure-button')//.css({'background-image':''});//.css({'margin':'1px', 'padding':'2px'});
 
 
-        if(localStorage.getItem('queryHighlight') == 1){
-            if($('#headKeySearch').val().toString().trim() != ''){
-                wrapText($('#productTable')[0], $('#headKeySearch').val().toString());  
+        if (localStorage.getItem('queryHighlight') == 1) {
+            if ($('#headKeySearch').val().toString().trim() != '') {
+                wrapText($('#productTable')[0], $('#headKeySearch').val().toString());
             }
-        } 
+        }
 
         addColumnMath();
         addGraphInterface();
@@ -1220,28 +1243,31 @@ compactRows()
         //setTimeout(function(){addDocRetrieve()}, 2500); //keep  for posterity
         // addClipboardCopyToResultsTable();
 
-        _log('formatFilterResultsPage() End',DLOG);
+        _log('formatFilterResultsPage() End', DLOG);
     }
 }
 
-function addQuickFilterButton(){
+function addQuickFilterButton() {
     var checkselector = '#filters-panel .filters-group-chkbxs #stock';
     $('#search-within-results')
-    .after(`
-        <div 
-            id=quickFilterButtonDiv class="pure-button button secondary"
-            title="Selects In Stock, Active, all packaging but T&R,T&B, and Digi-Reel"
-        >
-            Quick Select Filters
+        .after(`
+        <div style="flex-grow:4;">
+            <div
+                id=quickFilterButtonDiv class="pure-button button secondary"
+                title="Selects In Stock, Active, all packaging but T&R,T&B, and Digi-Reel"
+                style="margin:7px 10px; padding:.5em"
+            > Quick Select Filters
+            </div>
+
         </div>`);
-    $('#quickFilterButtonDiv').on('click', function(){
+    $('#quickFilterButtonDiv').on('click', function () {
         $('select[name=pv7] option')
-        .not('[value=243]')  // digireel
-        .not('[value=1]')  // tape and reel
-        .not('[value=4]')  // tape and box
-        .prop('selected',true);
-        $(checkselector).prop('checked',true);
-        $('select[name=pv1989] option[value=0]').prop('selected',true);
+            .not('[value=243]')  // digireel
+            .not('[value=1]')  // tape and reel
+            .not('[value=4]')  // tape and box
+            .prop('selected', true);
+        $(checkselector).prop('checked', true);
+        $('select[name=pv1989] option[value=0]').prop('selected', true);
     });
 
     GM_addStyle(`
@@ -1250,19 +1276,19 @@ function addQuickFilterButton(){
         .highlightselectbox[name="pv1989"] option[value="0"] {background-color:blue; color:white;}
     `)
     $('#quickFilterButtonDiv')
-    .on('mouseenter', function(){ 
-        $('select[name=pv7], select[name=pv1989]').addClass('highlightselectbox'); 
-        $(checkselector).parent().addClass('highlightcheckbox')
-    })
-    .on('mouseleave', function(){ 
-        $('select[name=pv7], select[name=pv1989]').removeClass('highlightselectbox');
-        $(checkselector).parent().removeClass('highlightcheckbox')
-    })
+        .on('mouseenter', function () {
+            $('select[name=pv7], select[name=pv1989]').addClass('highlightselectbox');
+            $(checkselector).parent().addClass('highlightcheckbox')
+        })
+        .on('mouseleave', function () {
+            $('select[name=pv7], select[name=pv1989]').removeClass('highlightselectbox');
+            $(checkselector).parent().removeClass('highlightcheckbox')
+        })
 
 }
 
-function compactRows(){
-    _log('compactRows() Start',DLOG);
+function compactRows() {
+    _log('compactRows() Start', DLOG);
     $('.th-packaging.ps-headerColumn').append('<div class="pure-button button secondary button-xsmall hideshowdkr showingdkr" style="font-size:90%;">Hide TR,DKR</div>')
     GM_addStyle(`
             .hideTheRows .hiddenrow{
@@ -1270,47 +1296,47 @@ function compactRows(){
             }
         `)
     $('.hideshowdkr').click(
-        function(){showHideTR();}
+        function () { showHideTR(); }
     )
 
-    if(localStorage.getItem('hideShowTRFlag') == 1){
+    if (localStorage.getItem('hideShowTRFlag') == 1) {
         showHideTR();
     }
 
-    _log('compactRows() End',DLOG);
+    _log('compactRows() End', DLOG);
 }
-function showHideTR(){
-        if($('.hideshowdkr').hasClass('showingdkr')){
-            $('.hideshowdkr').addClass('hidingdkr primary').removeClass('showingdkr secondary').text('Show TR,DKR')
-            var packagingFilter = $('select[name=pv7]');
-            if(packagingFilter.find('option[value=2]').length){
-                var priority = packagingFilter.find('option[value=2]').text().trim();
-                var tapereel = packagingFilter.find('option[value=1]').text().trim();
-                var digireel = packagingFilter.find('option[value=243]').text().trim();
-                var packagingColumn = $('.tr-packaging:first').index()+1;
-                 
-                $('#lnkPart .tr-packaging:contains('+tapereel+')').closest('tr').addClass('hiddenrow') 
-                $('#lnkPart .tr-packaging:contains('+digireel+')').closest('tr').addClass('hiddenrow')    
-                $('#lnkPart').addClass('hideTheRows');
-            }
-        }else if($('.hideshowdkr').hasClass('hidingdkr')){
-            $('.hideshowdkr').removeClass('hidingdkr primary').addClass('showingdkr secondary').text('Hide TR,DKR')
-            $('#lnkPart').removeClass('hideTheRows');
+function showHideTR() {
+    if ($('.hideshowdkr').hasClass('showingdkr')) {
+        $('.hideshowdkr').addClass('hidingdkr primary').removeClass('showingdkr secondary').text('Show TR,DKR')
+        var packagingFilter = $('select[name=pv7]');
+        if (packagingFilter.find('option[value=2]').length) {
+            var priority = packagingFilter.find('option[value=2]').text().trim();
+            var tapereel = packagingFilter.find('option[value=1]').text().trim();
+            var digireel = packagingFilter.find('option[value=243]').text().trim();
+            var packagingColumn = $('.tr-packaging:first').index() + 1;
+
+            $('#lnkPart .tr-packaging:contains(' + tapereel + ')').closest('tr').addClass('hiddenrow')
+            $('#lnkPart .tr-packaging:contains(' + digireel + ')').closest('tr').addClass('hiddenrow')
+            $('#lnkPart').addClass('hideTheRows');
         }
-    
+    } else if ($('.hideshowdkr').hasClass('hidingdkr')) {
+        $('.hideshowdkr').removeClass('hidingdkr primary').addClass('showingdkr secondary').text('Hide TR,DKR')
+        $('#lnkPart').removeClass('hideTheRows');
+    }
+
 }
 
-function compactRows2(){
-    _log('compactRows() Start',DLOG);
+function compactRows2() {
+    _log('compactRows() Start', DLOG);
 
-    if($('select[name=pv7] option[value=2]').length){
+    if ($('select[name=pv7] option[value=2]').length) {
         var priority = $('select[name=pv7] option[value=2]').text().trim();
-        var packagingColumn = $('.tr-packaging:first').index()+1;
+        var packagingColumn = $('.tr-packaging:first').index() + 1;
         GM_addStyle(`
-                .compactrow td:nth-child(n+${packagingColumn}), 
-                .compactrow .tr-description, 
-                .compactrow .tr-vendor, 
-                .compactrow .tr-image, 
+                .compactrow td:nth-child(n+${packagingColumn}),
+                .compactrow .tr-description,
+                .compactrow .tr-vendor,
+                .compactrow .tr-image,
                 .compactrow .tr-datasheet{
                     visibility:hidden;
                 }
@@ -1324,9 +1350,9 @@ function compactRows2(){
                     height:50px;
                 }
             `)
-        $('.tr-packaging').each(function(){
-                // console.log(priority, this.innerText, packagingColumn)
-            if( $(this).text().indexOf(priority) != -1 ){
+        $('.tr-packaging').each(function () {
+            // console.log(priority, this.innerText, packagingColumn)
+            if ($(this).text().indexOf(priority) != -1) {
                 var mfgpn = $(this).siblings('.tr-mfgPartNumber')
                 var others = [
                     $(this).closest('tr').prev().find('.tr-mfgPartNumber'),
@@ -1335,40 +1361,40 @@ function compactRows2(){
                     $(this).closest('tr').next().next().find('.tr-mfgPartNumber')
                 ]
 
-                others.forEach(function(el, index){
+                others.forEach(function (el, index) {
                     // console.log('OTHERSSSSSSSSSSSSSSSSSSSSSSSSSS', el.text(), mfgpn.text(), (el.text().trim() == mfgpn.text().trim()))
-                    if(el.text().trim() == mfgpn.text().trim()){
+                    if (el.text().trim() == mfgpn.text().trim()) {
                         el.closest('tr').addClass('compactrow');
                     }
                 })
             }
         })
     }
-    _log('compactRows() End',DLOG);
+    _log('compactRows() End', DLOG);
 }
 
-function addClipboardCopyToDetail(){
-    _log('addClipboardCopyToDetail() Start',DLOG);
-    $('#product-details td').each(function(){
-        if($(this).children().length > 0){
+function addClipboardCopyToDetail() {
+    _log('addClipboardCopyToDetail() Start', DLOG);
+    $('#product-details td').each(function () {
+        if ($(this).children().length > 0) {
             $(this).children(':first').after('<button class="copyContent button pure-button" title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>');
-        }else{
+        } else {
             $(this).append('<button class="copyContent button pure-button"  title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>')
         }
     });
-    $('.lnkMfct').css({'display':'inline-block'});
+    $('.lnkMfct').css({ 'display': 'inline-block' });
     $('.copyContent').tooltipster({
-        content:"copied!",
-        trigger:'custom',
+        content: "copied!",
+        trigger: 'custom',
         'side': 'right',
         'distance': -45
     })
     $('.copyContent').tooltipster({
-        content:"Copy Field to Clipboard",
+        content: "Copy Field to Clipboard",
         // "trigger":'hover',
         'side': 'right',
         'distance': -45,
-        'multiple':true
+        'multiple': true
     })
     GM_addStyle(`
         td .copyContent{
@@ -1381,209 +1407,209 @@ function addClipboardCopyToDetail(){
         }
     `);
     var clip = new Clipboard('.copyContent', {
-        text: function(trigger){
+        text: function (trigger) {
             return $(trigger).closest('td').text().trim();
         }
     })
-    clip.on('success', function(e){
+    clip.on('success', function (e) {
         $(e.trigger).tooltipster('open');
-        setTimeout(function(){$(e.trigger).tooltipster('close')}, 800)
+        setTimeout(function () { $(e.trigger).tooltipster('close') }, 800)
     });
 
-    _log('addClipboardCopyToDetail() End',DLOG);
+    _log('addClipboardCopyToDetail() End', DLOG);
 }
 
-function addClipboardCopyToResultsTable(){
-	_log('addClipboardCopyToResultsTable() Start',DLOG);
+function addClipboardCopyToResultsTable() {
+    _log('addClipboardCopyToResultsTable() Start', DLOG);
 
-	$('#content').append(`
+    $('#content').append(`
 		<div id="clipmecontainer" style="display:none;">
 		<button class="copyContent button pure-button"  title="Copy to Clipboard">
 			<i class="fa fa-files-o"></i> Copy Text
 		</button></div>
 	`);
 
-    $('#productTable').on('mouseenter', '.tr-dkPartNumber, .tr-mfgPartNumber', function(){
+    $('#productTable').on('mouseenter', '.tr-dkPartNumber, .tr-mfgPartNumber', function () {
 
-	    $(this).find('a:not(.tooltipstered)').tooltipster({
-	        content: $('.copyContent:last'),        
-	        'side': 'right',
-	        'distance': -45,
-	        'multiple':true,
-	        'delay': 50,
-	        'contentCloning': true,
-	        'functionReady': function(instance,helper){
-	        	$('.copyContent').html('<i class="fa fa-files-o"></i> Copy Text')
-	        	$('.copyContent').attr('data-clipboard-text', $(helper.origin).text().trim());
-	        	// console.log('~~~~~~~~~~~~~~~~~', instance, helper);
-	        	$(helper.tooltip).find('.tooltipster-content').css('padding','2px')
-	        	instance.reposition();
-	        },
-	    });
+        $(this).find('a:not(.tooltipstered)').tooltipster({
+            content: $('.copyContent:last'),
+            'side': 'right',
+            'distance': -45,
+            'multiple': true,
+            'delay': 50,
+            'contentCloning': true,
+            'functionReady': function (instance, helper) {
+                $('.copyContent').html('<i class="fa fa-files-o"></i> Copy Text')
+                $('.copyContent').attr('data-clipboard-text', $(helper.origin).text().trim());
+                // console.log('~~~~~~~~~~~~~~~~~', instance, helper);
+                $(helper.tooltip).find('.tooltipster-content').css('padding', '2px')
+                instance.reposition();
+            },
+        });
     });
 
     var clip = new Clipboard('.copyContent', {
-        text: function(trigger){
+        text: function (trigger) {
             return $(trigger).attr('data-clipboard-text');
         }
     });
-    clip.on('success', function(trigger){
-    	// alert('success!')
-    	// console.log(trigger)
-    	$(trigger.trigger).text('copied!')
+    clip.on('success', function (trigger) {
+        // alert('success!')
+        // console.log(trigger)
+        $(trigger.trigger).text('copied!')
     })
-    _log('addClipboardCopyToResultsTable() End',DLOG);
+    _log('addClipboardCopyToResultsTable() End', DLOG);
 }
 
-function addMorePartsToTable(){
-    _log('addMorePartsToTable() Start',DLOG);
+function addMorePartsToTable() {
+    _log('addMorePartsToTable() Start', DLOG);
 
-    if($('.paging .digiGray').length > 0){ // if there are no pages to load don't add a button
+    if ($('.paging .digiGray').length > 0) { // if there are no pages to load don't add a button
         //add button
-    	$('.paging:last').append('<button id="addmoreparts" class="button-small pure-button" style="margin-left:15px;">Show More Parts In Table</button>'+
-            ' showing <span class="showingparts">'+$('#productTable tbody>tr').length+'</span> parts');
+        $('.paging:last').append('<button id="addmoreparts" class="button-small pure-button" style="margin-left:15px;">Show More Parts In Table</button>' +
+            ' showing <span class="showingparts">' + $('#productTable tbody>tr').length + '</span> parts');
 
         //check if the paging is handled by javascript function
         var nextHref = $('.Next:first').attr('href') == undefined ? -1 : $('.Next:first').attr('href').indexOf('gotoPage');
-        if(nextHref !== -1){ //if gotoPage is found
-            
+        if (nextHref !== -1) { //if gotoPage is found
+
             var pageNumber = parseInt($('.Next:first').attr('href').split('(')[1]);
-            _log('page pageNumber is '+ pageNumber, DLOG);
+            _log('page pageNumber is ' + pageNumber, DLOG);
             $('#productTable:first').data('pagetoloadnext', pageNumber);
 
-            $('#addmoreparts').on('click', function(){
-                var method = window.eval('methodChooser(document.srform)')? 'POST':'GET'; // srform is the same as .quantity-form
-                    
+            $('#addmoreparts').on('click', function () {
+                var method = window.eval('methodChooser(document.srform)') ? 'POST' : 'GET'; // srform is the same as .quantity-form
+
                 $('.showingparts').append('<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>');
                 $('.quantity-form input[name=page]').val($('#productTable:first').data('pagetoloadnext'));
                 $.ajax({
                     method: method,
                     data: $('.quantity-form').serialize(),
-                    url : $('.quantity-form').attr('action'),
-                }).done(function(html){
+                    url: $('.quantity-form').attr('action'),
+                }).done(function (html) {
                     var pTable;
-                    if($('#combinePN').prop('checked')){
+                    if ($('#combinePN').prop('checked')) {
                         pTable = combinePNAfterLoad($(html).find('#productTable'));
                         pTable.find('tbody>tr').insertAfter($('#productTable:first tr:last'));
-                    }else{
+                    } else {
                         $(html).find('#productTable tbody>tr').insertAfter($('#productTable:first tr:last'));
                     }
-                    if($(html).find('a.Next').length !== 0){
+                    if ($(html).find('a.Next').length !== 0) {
                         // console.log('a.next is ', $(html).find('a.Next').length , $(html).find('a.Next:first').attr('href'));
                         $('#productTable:first').data('pagetoloadnext', parseInt($(html).find('.Next:first').attr('href').split('(')[1]));
                         $('.showingparts').text($('#productTable tbody>tr').length);
-                        
-                    }else{
-                        $('.showingparts').text($('#productTable tbody>tr').length);  
+
+                    } else {
+                        $('.showingparts').text($('#productTable tbody>tr').length);
                         $('#addmoreparts').hide();
                     }
-            });
                 });
-        }else{ // if gotoPage is not found
+            });
+        } else { // if gotoPage is not found
 
             $('#productTable:first').data('pagetoloadnext', $('.Next:first').attr('href'));
-        	$('#addmoreparts').on('click', function(){
+            $('#addmoreparts').on('click', function () {
 
                 // console.log($('#productTable:first').data('pagetoloadnext'));
                 $('.showingparts').append('<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>');
                 $.ajax({
                     method: "GET",
-                    url : $('#productTable:first').data('pagetoloadnext')
-                }).done(function(html){
+                    url: $('#productTable:first').data('pagetoloadnext')
+                }).done(function (html) {
                     var pTable = html;
 
-                    if($('#combinePN').prop('checked')){
+                    if ($('#combinePN').prop('checked')) {
                         pTable = combinePNAfterLoad($(html).find('#productTable'));
                         // console.log(pTable.find('tbody>tr').html());
-                        pTable.find('tbody>tr').insertAfter($('#productTable:first tr:last')); 
-                    }else{
+                        pTable.find('tbody>tr').insertAfter($('#productTable:first tr:last'));
+                    } else {
                         $(html).find('#productTable tbody>tr').insertAfter($('#productTable:first tr:last'));
                     }
                     // check for a.Next link on html page, set next page if exists otherwise hide button.
-                    if($(html).find('a.Next').length !== 0){
+                    if ($(html).find('a.Next').length !== 0) {
                         // console.log('a.next is ', $(html).find('a.Next').length , $(html).find('a.Next:first').attr('href'));
                         $('#productTable:first').data('pagetoloadnext', ($(html).find('a.Next:first').attr('href')));
                         $('.showingparts').text($('#productTable tbody>tr').length);
-                    }else{
-                        $('.showingparts').text($('#productTable tbody>tr').length);  
+                    } else {
+                        $('.showingparts').text($('#productTable tbody>tr').length);
                         $('#addmoreparts').hide();
                     }
                 });
-        	});
-        }  
+            });
+        }
     }
-    _log('addMorePartsToTable() End',DLOG);
+    _log('addMorePartsToTable() End', DLOG);
 
 }
 
-function replaceStarDash(){
-	_log('replaceStarDash() Start',DLOG);
-	$('select').not('[name=pv1989]').each(function(){
-		var thisSelect = $(this);
-		$(this).find('option:lt(2)').each(function(){
-			if($(this).text().trim() == '-'){
-				$(this).text('- (N/A)');
-				$(this).attr('title', 'Parameter not found in datasheet');
-				thisSelect.append($(this));
-			}
-			thisSelect.append($(this).filter('[value=0]').text('*(TBD)').attr('title', 'Parameter To Be Completed Soon'));
-		});
-	});
-	_log('replaceStarDash() End',DLOG);
+function replaceStarDash() {
+    _log('replaceStarDash() Start', DLOG);
+    $('select').not('[name=pv1989]').each(function () {
+        var thisSelect = $(this);
+        $(this).find('option:lt(2)').each(function () {
+            if ($(this).text().trim() == '-') {
+                $(this).text('- (N/A)');
+                $(this).attr('title', 'Parameter not found in datasheet');
+                thisSelect.append($(this));
+            }
+            thisSelect.append($(this).filter('[value=0]').text('*(TBD)').attr('title', 'Parameter To Be Completed Soon'));
+        });
+    });
+    _log('replaceStarDash() End', DLOG);
 }
 
-function formatComparePartsPage(){
-	if (window.location.href.indexOf('products/compare') != -1){
-		_log('formatComparePartsPage() Start',DLOG);
-		$('.tablescroller table tr:eq(3) td').each(function(idx){
-			$('.tablescroller table tr:eq(8) td:eq('+idx+')')
-			.addClass('tr-unitPrice')
-			.data('url', $(this).find('a').attr('href')).
-			append('<i class="fa fa-shopping-cart fa-lg" style="color:red;"></i>')
-		})
-		$('td.tr-unitPrice')
-	    .data('elementToLoad', '.catalog-pricing')
-	    .tooltipster({
-	        content: 'loading...',
-	        side: 'bottom',
-	        theme: 'tooltipster-shadow',
-	        // distance: -40,
-	        functionReady: loadPricesInCompare
-	    });
+function formatComparePartsPage() {
+    if (window.location.href.indexOf('products/compare') != -1) {
+        _log('formatComparePartsPage() Start', DLOG);
+        $('.tablescroller table tr:eq(3) td').each(function (idx) {
+            $('.tablescroller table tr:eq(8) td:eq(' + idx + ')')
+                .addClass('tr-unitPrice')
+                .data('url', $(this).find('a').attr('href')).
+                append('<i class="fa fa-shopping-cart fa-lg" style="color:red;"></i>')
+        })
+        $('td.tr-unitPrice')
+            .data('elementToLoad', '.catalog-pricing')
+            .tooltipster({
+                content: 'loading...',
+                side: 'bottom',
+                theme: 'tooltipster-shadow',
+                // distance: -40,
+                functionReady: loadPricesInCompare
+            });
 
-		$('#content').append('<img id="pszoomie" class="pszoomie psshadow" style="border: 0px solid white; box-shadow: 0px 0px 10px 5px rgb(136, 136, 136); height: 640px; width: 640px; display: none;" src="">')
-		fixImageHover();
-		_log('formatComparePartsPage() End',DLOG);
-	}
+        $('#content').append('<img id="pszoomie" class="pszoomie psshadow" style="border: 0px solid white; box-shadow: 0px 0px 10px 5px rgb(136, 136, 136); height: 640px; width: 640px; display: none;" src="">')
+        fixImageHover();
+        _log('formatComparePartsPage() End', DLOG);
+    }
 
 }
 
-function loadPricesInCompare(instance,helper){
-    _log('loadPricesInCompare() Start',DLOG);
+function loadPricesInCompare(instance, helper) {
+    _log('loadPricesInCompare() Start', DLOG);
     var $origin = $(helper.origin);
-    if($origin.data('loaded')!==true){
+    if ($origin.data('loaded') !== true) {
         $.get(
-            $(helper.origin).data('url'), 
-            function(data){
+            $(helper.origin).data('url'),
+            function (data) {
                 instance.content($(data).find($origin.data('elementToLoad')))
                 instance.reposition();
-                $origin.data('loaded',true)
+                $origin.data('loaded', true)
             }
         );
     }
-    _log('loadPricesInCompare() End',DLOG);
+    _log('loadPricesInCompare() End', DLOG);
 }
 
 
 
 // TODO add the ability to submit using form filters
-function addVisualPicker(){
-    _log('addVisualPicker() Start',DLOG);
-    _log('addVisualPicker() tick',DLOG);
+function addVisualPicker() {
+    _log('addVisualPicker() Start', DLOG);
+    _log('addVisualPicker() tick', DLOG);
     // var dialogHeight = ($(window).height() * 0.8);
     // var dialogHeight = (window.innerHeight * 0.8);
     var dialogHeight = window.innerHeight * 0.8;
-    _log('addVisualPicker() tick',DLOG);
+    _log('addVisualPicker() tick', DLOG);
     // var dialogWidth = ($(window).width() * 0.8);
     // var dialogWidth = ($(window).width() * 0.8);
     var dialogWidth = window.innerWidth * 0.8;
@@ -1591,17 +1617,17 @@ function addVisualPicker(){
     // $('.selectboxdivclass>b').after('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
     $('.filters-headline').append('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
     $('#content').after(
-        '<div id="visualpickerdiv" class="firstopen" style="display:none;">'+
-            '<div class="pickerbody" style="overflow-y:scroll; height:'+(dialogHeight-90)+'px;"></div>'+
-            '<div class="pickerbuttondiv" style="height:30px">'+
-            '<div class="moreadder" style="height:30px">'+
-                '<span class=moreoptionsmessage /><button class="pure-button myRedButton addmoreoptions">Add More Lines</button>'+
-                '<span class="pickerhelp1" style="margin-left:10px"><i style="cursor:pointer;" class="fa fa-question-circle fa-lg"></i></span>'+
-            '</div>'+
-                '<button class="pure-button done-with-filter" style="float:right; margin-right:20px;">Done</button>'+
-                '<button class="pure-button submitPickerForm" style="float:right; margin-right:20px;">Apply</button>'+
-                '<span class="pickerhelp2" style="float:right; margin-right:10px;"><i style="cursor:pointer;" class="fa fa-info-circle fa-lg"></i></span>'+
-            '</div>'+
+        '<div id="visualpickerdiv" class="firstopen" style="display:none;">' +
+        '<div class="pickerbody" style="overflow-y:scroll; height:' + (dialogHeight - 90) + 'px;"></div>' +
+        '<div class="pickerbuttondiv" style="height:30px">' +
+        '<div class="moreadder" style="height:30px">' +
+        '<span class=moreoptionsmessage /><button class="pure-button myRedButton addmoreoptions">Add More Lines</button>' +
+        '<span class="pickerhelp1" style="margin-left:10px"><i style="cursor:pointer;" class="fa fa-question-circle fa-lg"></i></span>' +
+        '</div>' +
+        '<button class="pure-button done-with-filter" style="float:right; margin-right:20px;">Done</button>' +
+        '<button class="pure-button submitPickerForm" style="float:right; margin-right:20px;">Apply</button>' +
+        '<span class="pickerhelp2" style="float:right; margin-right:10px;"><i style="cursor:pointer;" class="fa fa-info-circle fa-lg"></i></span>' +
+        '</div>' +
         '</div>');
     var p = $('.pickerbody');
     $('.pickerhelp1').tooltipster({
@@ -1610,14 +1636,14 @@ function addVisualPicker(){
         side: 'bottom'
     });
     $('.pickerhelp2').tooltipster({
-        content: $('<span>If you would like to see a more complete representation of example pictures for each filter option above, clear any other filters that may be selected. '+
-                '(ex items in Manufacturer or Series).</span>'),
+        content: $('<span>If you would like to see a more complete representation of example pictures for each filter option above, clear any other filters that may be selected. ' +
+            '(ex items in Manufacturer or Series).</span>'),
         theme: 'tooltipster-shadow',
         side: 'left'
     });
-    _log('addVisualPicker() tick',DLOG);
+    _log('addVisualPicker() tick', DLOG);
 
-    // $( "#visualpickerdiv" ).dialog( { 
+    // $( "#visualpickerdiv" ).dialog( {
     //     autoOpen: false,
     //     modal: true,
     //     height: ($(window).height() * 0.8),
@@ -1625,224 +1651,252 @@ function addVisualPicker(){
     //     close: function(){
     //         $('.moreadder').prependTo($('.pickerbuttondiv'));
     //         $('.pickerbody').empty('');
-    //     }, 
+    //     },
     // } );
     // $('.pickericon').on('click', openVisualPicker );
-    $('.pickericon').on('click', openVisualPickerNoWrap );
-    
+    $('.pickericon').on('click', openVisualPickerNoWrap);
+
     $('.addmoreoptions').on('click', addImagesToVisualPicker);
 
     $('#visualpickerdiv').on('click', '.pickerItem, .pickerItem input[type=checkbox]', pickerOptionClick);
 
-    $('.done-with-filter').on('click', function(){
-        $( "#visualpickerdiv" ).dialog('close');
+    $('.done-with-filter').on('click', function () {
+        $("#visualpickerdiv").dialog('close');
     });
-    $('.submitPickerForm').on('click', function(){
+    $('.submitPickerForm').on('click', function () {
         $('#mainform').submit();
     });
     mediumImageHover();
     //add special case for manufacturer, pull logo?
-    _log('addVisualPicker() End',DLOG);
+    _log('addVisualPicker() End', DLOG);
 }
 
-function pickerOptionClick(){
-        var p = $('.pickerbody');
-        var $cb;
-        var $pickerItem;
-        if ($(this).hasClass('pickerItem')){
-            $cb = $(this).find('input[type=checkbox]');
-            $pickerItem = $(this);
-            $cb.prop("checked", !$cb.prop("checked"));
-        }else{
-            $cb = $(this);
-            $pickerItem = $(this).closest('.pickerItem');
-        }
-        // console.log('this is, ', this)
-        $pickerItem.toggleClass('pickerItemSelected pickerItemNotSelected');
-        var targetSelect = $('select[name="'+p.data('selectval')+'"]');
-        console.log('targetselect', targetSelect.text())
-        p.find('input[type=checkbox]').each(function(){
-            // console.log('hi', this)
-            // console.log($pickerItem.prop('checked'), $pickerItem.val());
-            targetSelect.find('[value="'+$(this).val()+'"]').prop('selected', $(this).prop('checked'));
+function pickerOptionClick() {
+    var p = $('.pickerbody');
+    var $cb;
+    var $pickerItem;
+    if ($(this).hasClass('pickerItem')) {
+        $cb = $(this).find('input[type=checkbox]');
+        $pickerItem = $(this);
+        $cb.prop("checked", !$cb.prop("checked"));
+    } else {
+        $cb = $(this);
+        $pickerItem = $(this).closest('.pickerItem');
+    }
+    // console.log('this is, ', this)
+    $pickerItem.toggleClass('pickerItemSelected pickerItemNotSelected');
+    var targetSelect = $('select[name="' + p.data('selectval') + '"]');
+    console.log('targetselect', targetSelect.text())
+    p.find('input[type=checkbox]').each(function () {
+        // console.log('hi', this)
+        // console.log($pickerItem.prop('checked'), $pickerItem.val());
+        targetSelect.find('[value="' + $(this).val() + '"]').prop('selected', $(this).prop('checked'));
+    });
+    console.log('pickerOptionClick finished')
+}
+
+function addTableHighlighting() {
+
+
+
+    GM_addStyle(`
+#productTable table>tbody>tr>td {
+    padding: 10px;
+    font-size: 14px;
+    position: relative;
+}
+
+
+#productTable table>tbody>tr:hover {
+    padding: 20px;
+    background-color: #ffa !important;
+}
+
+#productTable tr:nth-child(even) td:first-child::before {
+    content: "";
+    position: absolute;
+    background-color: lightgreen;
+    top: 0;
+    left: -5000px;
+    width: 10000px;
+    height: 100%;
+    z-index: -10;
+}
+    `)
+}
+
+function openVisualPickerNoWrap() {
+    // _log('clicked on .pickeritem', true);
+
+    if ($('#visualpickerdiv.firstopen').length) {
+        $("#visualpickerdiv").dialog({
+            autoOpen: false,
+            modal: true,
+            height: ($(window).height() * 0.95),
+            width: ($(window).width() * 0.95),
+            close: function () {
+                $('.moreadder').prependTo($('.pickerbuttondiv'));
+                $('.pickerbody').empty('');
+            },
         });
-        console.log('pickerOptionClick finished')
+    } else { }
+
+    var p = $('.pickerbody');
+    // var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
+    var filtername = $(this).closest('span').text(); //for non wrapping function
+    var colIndex = $(this).closest('th').index();
+    var colDiv = $(this).closest('div');
+    p.data('selectval', colDiv.find('select').attr('name'));
+    // p.data('selectval', $('#appliedFilterOptions td').eq(colIndex).find('select').attr('name'));
+    // p.data('selectval', $(this).parent().find('select').attr('name'));
+    var $options = colDiv.find('select option');
+    // console.log($options);
+
+    p.attr('data-selectval', p.data('selectval'))
+    p.attr('data-filtername', filtername);
+    p.data('optioncount', $options.length);
+    p.data('optionsvisible', 0);
+    p.data('currentfilter', filtername);
+    p.data('theoptions', $options);
+
+    $("#visualpickerdiv").dialog('open');
+    $('.addmoreoptions').show();
+    addImagesToVisualPicker();
 }
 
-
-
-function openVisualPickerNoWrap(){
-        // _log('clicked on .pickeritem', true);
-
-        if($('#visualpickerdiv.firstopen').length){
-        	$( "#visualpickerdiv" ).dialog( { 
-		        autoOpen: false,
-		        modal: true,
-		        height: ($(window).height() * 0.95),
-		        width: ($(window).width() * 0.95),
-		        close: function(){
-		            $('.moreadder').prependTo($('.pickerbuttondiv'));
-		            $('.pickerbody').empty('');
-		        }, 
-		    } );
-        }else{}
-
-        var p = $('.pickerbody');
-        // var filtername = $(this).closest('.selectboxdivclass').find('b').text();  //for wrapping function
-        var filtername = $(this).closest('span').text(); //for non wrapping function
-        var colIndex = $(this).closest('th').index();
-        var colDiv = $(this).closest('div');
-        p.data('selectval', colDiv.find('select').attr('name'));
-        // p.data('selectval', $('#appliedFilterOptions td').eq(colIndex).find('select').attr('name'));
-        // p.data('selectval', $(this).parent().find('select').attr('name'));
-        var $options = colDiv.find('select option');
-        // console.log($options);
-
-        p.attr('data-selectval', p.data('selectval'))
-        p.attr('data-filtername', filtername);
-        p.data('optioncount', $options.length);
-        p.data('optionsvisible', 0);
-        p.data('currentfilter', filtername);
-        p.data('theoptions', $options);
-
-        $( "#visualpickerdiv" ).dialog('open');
-        $('.addmoreoptions').show();
-        addImagesToVisualPicker();
-}
-
-function addImagesToVisualPicker(){
-        var p = $('.pickerbody');
-        var ovisible = p.data('optionsvisible');
-        var ocount = p.data('optioncount');
-        if(ovisible+5 < ocount){
+function addImagesToVisualPicker() {
+    var p = $('.pickerbody');
+    var ovisible = p.data('optionsvisible');
+    var ocount = p.data('optioncount');
+    if (ovisible + 5 < ocount) {
         // console.log('clicked')
-            getSubsetOfOptionImages(p.data('theoptions'), p.data('currentfilter'), ovisible, ovisible+5);
-            $( ".moreoptionsmessage" ).text( 'Showing '+ (ovisible+5)+ ' of '+ ocount+ ' available filters Click to add more');
-            $( "#visualpickerdiv" ).dialog('option', 'title', 'Filtering on ' + p.data('currentfilter') +' '+ (ovisible+5) + ' showing out of '+ ocount);
-            $('.addmoreoptions').show();
+        getSubsetOfOptionImages(p.data('theoptions'), p.data('currentfilter'), ovisible, ovisible + 5);
+        $(".moreoptionsmessage").text('Showing ' + (ovisible + 5) + ' of ' + ocount + ' available filters Click to add more');
+        $("#visualpickerdiv").dialog('option', 'title', 'Filtering on ' + p.data('currentfilter') + ' ' + (ovisible + 5) + ' showing out of ' + ocount);
+        $('.addmoreoptions').show();
 
-        }else{
+    } else {
 
-            getSubsetOfOptionImages(p.data('theoptions'), p.data('currentfilter'), ovisible, ovisible+(ocount-ovisible));
-            $( ".moreoptionsmessage" ).text( 'Showing all '+ ocount+ ' of '+ ocount+ ' the available filters');
-            $( "#visualpickerdiv" ).dialog('option', 'title', 'Filtering on ' + p.data('currentfilter') +' '+ ocount+ ' showing out of '+ ocount);
-            $('.addmoreoptions').hide();
-        }
-        $('.moreadder').appendTo($('.pickerbody'));
+        getSubsetOfOptionImages(p.data('theoptions'), p.data('currentfilter'), ovisible, ovisible + (ocount - ovisible));
+        $(".moreoptionsmessage").text('Showing all ' + ocount + ' of ' + ocount + ' the available filters');
+        $("#visualpickerdiv").dialog('option', 'title', 'Filtering on ' + p.data('currentfilter') + ' ' + ocount + ' showing out of ' + ocount);
+        $('.addmoreoptions').hide();
+    }
+    $('.moreadder').appendTo($('.pickerbody'));
 
 }
 
-function getSubsetOfOptionImages($options, filtername, first, last){
-    $options.slice(first,last).each(function(){
+function getSubsetOfOptionImages($options, filtername, first, last) {
+    $options.slice(first, last).each(function () {
         getSingleOptionImageSet($(this), filtername);
     });
     $('.pickerbody').data('optionsvisible', last);
 }
 
-function getSingleOptionImageSet($option, filtername){
+function getSingleOptionImageSet($option, filtername) {
     //special cases replace - and * with descriptive names
     //fix special case when it goes to detail page, should not need to worry about no search results found
     //add clear this filter button
     //add extra data on hover
-    //give choice to see unrestricted examples of filters. 
-    //add (no images available message)   
-        var selectname = $option.parent().attr('name');
-        var optionval = $option.val();
-        $option.parent().attr('disabled', true);
-        var serialform = $('#mainform').serialize();
-        $option.parent().attr('disabled', false);
+    //give choice to see unrestricted examples of filters.
+    //add (no images available message)
+    var selectname = $option.parent().attr('name');
+    var optionval = $option.val();
+    $option.parent().attr('disabled', true);
+    var serialform = $('#mainform').serialize();
+    $option.parent().attr('disabled', false);
 
-        // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
-        var mylink =  '?'+serialform + '&' +$option.parent().attr('name')+'='+$option.val();
-        // console.log(mylink)
-        // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
-        var ddclass = 'store-'+optionval;
-        if ($('.'+ddclass).length === 0){
-            $('#content').after('<div  class="'+ddclass+'" />');
-            var dd = $('.'+ddclass);
+    // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&' +serialform + '&' +$option.parent().attr('name')+'='+$option.val();
+    var mylink = '?' + serialform + '&' + $option.parent().attr('name') + '=' + $option.val();
+    // console.log(mylink)
+    // var mylink = $('.seohtagbold').find('a:last').attr('href') + '&pageSize=25&akamai-feo=off&' + $option.parent().attr('name')+'='+$option.val();
+    var ddclass = 'store-' + optionval;
+    if ($('.' + ddclass).length === 0) {
+        $('#content').after('<div  class="' + ddclass + '" />');
+        var dd = $('.' + ddclass);
 
-            $('.pickerbody').append('<div id="pickerid'+optionval+'" class="pickerItem pickerItemNotSelected" />');
-            $('#pickerid'+optionval).append(
-                '<div class="pickercheckboxholder" >'+
-                    '<input type=checkbox value="'+optionval+'" class="css-checkbox" id="check'+optionval+'" style="z-index:2005;">'+
-                    '<label class="css-label" for="check'+optionval+'"></label>'+
-                '</div>'+
-                '<div class="imageholder imgholder'+optionval+'">'+
-                    '<div style="font-weight:bold; font-size:1.2em;"><span class="optiontext">'+$option.text()+'</span> (<span class="matchnum">loading</span>) </div>'+
-                ' </div>'
-            );
+        $('.pickerbody').append('<div id="pickerid' + optionval + '" class="pickerItem pickerItemNotSelected" />');
+        $('#pickerid' + optionval).append(
+            '<div class="pickercheckboxholder" >' +
+            '<input type=checkbox value="' + optionval + '" class="css-checkbox" id="check' + optionval + '" style="z-index:2005;">' +
+            '<label class="css-label" for="check' + optionval + '"></label>' +
+            '</div>' +
+            '<div class="imageholder imgholder' + optionval + '">' +
+            '<div style="font-weight:bold; font-size:1.2em;"><span class="optiontext">' + $option.text() + '</span> (<span class="matchnum">loading</span>) </div>' +
+            ' </div>'
+        );
 
-            dd.load(mylink+' #productTable,.image-table,img[src*=pna_en],#matching-records-count,#reportPartNumber', function(){
+        dd.load(mylink + ' #productTable,.image-table,img[src*=pna_en],#matching-records-count,#reportPartNumber', function () {
 
-                _log('matching', dd.find('#matching-records-count').text())
-                var matching = (dd.find('#matching-records-count').length > 0 ) ? dd.find('#matching-records-count').text().trim() : '1';
-                var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
-                $('#pickerid'+optionval).find('.matchnum').text(matching);
+            _log('matching', dd.find('#matching-records-count').text())
+            var matching = (dd.find('#matching-records-count').length > 0) ? dd.find('#matching-records-count').text().trim() : '1';
+            var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
+            $('#pickerid' + optionval).find('.matchnum').text(matching);
 
-                 $images.css({'height':'64px', 'width':'64px'});
-                $('.imgholder'+optionval).append(deDuplicateCollection($images, 'src').slice(0,20));
+            $images.css({ 'height': '64px', 'width': '64px' });
+            $('.imgholder' + optionval).append(deDuplicateCollection($images, 'src').slice(0, 20));
 
-                if($(this).find('.product-photo-wrapper img').length == 1){
-                    $(this).find('.product-photo-wrapper img').css({'height':'50px', 'width':'50px'}).appendTo($('.imgholder'+optionval)).addClass('pszoomervp');
-                }
+            if ($(this).find('.product-photo-wrapper img').length == 1) {
+                $(this).find('.product-photo-wrapper img').css({ 'height': '50px', 'width': '50px' }).appendTo($('.imgholder' + optionval)).addClass('pszoomervp');
+            }
 
-                dd.detach();
-                presetSelections(selectname);
-            });
-        }
+            dd.detach();
+            presetSelections(selectname);
+        });
+    }
 }
 
 
 
-function presetSelections(selectname){
+function presetSelections(selectname) {
     //grabs he highlighted options from the main form and selects them in the visual picker body.
-    $('select[name="'+selectname+'"] option:selected').each(function(){
-        $('.pickerbody').find('input[value='+$(this).val()+']').prop('checked',true);
+    $('select[name="' + selectname + '"] option:selected').each(function () {
+        $('.pickerbody').find('input[value=' + $(this).val() + ']').prop('checked', true);
     });
     $('.pickerbody input:checked').closest('.pickerItem').addClass('pickerItemSelected').removeClass('pickerItemNotSelected');
 }
 
-function deDuplicateCollection($collection, attribute){
+function deDuplicateCollection($collection, attribute) {
     //deduplicates a collection of  jquery objects based on an attribute
-    _log('deDuplicateCollection() Start',DLOG);
+    _log('deDuplicateCollection() Start', DLOG);
     var found = {};
-    return $collection.filter(function(){
+    return $collection.filter(function () {
         var $this = $(this);
-        if(found[$this.attr(attribute)]){
-           return false;   
+        if (found[$this.attr(attribute)]) {
+            return false;
         }
-        else{
-             found[$this.attr(attribute)] = true; 
-             return true;  
+        else {
+            found[$this.attr(attribute)] = true;
+            return true;
         }
     });
-    _log('deDuplicateCollection() End',DLOG);
-    return $collection;  
+    _log('deDuplicateCollection() End', DLOG);
+    return $collection;
 }
 
-function mediumImageHover(){
+function mediumImageHover() {
     //hover image for visual picker.
-    _log('mediumImageHover() Start',DLOG);
+    _log('mediumImageHover() Start', DLOG);
     $('#content').after('<img style="display:none; height:300px" id="mzoomie"></img>');
     $('#mzoomie').css({
-        'border':'0px solid white', 
-        'box-shadow' :'0 0 10px 5px #888',
+        'border': '0px solid white',
+        'box-shadow': '0 0 10px 5px #888',
         'position': 'absolute',
         'background': '#f5f5f5'
     });
 
     $('#visualpickerdiv').hoverIntent(
         function () {
-            $('#mzoomie').attr('src','');
+            $('#mzoomie').attr('src', '');
 
             //check if src is from a from a detail page or from a results page
-            var src = ($(this).filter('[itemprop]').length == 1)? this.src : $(this).attr('zoomimg');  
-            $('#mzoomie').attr('src', src.replace('tmb','sml'));
+            var src = ($(this).filter('[itemprop]').length == 1) ? this.src : $(this).attr('zoomimg');
+            $('#mzoomie').attr('src', src.replace('tmb', 'sml'));
             $('#mzoomie').show().position({
                 'my': 'left top',
                 'at': 'left bottom',
                 'of': $(this),
-                'collision':'flip',
+                'collision': 'flip',
                 'offset': '0 0',
             }).hide().css('z-index', 2000).show();
         },
@@ -1851,7 +1905,7 @@ function mediumImageHover(){
         },
         '.pszoomervp'
     );
-    _log('mediumImageHover() End',DLOG);
+    _log('mediumImageHover() End', DLOG);
 }
 
 
@@ -1862,89 +1916,89 @@ function mediumImageHover(){
 //     _log('addMatchingRecordsToApply() End',DLOG);
 // }
 
-function addColumnMath(){
-    _log('addColumnMath() Start',DLOG);
+function addColumnMath() {
+    _log('addColumnMath() Start', DLOG);
     $('.page-slector').append('<button id="doMath" style="margin:2px 5px; display:inline-block;"class="button-small pure-button"><i class="fa fa-calculator"></i> Column Math</button>');
     setTimeout(addColumnMathDialog, 3000);
-    $('#doMath').click(function(e){
+    $('#doMath').click(function (e) {
         _log('ready to do math', true);
         $('#colMathDialog').dialog("open");
         e.preventDefault();
     });
-    _log('addColumnMath() End',DLOG);
+    _log('addColumnMath() End', DLOG);
 }
 
-function addColumnMathDialog(){
+function addColumnMathDialog() {
     //TODO add units of precision in form
     //TODO add normalization checkbox
-    _log('addColumnMathDialog() Start',DLOG);
+    _log('addColumnMathDialog() Start', DLOG);
     $('body').append(
-        '<div id="colMathDialog" title="Column Math">'+
-            '<form><select id="firstMathColumn"></select><br>'+
-                '<select id="mathOperator">'+
-                    '<option value="div">/</option>'+
-                    '<option value="mul">*</option>'+
-                    '<option value="add">+</option>'+
-                    '<option value="sub">-</option>'+
-                '</select><br>'+
-                '<select id="secondMathColumn"></select><br><br>'+
-                '<button id="doOperation">Go</button>'+
-            '</form>'+
+        '<div id="colMathDialog" title="Column Math">' +
+        '<form><select id="firstMathColumn"></select><br>' +
+        '<select id="mathOperator">' +
+        '<option value="div">/</option>' +
+        '<option value="mul">*</option>' +
+        '<option value="add">+</option>' +
+        '<option value="sub">-</option>' +
+        '</select><br>' +
+        '<select id="secondMathColumn"></select><br><br>' +
+        '<button id="doOperation">Go</button>' +
+        '</form>' +
         '</div>');
-    GM_addStyle('.ui-widget-overlay {opacity: .3 !important;}' );
-    $('#doOperation').click(function(e){
+    GM_addStyle('.ui-widget-overlay {opacity: .3 !important;}');
+    $('#doOperation').click(function (e) {
         e.preventDefault();
         addMathCol();
         $('#colMathDialog').dialog('close');
     });
     $('#colMathDialog').dialog({
-        'autoOpen':false,
+        'autoOpen': false,
         'open': openMathDialog,
         'close': closeMathDialog,
         'modal': true,
-        'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
+        'position': { 'my': 'bottom', 'at': 'top', 'of': $('#productTable'), 'offset': '0px 0px' }
     });
-    _log('addColumnMathDialog() End',DLOG);
+    _log('addColumnMathDialog() End', DLOG);
 }
 
-function openMathDialog(){
-    _log('openMathDialog() Start',DLOG);
+function openMathDialog() {
+    _log('openMathDialog() Start', DLOG);
     insertTableSelectValues('#firstMathColumn', '#secondMathColumn');
-    $('#firstMathColumn, #secondMathColumn').on('mouseenter.math', 'option', function(){
-        var colval = +$(this).val()+1;
-        $('table tr td:nth-child('+colval+'), table tr th:nth-child('+colval+')').addClass('mathHighlight');
+    $('#firstMathColumn, #secondMathColumn').on('mouseenter.math', 'option', function () {
+        var colval = +$(this).val() + 1;
+        $('table tr td:nth-child(' + colval + '), table tr th:nth-child(' + colval + ')').addClass('mathHighlight');
     });
-    $('#firstMathColumn, #secondMathColumn').on('mouseleave.math', 'option', function(){
-        var colval = +$(this).val()+1;
-        $('table tr td:nth-child('+colval+'),table tr th:nth-child('+colval+')').removeClass('mathHighlight');
+    $('#firstMathColumn, #secondMathColumn').on('mouseleave.math', 'option', function () {
+        var colval = +$(this).val() + 1;
+        $('table tr td:nth-child(' + colval + '),table tr th:nth-child(' + colval + ')').removeClass('mathHighlight');
     });
-    _log('openMathDialog() End',DLOG);
+    _log('openMathDialog() End', DLOG);
 }
 
-function closeMathDialog(){
-    _log('closeMathDialog() Start',DLOG);
+function closeMathDialog() {
+    _log('closeMathDialog() Start', DLOG);
     $('#firstMathColumn').empty();
     $('#secondMathColumn').empty();
-    _log('closeMathDialog() End',DLOG);
+    _log('closeMathDialog() End', DLOG);
 }
 
-function insertTableSelectValues(firstSelector, secondSelector){
-    _log('insertTableSelectValues() Start',DLOG);
-    var skipClasses = ['.th-compareParts','.th-datasheet','.th-image', '.th-mfgPartNumber', '.th-description','.th-series', '.th-packaging' ];
-    $('#productTable>thead>tr:eq(0) th').each(function(ind){
+function insertTableSelectValues(firstSelector, secondSelector) {
+    _log('insertTableSelectValues() Start', DLOG);
+    var skipClasses = ['.th-compareParts', '.th-datasheet', '.th-image', '.th-mfgPartNumber', '.th-description', '.th-series', '.th-packaging'];
+    $('#productTable>thead>tr:eq(0) th').each(function (ind) {
 
-        if (!$(this).is(skipClasses.join(','))){
-            $(firstSelector).append('<option value='+ind+'>'+$(this).text()+'</option>');
-            $(secondSelector).append('<option value='+ind+'>'+$(this).text()+'</option>');
+        if (!$(this).is(skipClasses.join(','))) {
+            $(firstSelector).append('<option value=' + ind + '>' + $(this).text() + '</option>');
+            $(secondSelector).append('<option value=' + ind + '>' + $(this).text() + '</option>');
         }
-        if($(this).hasClass('th-unitprice')){ 
-            $(firstSelector).find('option[value='+ind+']').prop('selected',true); // set default option to price
+        if ($(this).hasClass('th-unitprice')) {
+            $(firstSelector).find('option[value=' + ind + ']').prop('selected', true); // set default option to price
         }
     });
-    _log('insertTableSelectValues() End',DLOG);
+    _log('insertTableSelectValues() End', DLOG);
 }
 
-function addMathCol(){
+function addMathCol() {
     _log('addMathCol() Start', DLOG);
     var fcol = $('#firstMathColumn').val();
     var scol = $('#secondMathColumn').val();
@@ -1954,104 +2008,105 @@ function addMathCol(){
     var sunit = getNormalization(scol);
     var operator = $('#mathOperator').val();
     // console.log('operator', operator);
-    var operatormap = { 'div': ' / ',
-                        'mul': ' x ',
-                        'add': ' + ',
-                        'sub': ' - '
-}
+    var operatormap = {
+        'div': ' / ',
+        'mul': ' x ',
+        'add': ' + ',
+        'sub': ' - '
+    }
     console.log('fcol', fcol, ' scol ', scol);
     console.log('funit', funit, ' sunit ', sunit);
-    $('#productTable>thead>tr:eq(0)').find('th').eq(scol).after('<th style="background:#607663; color:white;">' + ftitle + '<br>' + operatormap[operator] + '<br>' + stitle +'</th>');
+    $('#productTable>thead>tr:eq(0)').find('th').eq(scol).after('<th style="background:#607663; color:white;">' + ftitle + '<br>' + operatormap[operator] + '<br>' + stitle + '</th>');
     $('#productTable>thead>tr:eq(1)').find('td').eq(scol).after('<td style="background:#607663; color:white;"><div class="sortme"><i class="fa fa-sort-asc" aria-hidden="true"></i></div><div class="sortme" style="float:right; margin-right:8px;"><i class="fa fa-sort-desc" aria-hidden="true"></i></div></td>');
     $('.sortme').click(sortStuff);
     // _log('fcol'+ fcol + ' scol ' + scol);
-    $('#productTable>tbody>tr').each(function(ind){
-        try{                
+    $('#productTable>tbody>tr').each(function (ind) {
+        try {
             // var firstnum = Qty.parse($(this).find('td').eq(fcol).text().split('@')[0]);
             // var secondnum = Qty.parse($(this).find('td').eq(scol).text().split('@')[0]);
             var firstNum = parseElemForQty($(this).find('td').eq(fcol));
             var secondNum = parseElemForQty($(this).find('td').eq(scol));
             var finalNum = null;
-                // console.log('firstnum', firstNum, 'secondNum', secondNum, ' sntext ', $(this).find('td').eq(scol).text());
-            
-            if(firstNum !== null && secondNum !== null){
+            // console.log('firstnum', firstNum, 'secondNum', secondNum, ' sntext ', $(this).find('td').eq(scol).text());
+
+            if (firstNum !== null && secondNum !== null) {
                 firstNum = toUnit(firstNum, funit);
                 secondNum = toUnit(secondNum, sunit);
                 // console.log(firstNum.div(secondNum).toString())
-                try{
-                    if (operator == 'div'){
+                try {
+                    if (operator == 'div') {
                         finalNum = firstNum.div(secondNum);
                     }
-                    if(operator == 'mul'){
+                    if (operator == 'mul') {
                         finalNum = firstNum.mul(secondNum);
                     }
-                    if(operator == 'add'){
+                    if (operator == 'add') {
                         finalNum = firstNum.add(secondNum);
                     }
-                    if(operator == 'sub'){
+                    if (operator == 'sub') {
                         finalNum = firstNum.sub(secondNum);
                     }
                     // finalNum = finalNum.toPrec(0.000001);
                     // finalNum = finalNum.toPrec(0.000001);
-                }catch(err){
+                } catch (err) {
                     console.log(err, "not compatible with ", operator);
                     finalNum = 'NaN';
                 }
-                // console.log(finalNum.toString(), firstNum.toString(), secondNum.toString()) 
-                $(this).find('td').eq(scol).after('<td class="mathcol">'+finalNum +'</td>');
+                // console.log(finalNum.toString(), firstNum.toString(), secondNum.toString())
+                $(this).find('td').eq(scol).after('<td class="mathcol">' + finalNum + '</td>');
             }
-            else{
+            else {
                 console.log(firstNum, secondNum, ' changing finalNum to NaN');
                 finalNum = 'NaN';
-                $(this).find('td').eq(scol).after('<td class="mathcol">'+'NaN'+'</td>');
+                $(this).find('td').eq(scol).after('<td class="mathcol">' + 'NaN' + '</td>');
             }
-            $(this).find('td').eq(+scol+1).data('qtyval',finalNum); 
-        } catch(err){console.log('row', ind ,err);}
+            $(this).find('td').eq(+scol + 1).data('qtyval', finalNum);
+        } catch (err) { console.log('row', ind, err); }
     });
     _log('addMathCol() End', DLOG);
 }
 
 
-function preProcessForQty($elem){
+function preProcessForQty($elem) {
     var parsableText = '';
 
-    if(typeof $elem === 'string'){ //taking care of the case where there is a need to pass in a string.
+    if (typeof $elem === 'string') { //taking care of the case where there is a need to pass in a string.
         parsableText = $elem;
         // console.log ( parsableText, 'parsabletext');
-    }else {
+    } else {
         var etext = $elem.text().trim();
         // console.log('etext...', etext)
-        if($elem.hasClass('CLS 1')){
+        if ($elem.hasClass('CLS 1')) {
             // console.log('type = resistance');
             parsableText = etext + 'Ohm';
-        }else if ($elem.hasClass('tr-unitPrice') || $elem.hasClass('priceme')){
+        } else if ($elem.hasClass('tr-unitPrice') || $elem.hasClass('priceme')) {
             //console.log('type = price')
-            parsableText = etext.split('@')[0].replace(/[^0-9,.]/,'') + ' USD';
-        }else if ($elem.hasClass('CLS 2')){
+            parsableText = etext.split('@')[0].replace(/[^0-9,.]/, '') + ' USD';
+        } else if ($elem.hasClass('CLS 2')) {
             parsableText = etext.split(',')[0];
-            if((etext.split(',').length > 2)){
+            if ((etext.split(',').length > 2)) {
                 console.log('there may be more values in this cell than were handled');
             }
-        }else if ($elem.hasClass('CLS 33')){
+        } else if ($elem.hasClass('CLS 33')) {
             // console.log('type = Capacity cls 33');
-            if(etext.indexOf('Ah') != -1){
+            if (etext.indexOf('Ah') != -1) {
                 parsableText = etext.replace('Ah', 'A h');
                 // console.log('change to A h', parsableText);
-            }else{ 
+            } else {
                 parsableText = etext;
             }
-        }else if (etext.indexOf('(') !== -1){
+        } else if (etext.indexOf('(') !== -1) {
             parsableText = etext.split('(')[0];
             console.log('type with multiple units in ()');
-        }else if ($elem.hasClass('tr-qtyAvailable')){
+        } else if ($elem.hasClass('tr-qtyAvailable')) {
             // this will have problems with European notation '5,4' vs '5.4'
             parsableText = etext.split('-')[0].replace(/,/g, '');
-        }else if ($elem.hasClass('CLS 17')){//Temperature coefficient
-            parsableText = etext.replace('±', '').replace('°C','degC');
-        }else if (etext.indexOf('@') != -1){
-            parsableText =  etext.split('@')[0];
+        } else if ($elem.hasClass('CLS 17')) {//Temperature coefficient
+            parsableText = etext.replace('±', '').replace('°C', 'degC');
+        } else if (etext.indexOf('@') != -1) {
+            parsableText = etext.split('@')[0];
         }
-        else{
+        else {
             parsableText = etext;
             // console.log('general case', parsableText);
         }
@@ -2059,59 +2114,57 @@ function preProcessForQty($elem){
     return parsableText;
 }
 
-function parseElemForQty($elem){
+function parseElemForQty($elem) {
     var elemText = preProcessForQty($elem);
-    try{
+    try {
         // console.log('----', elemText);
         var num = Qty.parse(elemText);
-        if(num == null){ 
+        if (num == null) {
             console.log("can't parse ", elemText, elemText.length);
             return num;
-        }else{ 
+        } else {
             console.log('parseEQTY', num)
             return num;
         }
-    }catch(err){
-        console.log('parseElemForQty Error', $elem.text() , err);
+    } catch (err) {
+        console.log('parseElemForQty Error', $elem.text(), err);
     }
 }
 
 
 
-function getNormalization(colNum){
+function getNormalization(colNum) {
     //goes through each row of the #productTable and finds the most common label for given column
     var unitarray = [];
     var indexrow;
-    $('#productTable>tbody>tr').each(function(ind){
-        try{
+    $('#productTable>tbody>tr').each(function (ind) {
+        try {
             indexrow = ind;
             //unitarray.push(Qty.parse($(this).find('td').eq(colNum).text().split('@')[0]).units());
             unitarray.push(parseElemForQty($(this).find('td').eq(colNum)).units());
         }
-        catch(err){ 
+        catch (err) {
             //console.log('normalization error on row ', indexrow , err);
         }
     });
-   // console.log( unitarray);
-   console.log('mode of unitarray ',mode(unitarray));
+    // console.log( unitarray);
+    console.log('mode of unitarray ', mode(unitarray));
     return mode(unitarray);
 }
 
-function mode(array){
+function mode(array) {
     //stack overflow
-    if(array.length === 0)
+    if (array.length === 0)
         return null;
     var modeMap = {};
     var maxEl = array[0], maxCount = 1;
-    for(var i = 0; i < array.length; i++)
-    {
+    for (var i = 0; i < array.length; i++) {
         var el = array[i];
-        if(modeMap[el] == null)
+        if (modeMap[el] == null)
             modeMap[el] = 1;
         else
-            modeMap[el]++;  
-        if(modeMap[el] > maxCount)
-        {
+            modeMap[el]++;
+        if (modeMap[el] > maxCount) {
             maxEl = el;
             maxCount = modeMap[el];
         }
@@ -2119,90 +2172,90 @@ function mode(array){
     return maxEl;
 }
 
-function sortStuff(){
+function sortStuff() {
     var ind = $(this).parent().index();
     var direction = $(this).text();
-    var rows = $('#productTable>tbody>tr').sort(function(a,b){
+    var rows = $('#productTable>tbody>tr').sort(function (a, b) {
         var aval = $(a).find('td').eq(+ind).data('qtyval');
         var bval = $(b).find('td').eq(+ind).data('qtyval');
-        if(aval == 'NaN' || bval == 'NaN') {
-            return (aval=='NaN') ? 1 : 0;   
+        if (aval == 'NaN' || bval == 'NaN') {
+            return (aval == 'NaN') ? 1 : 0;
         }
-        else{
-            if(direction == "asc"){
+        else {
+            if (direction == "asc") {
                 return aval.compareTo(bval);
-            }else{ return (-1 * aval.compareTo(bval));}
+            } else { return (-1 * aval.compareTo(bval)); }
         }
-    });    
+    });
     $('#productTable>tbody').append(rows);
 }
 
-function highlightKeywords(){
+function highlightKeywords() {
 }
 
-function addGraphInterface(){
+function addGraphInterface() {
     _log('addGraphInterface() Start', DLOG);
     $('body').append('<div id=graphDialog></div>');
-    setTimeout(function(){
+    setTimeout(function () {
         $('#graphDialog').dialog({
-            'autoOpen':false,
+            'autoOpen': false,
             'open': openGraphDialog,
             'close': closeGraphDialog,
             'modal': true,
             'height': 550,
             'width': 900,
-            'position': {'my':'bottom', 'at':'top', 'of':$('#productTable'), 'offset': '0px 0px'}
+            'position': { 'my': 'bottom', 'at': 'top', 'of': $('#productTable'), 'offset': '0px 0px' }
         });
-    },3000);
+    }, 3000);
 
-    
+
     $('.page-slector').append('<button id="buildChart" style="margin:2px 5px;display:inline-block;"class="button-small pure-button"><i class="fa fa-line-chart"></i> Build Chart</button>');
-    
+
     $('#graphDialog').append(
-        '<form><select id="yGraphColumn"></select>'+
-            '<span> vs. </span>'+
-            '<select id="xGraphColumn"></select>'+
-            '<button id="drawGraphButton">Go</button>'+
+        '<form><select id="yGraphColumn"></select>' +
+        '<span> vs. </span>' +
+        '<select id="xGraphColumn"></select>' +
+        '<button id="drawGraphButton">Go</button>' +
         '</form>'
     );
 
     $('#graphDialog').append('<div class="featureNotice">This is a test feature.  All data shown in chart is only from table below on the current page. To view maximum number of points change the number of Results per Page to 500 </div>');
-    $('#drawGraphButton').on('click', function(e){
+    $('#drawGraphButton').on('click', function (e) {
         e.preventDefault();
         console.log('graphcol1', $('#xGraphColumn').val(), 'graphcol2', $('#yGraphColumn').val());
         drawChart($('#xGraphColumn').val(), $('#yGraphColumn').val());
 
         //$('#graphDialog').dialog('close');
     });
-    $('#buildChart').on('click', function(e){ 
-        $('#graphDialog').dialog('open'); 
+    $('#buildChart').on('click', function (e) {
+        $('#graphDialog').dialog('open');
         e.preventDefault();
     });
 
     $('#graphDialog').append('<div class="graphErrorNotice"></div>');
     _log('addGraphInterface() End', DLOG);
 }
-    
-function openGraphDialog(){
+
+function openGraphDialog() {
     $('.featureNotice').after('<div id=graphContainer style="width:800px;"></div>');
     insertTableSelectValues('#xGraphColumn', '#yGraphColumn');
-    $('#xGraphColumn, #yGraphColumn').on('mouseenter.graph', 'option', function(){
-        var colval = +$(this).val()+1;
-        $('table tr td:nth-child('+colval+'), table tr th:nth-child('+colval+')').addClass('mathHighlight');
+    $('#xGraphColumn, #yGraphColumn').on('mouseenter.graph', 'option', function () {
+        var colval = +$(this).val() + 1;
+        $('table tr td:nth-child(' + colval + '), table tr th:nth-child(' + colval + ')').addClass('mathHighlight');
     });
-    $('#xGraphColumn, #yGraphColumn').on('mouseleave.graph', 'option', function(){
-        var colval = +$(this).val()+1;
-        $('table tr td:nth-child('+colval+'),table tr th:nth-child('+colval+')').removeClass('mathHighlight');
+    $('#xGraphColumn, #yGraphColumn').on('mouseleave.graph', 'option', function () {
+        var colval = +$(this).val() + 1;
+        $('table tr td:nth-child(' + colval + '),table tr th:nth-child(' + colval + ')').removeClass('mathHighlight');
     });
 
 }
-function closeGraphDialog(){
+function closeGraphDialog() {
     $('#xGraphColumn').empty();
     $('#yGraphColumn').empty();
     $('#graphContainer').remove();
 }
 
-function getChartSeriesData(xcol, ycol, xunit, yunit){
+function getChartSeriesData(xcol, ycol, xunit, yunit) {
     // TODO verify numerical inputs
     // TODO give option for non-numerical.... create dictionary, enumerate, then plot across each unique item
 
@@ -2210,21 +2263,21 @@ function getChartSeriesData(xcol, ycol, xunit, yunit){
     var data = [];
     var failedData = [];
 
-    pt.find('tbody>tr').each(function(ind){
-        var dp = getDataPoint(xcol,ycol, xunit, yunit, $(this));
-        if (dp.usablePoint !== false){
+    pt.find('tbody>tr').each(function (ind) {
+        var dp = getDataPoint(xcol, ycol, xunit, yunit, $(this));
+        if (dp.usablePoint !== false) {
             data.push(dp);
-        }else{
+        } else {
             console.log('incomplete data for row', ind);
             failedData.push(dp);
         }
     });
     console.log(failedData);
-    return {'validPoints':data, 'failedPoints': failedData};
+    return { 'validPoints': data, 'failedPoints': failedData };
 }
 
 
-function getDataPoint(xcol, ycol, xunit, yunit, $row){
+function getDataPoint(xcol, ycol, xunit, yunit, $row) {
     var xcell = $row.find('td').eq(xcol);
     var ycell = $row.find('td').eq(ycol);
     var x = parseElemForQty(xcell);
@@ -2232,36 +2285,36 @@ function getDataPoint(xcol, ycol, xunit, yunit, $row){
 
     var retData;
     // if( x== undefined || y == undefined){console.log('x', x, 'y', y);}
-    if (x !== null && y !== null){
+    if (x !== null && y !== null) {
         return {
-            'name':$row.find('.mfg-partnumber a:first').text(),
-            'dkname': $row.find('meta[itemprop=productid]').attr('content').replace('sku:',''),
+            'name': $row.find('.mfg-partnumber a:first').text(),
+            'dkname': $row.find('meta[itemprop=productid]').attr('content').replace('sku:', ''),
             'x': toUnit(x, xunit).scalar,
             'y': toUnit(y, yunit).scalar,
             'usablePoint': true
         };
 
-    }else{ 
+    } else {
         return {
-            'name':$row.find('.mfg-partnumber a:first').text(),
+            'name': $row.find('.mfg-partnumber a:first').text(),
             'usablePoint': false
         };
     }
 }
 
-function toUnit(q, unit){
-    try{
+function toUnit(q, unit) {
+    try {
         //console.log('q is', q, 'unit is ', unit);
         //console.log(Qty(q.format(unit).toString()));
-        if (q != null){
+        if (q != null) {
             return Qty(q.format(unit).toString());
-        }else{ return "NaN";}
-    }catch(err){
+        } else { return "NaN"; }
+    } catch (err) {
         console.log('error converting ', err); return 'error Parsing';
     }
 }
 
-function drawChart(xcol, ycol){
+function drawChart(xcol, ycol) {
     //TODO, give option to draw not log, vs log graphs
     //TODO always-on hover tooltip
     //TODO make each point clickable to new tab?
@@ -2269,7 +2322,7 @@ function drawChart(xcol, ycol){
     var yname = $('#productTable').find('thead>tr:first th').eq(ycol).text();
     var xunit = getNormalization(xcol);
     var yunit = getNormalization(ycol);
-    var pointData = getChartSeriesData( xcol, ycol, xunit, yunit);
+    var pointData = getChartSeriesData(xcol, ycol, xunit, yunit);
 
     $('#graphContainer').highcharts({
         chart: {
@@ -2285,16 +2338,16 @@ function drawChart(xcol, ycol){
         yAxis: {
             title: {
                 enabled: true,
-                text: (yname +' '+getNormalization(ycol))
+                text: (yname + ' ' + getNormalization(ycol))
             },
             type: 'logarithmic',
             minorTickInterval: 10,
         },
         xAxis: {
             title: {
-                text: (xname +' '+getNormalization(xcol))
+                text: (xname + ' ' + getNormalization(xcol))
             },
-                        type: 'logarithmic',
+            type: 'logarithmic',
             minorTickInterval: 1,
         },
 
@@ -2318,7 +2371,7 @@ function drawChart(xcol, ycol){
                 },
                 tooltip: {
                     headerFormat: '<b>{point.point.name}</b><br />',
-                    pointFormat: '<br>{point.x}'+xunit+', {point.y}'+yunit
+                    pointFormat: '<br>{point.x}' + xunit + ', {point.y}' + yunit
                 }
             }
         },
@@ -2326,27 +2379,27 @@ function drawChart(xcol, ycol){
             name: $('#famBreadCrumb').text(), //dependency identified
             color: 'rgba(223, 83, 83, .5)',
             data: pointData.validPoints,
-            },]
+        },]
     });
-    
 
-    $('.graphErrorNotice').text('There were '+ pointData.failedPoints.length +
+
+    $('.graphErrorNotice').text('There were ' + pointData.failedPoints.length +
         ' rows that were not included in this chart due to parsing errors.');
     console.log(pointData.failedPoints);
 
 }
 
-function formatQtyBox(){
-    _log('formatQtyBox() Start',DLOG);
-    $('#f2>.filters-group-chkbxs').append($('.filters-quantity').css('display','inline'));
+function formatQtyBox() {
+    _log('formatQtyBox() Start', DLOG);
+    $('#f2>.filters-group-chkbxs').append($('.filters-quantity').css('display', 'inline'));
 
-    _log('formatQtyBox() End',DLOG);
+    _log('formatQtyBox() End', DLOG);
 }
 
-function fixImageHover(){
-    _log('fixImageHover() Start',DLOG);
+function fixImageHover() {
+    _log('fixImageHover() Start', DLOG);
     $('.pszoomie').css({
-        'border':'0px solid white', 
+        'border': '0px solid white',
         'box-shadow': '0 0 10px 5px #888'
     });
 
@@ -2355,31 +2408,31 @@ function fixImageHover(){
     $('#productTable, .tablescroller table').hoverIntent( // tablescroller is for product compare page
         function () {
             var d = Math.min(640, 0.8 * Math.min($(window).width(), $(window).height()));
-            $('#pszoomie').attr('src','');
+            $('#pszoomie').attr('src', '');
             $('#pszoomie')
-            .attr('src', $(this).attr('zoomimg'))
-            .css('height', d)
-            .css('width', d)
-            .css('left', ($(window).width() - d) / 2)
-            .css('top', ($(window).height() - d) / 2)
-            .fadeIn(300);
+                .attr('src', $(this).attr('zoomimg'))
+                .css('height', d)
+                .css('width', d)
+                .css('left', ($(window).width() - d) / 2)
+                .css('top', ($(window).height() - d) / 2)
+                .fadeIn(300);
         },
         function () {
             $('.pszoomie')
-            .fadeOut(100);
+                .fadeOut(100);
         },
         '.pszoomer'
     );
-    _log('fixImageHover() End',DLOG);
+    _log('fixImageHover() End', DLOG);
 }
 
 
-function floatApplyFilters(){
+function floatApplyFilters() {
     // $('.filters-buttons').wrapAll('<div id=floatApply>');
-    
+
     $('#filters-buttons, #record-count-container').css('position', 'relative');
-    $(window).scroll(function(){
-        $('#filters-buttons, #record-count-container').css('left', $(window).scrollLeft() );
+    $(window).scroll(function () {
+        $('#filters-buttons, #record-count-container').css('left', $(window).scrollLeft());
     });
     // addSearchWithin();
 }
@@ -2391,25 +2444,25 @@ function floatApplyFilters(){
 //     $('.searchWithin').val($('.dkdirchanger2').val());
 // }
 
-function addFilterHider(){
+function addFilterHider() {
 }
 
 
 
-function getParamList(){
+function getParamList() {
     //TODO finish
     var myobject;
 
-    if (localStorage.getItem(getFamilyLink()) == undefined){
-        $('#filterResetDiv').load(getFamilyLink().replace('stock=1','stock=0')+' form[name=attform]', function(){
+    if (localStorage.getItem(getFamilyLink()) == undefined) {
+        $('#filterResetDiv').load(getFamilyLink().replace('stock=1', 'stock=0') + ' form[name=attform]', function () {
             myobject = {
-                'lastupdate' : Date.getTime(),
-                'selectlist' : $('#filterResetDiv').find('select')
+                'lastupdate': Date.getTime(),
+                'selectlist': $('#filterResetDiv').find('select')
             };
             return myobject.selectlist;
         });
     }
-    else if (myobject.lastupdate+604800000 <= Date.getTime()) {
+    else if (myobject.lastupdate + 604800000 <= Date.getTime()) {
 
     }
     else {
@@ -2428,37 +2481,37 @@ function getParamList(){
 //         $('#morefiltersbutton').show();
 //     }
 // }
-function wrapFilterClickFunc2(somespan, buttonval){
-    if(buttonval == 0){
+function wrapFilterClickFunc2(somespan, buttonval) {
+    if (buttonval == 0) {
         $('#selectboxdiv').addClass('wsnowrap').removeClass('morefilters lessfilters');
         $('#morefiltersbutton').hide();
     }
-    else if( buttonval == 1){
+    else if (buttonval == 1) {
         $('#selectboxdiv').removeClass('wsnowrap').addClass('morefilters');
         $('#morefiltersbutton').show();
     }
 }
 
 
-function wrapFilterTable(){
-    _log('wrapFilterTable() Start',DLOG);
+function wrapFilterTable() {
+    _log('wrapFilterTable() Start', DLOG);
     //button code
     $('#mainform').wrap('<div id=mainformdiv />');
 
-    var thehtml = '<div id="wrapfilterschooser" class="tabbedbutton" style="display:inline-block;" title="Instead of scrolling horizontally the filters will wrap to the next line"><div>'+
+    var thehtml = '<div id="wrapfilterschooser" class="tabbedbutton" style="display:inline-block;" title="Instead of scrolling horizontally the filters will wrap to the next line"><div>' +
         '<input id="wrapFilters" value="0" class="saveState" type="hidden">' +
-        '<button id=wrapfilteron value=0 class="pure-button">Off</button>'+
-        '<button id=wrapfilteroff value=1 class="pure-button">On</button>'+
-        ' Wrap Filters'+
-    '</div></div><div class="dummydiv"></div>'; //remove dummydiv from here if explore mode comes back.
+        '<button id=wrapfilteron value=0 class="pure-button">Off</button>' +
+        '<button id=wrapfilteroff value=1 class="pure-button">On</button>' +
+        ' Wrap Filters' +
+        '</div></div><div class="dummydiv"></div>'; //remove dummydiv from here if explore mode comes back.
     var originalSelects = $('.filters-panel').find('form[name=attform] select');
-    _log('wrapFilterTable width calc',DLOG);
-    originalSelects.each(function(){
-        $(this).data('limitwidth', ($(this).width()+25));
+    _log('wrapFilterTable width calc', DLOG);
+    originalSelects.each(function () {
+        $(this).data('limitwidth', ($(this).width() + 25));
     });
-    _log('wrapFilterTable width calc',DLOG);
+    _log('wrapFilterTable width calc', DLOG);
 
-    $('.filters-panel').prepend(thehtml);   
+    $('.filters-panel').prepend(thehtml);
     addChooserButtonAction($('.filters-panel').find('#wrapfilterschooser'), wrapFilterClickFunc);
     var $filtersPanel = $('.filters-panel');
     // var $filtersPanel = $('.filters-panel').detach();
@@ -2467,53 +2520,53 @@ function wrapFilterTable(){
     //end button code
 
     var selectlist = $mainform.find('select');
-    selectlist.each(function(ind){
-        $(this).data('pname', $(this).closest('table').find('th:eq('+ind+')').text());
-        // _log('pv '+ $(this).attr('name') + ' columnname ' + 
+    selectlist.each(function (ind) {
+        $(this).data('pname', $(this).closest('table').find('th:eq(' + ind + ')').text());
+        // _log('pv '+ $(this).attr('name') + ' columnname ' +
         //      $(this).closest('table').find('th:eq('+ind+')').text()
-            // );
-        });
+        // );
+    });
     $mainform.prepend('<div id=selectboxdiv class="morefilters" />');
-    
-    $(selectlist.get().reverse()).each(function(){
+
+    $(selectlist.get().reverse()).each(function () {
         var $thisSelect = $(this);
-        
+
         $mainform.find('#selectboxdiv').prepend(
-            '<div class="selectboxdivclass" style="max-width:'+ $thisSelect.data('limitwidth')+'px;"><b>'+ // this line forces the select header to wrap
-                $thisSelect.data('pname')+'</b><br>'+$thisSelect.parent().html()+
-            '<br><a name="'+$thisSelect.attr('name')+'" class="clearselect" style="display:none; " href="#">clear</a></div>'
+            '<div class="selectboxdivclass" style="max-width:' + $thisSelect.data('limitwidth') + 'px;"><b>' + // this line forces the select header to wrap
+            $thisSelect.data('pname') + '</b><br>' + $thisSelect.parent().html() +
+            '<br><a name="' + $thisSelect.attr('name') + '" class="clearselect" style="display:none; " href="#">clear</a></div>'
         );
         // if($(this).find('option').filter(':selected').length == 1){
         //     $(this).find('.clearselect').css({visibility:'visible'});
         // }
     });
-    $filtersPanel.on('click','.clearselect', function(e){
+    $filtersPanel.on('click', '.clearselect', function (e) {
         e.preventDefault();
-        $filtersPanel.find('select[name="'+$(this).attr('name')+'"]').find('option').each(function(){
-            $(this).prop('selected',$(this).prop('defaultSelected'));
+        $filtersPanel.find('select[name="' + $(this).attr('name') + '"]').find('option').each(function () {
+            $(this).prop('selected', $(this).prop('defaultSelected'));
         });
         addApplyFiltersButtonHighlight();
     });
     // $('.seohtagbold:first').after($filtersPanel);  //part of a possible speedup detach, do stuff and reattach?  probably no benefit
-    $('#mainform').on('mouseup', 'option', function(){
-        
-        if($(this).parent().find('option').filter(':selected').length >=1){
+    $('#mainform').on('mouseup', 'option', function () {
+
+        if ($(this).parent().find('option').filter(':selected').length >= 1) {
             $(this).closest('div').find('.clearselect').show();
-        }else{
+        } else {
             $(this).closest('div').find('.clearselect').hide();
         }
     });
-    
+
     $('#mainformdiv table').detach(); //use this instead of empty or remove to maintain speed
 
     $('.filters-group').append(
-        '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">'+
-        
-        '<span style="position:relative; top:-2px;"> + see all '+$('#mainformdiv div>select').length+' filters + </span><span style="display:none; position:relative; top:-2px;"> - see fewer filters - </span>'+
-        '</div>'+
-        '<div style="float:right;">'+
-            '<input style="float:right" type="checkbox" class="css-checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand">'+
-            '<label class="css-label" for="filterAlwaysExpand">Always Expand</label>'+
+        '<div id="morefiltersbutton" class="cupid-green" style="float:right; width:200px; padding:2px; height:10px; cursor:pointer; margin-left:3px;">' +
+
+        '<span style="position:relative; top:-2px;"> + see all ' + $('#mainformdiv div>select').length + ' filters + </span><span style="display:none; position:relative; top:-2px;"> - see fewer filters - </span>' +
+        '</div>' +
+        '<div style="float:right;">' +
+        '<input style="float:right" type="checkbox" class="css-checkbox" value="1" name="filterAlwaysExpand" id="filterAlwaysExpand">' +
+        '<label class="css-label" for="filterAlwaysExpand">Always Expand</label>' +
         '</div>'
     );
     //test area
@@ -2521,48 +2574,50 @@ function wrapFilterTable(){
     // end test area
 
     restoreInputState($('#filterAlwaysExpand'));
-    if($('#filterAlwaysExpand').val() == 1){
+    if ($('#filterAlwaysExpand').val() == 1) {
         _log('filterAlwaysExpand ' + $('#filterAlwaysExpand').val(), true);
         $('#selectboxdiv').toggleClass('morefilters lessfilters');
         $('#morefiltersbutton span').toggle();
     }
-    $('#morefiltersbutton').click(function(){
+    $('#morefiltersbutton').click(function () {
         //$('#mainformdiv').animate({'height': '100%'},200);
         $('#selectboxdiv').toggleClass('morefilters lessfilters');
         $('#morefiltersbutton>span').toggle();
         _log('finished morefiltersbutton click func', true);
     });
 
-    if($('#wrapFilters').val() == 0){
+    if ($('#wrapFilters').val() == 0) {
 
         $('#selectboxdiv').removeClass('morefilters lessfilters');
         $('#morefiltersbutton').hide();
         $('#selectboxdiv').addClass('wsnowrap');
-    }else{
+    } else {
         //$('#selectboxdiv').removeClass('morefilters lessfilters');
     }
 
     setupAttForm();
     // setTimeout(function(){location.assign("javascript:setupAttForm();void(0)")},8000);
     // location.assign("javascript: $('content').empty(); void(0);");
-    _log('wrapFilterTable() End',DLOG);
+    _log('wrapFilterTable() End', DLOG);
 }
 
 
 
 function setupAttForm() {
-//TODO doublecheck to see if this new rip has any problems... 
+    //TODO doublecheck to see if this new rip has any problems...
     var n = $('[name="attform"]'),
         t, i;
     n.contextId = 0,
-     n.updateEnabled = !0,
-     n.oldRecordCount = $(".matching-records").html(),
-     n.resetRecordCount = function() { $(".matching-records").html(n.oldRecordCount),
-     n.find(":submit").each(function() { this.disabled = !1 }) },
-      n.updateRecordCount = function() { this.updateEnabled && (this.contextId++, $.ajax({ type: "POST", url: summaryUrl, data: $(this).serialize() + "&contextId=" + this.contextId, timeout: summaryTimeout, success: function(t) { t.contextId == n.contextId && $(".matching-records").html(t.msg), n.find(":submit").each(function() { this.disabled = !t.nMatches, t.nMatches ? $("#btn-apply-filters").removeClass("disabled") : $("#btn-apply-filters").addClass("disabled"), verifyRecordCounts() }) }, error: function() { n.resetRecordCount(), n.updateEnabled = !1 } })) }, n.bind("reset", function() { $("a[name^='btn']").hide(), $(".matching-records").hide(), $("#btn-apply-filters").removeClass("disabled"), n.resetRecordCount() }), $("a[name^='btn']").click(function() { n.updateRecordCount() }), t = n.find("input:not([type=reset], [type=checkbox])"), t.focus(function() { n.updateRecordCount() }), t.blur(function() { n.updateRecordCount() }), i = n.find("input:checkbox"), i.click(function() { n.updateRecordCount() }), n.find("select").each(function() { selectionVerification(this), this.onchange = function() { n.updateRecordCount(), selectionVerification(this) } }), n.updateRecordCount()
+        n.updateEnabled = !0,
+        n.oldRecordCount = $(".matching-records").html(),
+        n.resetRecordCount = function () {
+            $(".matching-records").html(n.oldRecordCount),
+                n.find(":submit").each(function () { this.disabled = !1 })
+        },
+        n.updateRecordCount = function () { this.updateEnabled && (this.contextId++ , $.ajax({ type: "POST", url: summaryUrl, data: $(this).serialize() + "&contextId=" + this.contextId, timeout: summaryTimeout, success: function (t) { t.contextId == n.contextId && $(".matching-records").html(t.msg), n.find(":submit").each(function () { this.disabled = !t.nMatches, t.nMatches ? $("#btn-apply-filters").removeClass("disabled") : $("#btn-apply-filters").addClass("disabled"), verifyRecordCounts() }) }, error: function () { n.resetRecordCount(), n.updateEnabled = !1 } })) }, n.bind("reset", function () { $("a[name^='btn']").hide(), $(".matching-records").hide(), $("#btn-apply-filters").removeClass("disabled"), n.resetRecordCount() }), $("a[name^='btn']").click(function () { n.updateRecordCount() }), t = n.find("input:not([type=reset], [type=checkbox])"), t.focus(function () { n.updateRecordCount() }), t.blur(function () { n.updateRecordCount() }), i = n.find("input:checkbox"), i.click(function () { n.updateRecordCount() }), n.find("select").each(function () { selectionVerification(this), this.onchange = function () { n.updateRecordCount(), selectionVerification(this) } }), n.updateRecordCount()
 }
 
-function squishedFilters(){
+function squishedFilters() {
     // hover animation in advancedsearch.css
     var $selects = $('#mainform').find('select');
     $selects.addClass('fullwidth');
@@ -2584,11 +2639,11 @@ function squishedFilters(){
 //     _log('enableDefaultQty() End',DLOG);
 // }
 
-function formatIndexResultsPage(){
+function formatIndexResultsPage() {
 
     //TODO fix results margin and placement.
-    if($('.catfilterlink').length){
-        _log('formatIndexResultsPage() Start',DLOG);
+    if ($('.catfilterlink').length) {
+        _log('formatIndexResultsPage() Start', DLOG);
         $('body').addClass('indexPage');
         addIndexPicPrev();
         // if(localStorage.getItem('qfControl') == 1) {
@@ -2596,12 +2651,12 @@ function formatIndexResultsPage(){
         // }
         $('h1:contains(Electronic)').detach();
         //fixAssProdFamilyLinks();
-        if(localStorage.getItem('instantfilter') == 1){
+        if (localStorage.getItem('instantfilter') == 1) {
             // console.log('instant filter loaded');
             indexInstantFilter3();
         }
 
-        
+
         // fixAssociatedPartsForIndexResultsPage();
 
         var productTree = storeProductIndexTree();
@@ -2623,24 +2678,24 @@ function formatIndexResultsPage(){
 
         addToTopButton();
         addLearnMore();
-        $('#content').css({'margin':'0px','padding':'0px 10px 10px 10px'});// for the sidebar separator
+        $('#content').css({ 'margin': '0px', 'padding': '0px 10px 10px 10px' });// for the sidebar separator
         // setTimeout(function(){$('#headKeySearch').focus();}, 50);  //for some reason it looks like this takes 100ms+ to execute .focus
 
-        _log('formatIndexResultsPage() End',DLOG);
+        _log('formatIndexResultsPage() End', DLOG);
     }
 }
 
-function formatJumpTo(){
+function formatJumpTo() {
     $('.jumpToCats');
-    $('.jumpToCats').parent().css({'border':'0px', 'background':'white'}).addClass('box effect1');
-    $('#jumpTo .jumpToHeader').css({'max-height':''});
-    $('#jumpTo').css({'max-height':''});
+    $('.jumpToCats').parent().css({ 'border': '0px', 'background': 'white' }).addClass('box effect1');
+    $('#jumpTo .jumpToHeader').css({ 'max-height': '' });
+    $('#jumpTo').css({ 'max-height': '' });
 }
 
-function addLearnMore(){
+function addLearnMore() {
     //TODO add catid to this
-	var learnMoreCatList = [
-		{
+    var learnMoreCatList = [
+        {
             'category': 'Capacitors',
             'link': 'https://eewiki.net/display/Motley/Capacitors',
             'text': 'Learn More About Capacitors'
@@ -2649,26 +2704,26 @@ function addLearnMore(){
             'category': 'Programmers, Development Systems',
             'link': 'http://www.digikey.com/en/resources/development-tools',
             'text': 'Development Tools Selector Guide'
-        },        
+        },
         {
-			'category': ' Discrete Semiconductor Products ',
-			'link': 'https://www.eewiki.net/pages/viewpage.action?pageId=49414403',
-			'text': 'Learn More About FETs'
-		},
-	];
+            'category': ' Discrete Semiconductor Products ',
+            'link': 'https://www.eewiki.net/pages/viewpage.action?pageId=49414403',
+            'text': 'Learn More About FETs'
+        },
+    ];
 
-	var learnMoreFamList = [
-		{
-			"family": "Aluminum Capacitors",
-			"famid": "''"
-		}
-	];
-	learnMoreCatList.forEach(function(el, idx, arr){
-		$('#'+selectorEscape(el.category)).find('.piThumbIcons').before('<a style=" margin-right:20px; margin-left:auto; font-size:14px; color:red;" target="_blank" href="'+el.link+'">'+el.text+'</a>');
-	});
+    var learnMoreFamList = [
+        {
+            "family": "Aluminum Capacitors",
+            "famid": "''"
+        }
+    ];
+    learnMoreCatList.forEach(function (el, idx, arr) {
+        $('#' + selectorEscape(el.category)).find('.piThumbIcons').before('<a style=" margin-right:20px; margin-left:auto; font-size:14px; color:red;" target="_blank" href="' + el.link + '">' + el.text + '</a>');
+    });
 }
 
-function smoothScrollToCat(e){
+function smoothScrollToCat(e) {
     //TODO add color highlighting for each click... highlight category box?
     e.preventDefault();
     var destinationHref = $(this).attr('href');
@@ -2679,18 +2734,18 @@ function smoothScrollToCat(e){
     // $('.sideIndexContent a').css({'background': ''});
     // setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
     $('body').animate(
-        {scrollTop: dpos-0},
-        {       
-        duration: 250,
-        easing: 'swing', 
-        complete: function(){
-            //hack to get around the complete function firing early and getting stomped on by the scroll event
-            // $(destinationHref).closest('.catfilteritem').fadeTo(0,1);
-            // $('.catfilteritem').not($(destinationHref).closest('.catfilteritem')).fadeTo('slow', 1)
-            // clickedon.css({'background':'#ddd'});
-            // setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
-        }   
-    });
+        { scrollTop: dpos - 0 },
+        {
+            duration: 250,
+            easing: 'swing',
+            complete: function () {
+                //hack to get around the complete function firing early and getting stomped on by the scroll event
+                // $(destinationHref).closest('.catfilteritem').fadeTo(0,1);
+                // $('.catfilteritem').not($(destinationHref).closest('.catfilteritem')).fadeTo('slow', 1)
+                // clickedon.css({'background':'#ddd'});
+                // setTimeout(function(){clickedon.css({'background':'#ddd'});}, 1);
+            }
+        });
     $('.catfilteritem h2').removeClass('highlightCat');
     //get the parent catfilteritem and set highlight background
     $(destinationHref).closest('h2').addClass('highlightCat');
@@ -2698,87 +2753,87 @@ function smoothScrollToCat(e){
     // $(destinationHref).closest('.catTitle').animate({'background-color': 'red'}, 3000);
 }
 
-function addFullResultsTitle(){
-    _log('addFullResultsTitle() Start',DLOG);
+function addFullResultsTitle() {
+    _log('addFullResultsTitle() Start', DLOG);
 
     //add Full Results title bar to separate top results from full results. Use keyword in title if available.
     var keyword = $("#headKeySearch").val();
-    if(keyword !=''){
+    if (keyword != '') {
         $('#productIndexDiv').before(
             // '<div id="fullResultsTitle" style="width:100%; border: 1px solid #ccc; background:#eee; padding:3px; margin:3px 20px 3px 0px;">'+
-            '<div id="fullResultsTitle" class="" style="display:flex;  background:#888; height:25; padding:5px; margin:8px 0px 10px 0px; color:white;">'+
-            '<div style="display:flex; font-weight:bold; font-size:15px;">Full Results for <span style="font-size:15px; font-weight:bold; font-style:italic;">&nbsp'+keyword+'</span></div>'+
+            '<div id="fullResultsTitle" class="" style="display:flex;  background:#888; height:25; padding:5px; margin:8px 0px 10px 0px; color:white;">' +
+            '<div style="display:flex; font-weight:bold; font-size:15px;">Full Results for <span style="font-size:15px; font-weight:bold; font-style:italic;">&nbsp' + keyword + '</span></div>' +
             '</div>'
-        );  
-    }else{
+        );
+    } else {
 
         $('#productIndexDiv').before(
             // '<div id="fullResultsTitle" style="width:100%; border: 1px solid #ccc; background:#eee; padding:3px; margin:3px 20px 3px 0px;">'+
-            '<div id="fullResultsTitle" class="" style="display:flex;  background:#888; height:25; padding:5px; margin:0px 0px 10px 0px; color:white;">'+
-            '<div style="display:flex; font-weight:bold; font-size:15px;">Full Results</div>'+
+            '<div id="fullResultsTitle" class="" style="display:flex;  background:#888; height:25; padding:5px; margin:0px 0px 10px 0px; color:white;">' +
+            '<div style="display:flex; font-weight:bold; font-size:15px;">Full Results</div>' +
             '</div>'
         );
     }
-        // $('#fullResultsTitle').append($('.matching-records').css({'margin':'auto auto',}));
-        $('#fullResultsTitle').append($('.initial-record-count').clone().css({'margin':'auto auto'}));
-        $('.initial-record-count').children().css({'font-size':'16px'})
-    _log('addFullResultsTitle() End',DLOG);
+    // $('#fullResultsTitle').append($('.matching-records').css({'margin':'auto auto',}));
+    $('#fullResultsTitle').append($('.initial-record-count').clone().css({ 'margin': 'auto auto' }));
+    $('.initial-record-count').children().css({ 'font-size': '16px' })
+    _log('addFullResultsTitle() End', DLOG);
 
 }
 
-function handleTopResults4(){
+function handleTopResults4() {
     //TODO add category jumpto links with smoothscroll
-    $('#quickPicksDisplay').addClass('box effect1').css({border:'none', 'padding-bottom': '5px', 'margin-top':0, 'margin-bottom': '10px'});
-    $('#qpLinkList').css({border:'none', 'margin-bottom':'10px'});
-    $('#qpTitle').css({'background':'white'})
+    $('#quickPicksDisplay').addClass('box effect1').css({ border: 'none', 'padding-bottom': '5px', 'margin-top': 0, 'margin-bottom': '10px' });
+    $('#qpLinkList').css({ border: 'none', 'margin-bottom': '10px' });
+    $('#qpTitle').css({ 'background': 'white' })
     // $('#search-dropdown-container').before('<br>');
     // $('#search-within-results').css({'display':'flex'});
     // $('#qpTitle').append('for '+ $('#headKeySearch').val())
 }
 
 
-function storeProductIndexTree(){
-    _log('storeProductIndexTree() Start',DLOG);
+function storeProductIndexTree() {
+    _log('storeProductIndexTree() Start', DLOG);
 
     var container = [];
-    var quantitytest = (localStorage.getItem('qtydefault') == 1)? 1 : 0;
- 
-        $('#productIndexList>.catfiltertopitem').each(function(){
-            var oneCategory = $(this);
-            //if the next element is a span that means it is the newProductCategory span and there is a number located inside.
-            //if it isn't a span that means it should be the ul element and we assume the number is of new products is 0
-            var oneCategoryNew = ($(this).next().is('.newProductCategory')) ? parseInt($(this).next().text().replace('-','')) : 0;
-            // if the span exists, we store the next element after the span which should be the ul, if the span doesn't exist
-            // we assume the ul is the next element
-            var oneCategoryFamilies = ($(this).next().is('.catfiltersub')) ? $(this).next() : $(this).next().next();
+    var quantitytest = (localStorage.getItem('qtydefault') == 1) ? 1 : 0;
 
-            // console.log('oneCategoryFamilies', oneCategoryFamilies.text());
+    $('#productIndexList>.catfiltertopitem').each(function () {
+        var oneCategory = $(this);
+        //if the next element is a span that means it is the newProductCategory span and there is a number located inside.
+        //if it isn't a span that means it should be the ul element and we assume the number is of new products is 0
+        var oneCategoryNew = ($(this).next().is('.newProductCategory')) ? parseInt($(this).next().text().replace('-', '')) : 0;
+        // if the span exists, we store the next element after the span which should be the ul, if the span doesn't exist
+        // we assume the ul is the next element
+        var oneCategoryFamilies = ($(this).next().is('.catfiltersub')) ? $(this).next() : $(this).next().next();
 
-            var familyTree = [];
-            oneCategoryFamilies.find('li').each(function(){
-                familyTree.push(getFamilyItemFromListElem(this, quantitytest)); 
-            });
-            // console.log('familyTree');
-            container.push({
-                'category': oneCategory.text(),
-                'catanchor':oneCategory.attr('id'), 
-                'catlink': oneCategory.find('a').attr('href'), 
-                'families': familyTree,
-                'new': oneCategoryNew 
-            });
+        // console.log('oneCategoryFamilies', oneCategoryFamilies.text());
+
+        var familyTree = [];
+        oneCategoryFamilies.find('li').each(function () {
+            familyTree.push(getFamilyItemFromListElem(this, quantitytest));
         });
-        // console.log(container);
-    _log('storeProductIndexTree() End',DLOG);
+        // console.log('familyTree');
+        container.push({
+            'category': oneCategory.text(),
+            'catanchor': oneCategory.attr('id'),
+            'catlink': oneCategory.find('a').attr('href'),
+            'families': familyTree,
+            'new': oneCategoryNew
+        });
+    });
+    // console.log(container);
+    _log('storeProductIndexTree() End', DLOG);
     return container;
 }
 
 
-function getFamilyItemFromListElem(item, quantitytest){
+function getFamilyItemFromListElem(item, quantitytest) {
     // var itemsRE = /\(\d+\sitems\)/;
     // var count = itemsRE.exec($(item).contents().text()).toString().replace(/\(|\)|\sitems/g, '');
     // count = parseInt(count);
     // console.log( '>>>>>>>>>>>>>>>>>>>>>getFamilyItemFromListElem')
-    var resultCount = $(item).contents().filter(function(){return this.nodeType ===3;}).text().replace('(','');
+    var resultCount = $(item).contents().filter(function () { return this.nodeType === 3; }).text().replace('(', '');
     var count = parseInt(resultCount);
 
     // console.log('getFamilyItemFromListElem');
@@ -2788,30 +2843,30 @@ function getFamilyItemFromListElem(item, quantitytest){
     var name = $(item).find('a').text();
     var link = augmentHref($(item).find('a').attr('href'), akamai, quantitytest);
     var famID = $(item).find('a').attr('href').split('/');
-    famID = famID[famID.length-1];
+    famID = famID[famID.length - 1];
     return {
         'name': name,
         'count': count,
         'link': link,
-        'famId':  famID
+        'famId': famID
     };
 }
 
-function augmentHref(catfilterlinkhref, akamai, quantity){
+function augmentHref(catfilterlinkhref, akamai, quantity) {
     var queryCheckedURL = catfilterlinkhref;
-    if(akamai){
-        queryCheckedURL = (catfilterlinkhref.indexOf('?') != -1) ? (catfilterlinkhref + '&akamai-feo=off') : (catfilterlinkhref + '?akamai-feo=off');  
+    if (akamai) {
+        queryCheckedURL = (catfilterlinkhref.indexOf('?') != -1) ? (catfilterlinkhref + '&akamai-feo=off') : (catfilterlinkhref + '?akamai-feo=off');
     }
-    if(quantity){
-        queryCheckedURL = (queryCheckedURL.indexOf('?') == -1) ? 
-                (queryCheckedURL + '?ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val()) :
-                (queryCheckedURL + '&ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val());
+    if (quantity) {
+        queryCheckedURL = (queryCheckedURL.indexOf('?') == -1) ?
+            (queryCheckedURL + '?ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val()) :
+            (queryCheckedURL + '&ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val());
     }
     return queryCheckedURL;
 }
 
-function newProductIndexDiv(productTree){
-        _log('newProductIndexDiv() Start',DLOG);
+function newProductIndexDiv(productTree) {
+    _log('newProductIndexDiv() Start', DLOG);
 
     $('#productIndexList').after('<div id="productIndexDiv" class="" style="white-space:normal;" />').detach();
 
@@ -2823,17 +2878,17 @@ function newProductIndexDiv(productTree){
     // });
 
     var ht = '';
-    productTree.forEach(function(item){
-        ht = ht+ buildCategoryItem(item, exampleFamilyImages);
+    productTree.forEach(function (item) {
+        ht = ht + buildCategoryItem(item, exampleFamilyImages);
         //_log(item.category, DLOG)
     });
     $('#productIndexDiv').append(ht);
 
-    _log('newProductIndexDiv() End',DLOG);
+    _log('newProductIndexDiv() End', DLOG);
 }
 
-function addIndexLazyLoad(){
-    _log('addIndexLazyLoad() Start',DLOG);
+function addIndexLazyLoad() {
+    _log('addIndexLazyLoad() Start', DLOG);
 
     // $('#content').find('.lazyimg').lazyLoadXT({
     //     throttle: 200
@@ -2842,12 +2897,12 @@ function addIndexLazyLoad(){
     $.lazyLoadXT.edgeY = 200;
     $.lazyLoadXT.throttle = 200;
 
-    _log('addIndexLazyLoad() End',DLOG);
+    _log('addIndexLazyLoad() End', DLOG);
 }
 
 
 
-function buildCategoryItem(catItem, exampleFamilyImages){
+function buildCategoryItem(catItem, exampleFamilyImages) {
     var catSelector = selectorEscape(catItem.category.replace(/\s/g, ''));
     // $('#productIndexDiv').append('<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
     //     '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a></div>'+
@@ -2859,64 +2914,64 @@ function buildCategoryItem(catItem, exampleFamilyImages){
     var fams = catItem.families;
     var htmltext = '';
     var rettext = ';';
-    for(var i in fams){
+    for (var i in fams) {
         htmltext += buildFamilyItemHTML(fams[i], catSelector, exampleFamilyImages);
     }
     // $('#cat-'+catSelector).append(htmltext);
     // _log('newprod2')
 
-    if(catItem.catlink == undefined){
-    	catItem.catlink = '';
+    if (catItem.catlink == undefined) {
+        catItem.catlink = '';
         // rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
-        rettext = '<div id="'+selectorEscape(catItem.catanchor)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
-	    '<div class="catTitle"><a href="'+catItem.catlink+'">'+catItem.category+'</a> </div>'+
-	    '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
-	    '</div> ';	
-    }else{
-	    var queryCheckedURL = (catItem.catlink.indexOf('?') != -1) ? 
-	                                            (catItem.catlink + '&newproducts=1') : 
-	                                            (catItem.catlink + '?newproducts=1');
+        rettext = '<div id="' + selectorEscape(catItem.catanchor) + '" class="box effect1 catContainer ' + catSelector + '" data-view=0>' +
+            '<div class="catTitle"><a href="' + catItem.catlink + '">' + catItem.category + '</a> </div>' +
+            '<div id="cat-' + catSelector + '" class="familiesContainer">' + htmltext + '</div>' +
+            '</div> ';
+    } else {
+        var queryCheckedURL = (catItem.catlink.indexOf('?') != -1) ?
+            (catItem.catlink + '&newproducts=1') :
+            (catItem.catlink + '?newproducts=1');
         // rettext = '<div id="'+selectorEscape(catItem.category)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
-	    rettext = '<div id="'+selectorEscape(catItem.catanchor)+'" class="box effect1 catContainer '+catSelector+'" data-view=0>'+
-		    '<div class="catTitle">'+
-		    	'<a href="'+catItem.catlink+'">'+catItem.category+'</a> '+
-		    (catItem.new	? '<a style="font-size: 14px; padding-left:50px;" href="'+queryCheckedURL+'"> ('+catItem.new+' New Products)</a>' : '')+
-		    '</div>'+
-		    '<div id="cat-'+catSelector+'" class="familiesContainer">'+htmltext+'</div>'+
-	    '</div> ';
-    	
+        rettext = '<div id="' + selectorEscape(catItem.catanchor) + '" class="box effect1 catContainer ' + catSelector + '" data-view=0>' +
+            '<div class="catTitle">' +
+            '<a href="' + catItem.catlink + '">' + catItem.category + '</a> ' +
+            (catItem.new ? '<a style="font-size: 14px; padding-left:50px;" href="' + queryCheckedURL + '"> (' + catItem.new + ' New Products)</a>' : '') +
+            '</div>' +
+            '<div id="cat-' + catSelector + '" class="familiesContainer">' + htmltext + '</div>' +
+            '</div> ';
+
     }
 
     return rettext;
 }
 
-function buildFamilyItemHTML(fam, catSelector, exampleFamilyImages){
+function buildFamilyItemHTML(fam, catSelector, exampleFamilyImages) {
 
-        // _log('>>>>>>>>><<<<<<<<<<<>>>>>>>>>>>'+fam.link)
-        var root = fam.link.replace('products/en/','').split('?')[0].replace(/\d+$/,'');
-        var famitem = $(this);
-        var imagestring = '';
-        if (exampleFamilyImages[root] != undefined){
-            exampleFamilyImages[root].slice(0,3).forEach(function(item, ind){
-                // console.log(root, item);
-                // famitem.find('.familyimages').append('<img class=lazyimg data-original="http://media.digikey.com'+item+'">');
-                imagestring = imagestring + '<img class=lazyimg data-src="https://media.digikey.com'+item+'">';
-            });
-        }
+    // _log('>>>>>>>>><<<<<<<<<<<>>>>>>>>>>>'+fam.link)
+    var root = fam.link.replace('products/en/', '').split('?')[0].replace(/\d+$/, '');
+    var famitem = $(this);
+    var imagestring = '';
+    if (exampleFamilyImages[root] != undefined) {
+        exampleFamilyImages[root].slice(0, 3).forEach(function (item, ind) {
+            // console.log(root, item);
+            // famitem.find('.familyimages').append('<img class=lazyimg data-original="http://media.digikey.com'+item+'">');
+            imagestring = imagestring + '<img class=lazyimg data-src="https://media.digikey.com' + item + '">';
+        });
+    }
 
-        
 
-        var famSelector = selectorEscape(fam.name.replace(/\s/g, ''));
-        // $('#cat-'+catSelector).append('<div class="famItemContainer fam-'+famSelector+'">'+'<div class="fcount">('+fam.count+')</div>'+
-        return'<div class="famItemContainer fam-'+famSelector+'">'+'<div class="fcount">('+fam.count+')</div>'+
-            '<div class="famTitle"><a href="'+fam.link+'">'+fam.name+'</a> </div> '+
-            '<a href="'+fam.link+'" class="familyimages">'+imagestring+'</a> '+
-            '</div>';
-        // getCachedImagesForFamily(fam, catSelector, fam.link, MOCKPICS);
+
+    var famSelector = selectorEscape(fam.name.replace(/\s/g, ''));
+    // $('#cat-'+catSelector).append('<div class="famItemContainer fam-'+famSelector+'">'+'<div class="fcount">('+fam.count+')</div>'+
+    return '<div class="famItemContainer fam-' + famSelector + '">' + '<div class="fcount">(' + fam.count + ')</div>' +
+        '<div class="famTitle"><a href="' + fam.link + '">' + fam.name + '</a> </div> ' +
+        '<a href="' + fam.link + '" class="familyimages">' + imagestring + '</a> ' +
+        '</div>';
+    // getCachedImagesForFamily(fam, catSelector, fam.link, MOCKPICS);
 }
 
-function addProductIndexThumbs(){
-    _log('addProductIndexThumbs() Start',DLOG);
+function addProductIndexThumbs() {
+    _log('addProductIndexThumbs() Start', DLOG);
 
     $('.catContainer').addClass('plTextOnly');
     // var exampleFamilyImages = getIndexImages();
@@ -2934,7 +2989,7 @@ function addProductIndexThumbs(){
     //     }
 
     // });
-    _log('addProductIndexThumbs() Here>>>>>>>>>>>>>>>>>',DLOG);
+    _log('addProductIndexThumbs() Here>>>>>>>>>>>>>>>>>', DLOG);
     // $('.lazyimg').lazyload({
     //     skip_invisible: true,
     //     threshold : 800
@@ -2944,35 +2999,35 @@ function addProductIndexThumbs(){
     // setTimeout(addIndexLazyLoad, 1);
     addIndexLazyLoad();
 
-    $('.catTitle').append('<div class="piThumbIcons"><i title="text only" class="piText fa fa-list fa-2x"></i><i title="turn on images" class="piThumbs fa fa-th fa-2x"></i></div>');
-    
+    $('.catTitle').append('<div class="piThumbIcons"><i title="text only" class="piText fa fa-list"></i><i title="turn on images" class="piThumbs fa fa-th"></i></div>');
 
-    $('#productIndexDiv').on('click', '.piText', function(){
+
+    $('#productIndexDiv').on('click', '.piText', function () {
         // $('#productIndexDiv').toggleClass('plTextOnly plContainerized');
         $(this).closest('.catContainer').addClass('plTextOnly').removeClass('plContainerized');
-        $(window).scrollTop($(window).scrollTop()+1);
+        $(window).scrollTop($(window).scrollTop() + 1);
     });
-    $('#productIndexDiv').on('click', '.piThumbs', function(){
+    $('#productIndexDiv').on('click', '.piThumbs', function () {
         // $('#productIndexDiv').toggleClass('plTextOnly plContainerized');
         $(this).closest('.catContainer').addClass('plContainerized').removeClass('plTextOnly');
-        $(window).scrollTop($(window).scrollTop()+1);
+        $(window).scrollTop($(window).scrollTop() + 1);
     });
 
-    $('#fullResultsTitle').append('<div class="piThumbIconsAll">'+
-        '<input id="indexThumbsState" type="hidden" class="saveState" value=0>'+
-        '<button id="piTextAllButton" title="text only" class="pure-button" value=0>'+
-        '<i class="piTextAll fa fa-list fa-lg"></i></button>'+
-        '<button id="piThumbsAllButton" title="turn on images" class="pure-button" value=1><i class="piThumbsAll fa fa-th fa-lg"></i></button>'+
+    $('#fullResultsTitle').append('<div class="piThumbIconsAll">' +
+        '<input id="indexThumbsState" type="hidden" class="saveState" value=0>' +
+        '<button id="piTextAllButton" title="text only" class="pure-button" value=0>' +
+        '<i class="piTextAll fa fa-list fa-lg"></i></button>' +
+        '<button id="piThumbsAllButton" title="turn on images" class="pure-button" value=1><i class="piThumbsAll fa fa-th fa-lg"></i></button>' +
         ' Images</div>'
-        );
+    );
 
     restoreInputState($('#indexThumbsState'));
     // _log($('#columnchooserstate').length);
-    if($('#indexThumbsState').val() == 0){
+    if ($('#indexThumbsState').val() == 0) {
         _log('indexThumbsState off', DLOG);
         $('#piTextAllButton').addClass('myRedButton');
         $('.catContainer').addClass('plTextOnly').removeClass('plContainerized');
-    }else if($('#indexThumbsState').val() == 1){
+    } else if ($('#indexThumbsState').val() == 1) {
         _log('indexThumbsState columns', DLOG);
         $('#piThumbsAllButton').addClass('myRedButton');
         $('.catContainer').addClass('plContainerized').removeClass('plTextOnly');
@@ -2980,7 +3035,7 @@ function addProductIndexThumbs(){
 
 
 
-    $('#fullResultsTitle').on('click', '#piTextAllButton', function(){
+    $('#fullResultsTitle').on('click', '#piTextAllButton', function () {
         localStorage.setItem('indexThumbsState', $(this).val());
         $('.catContainer').addClass('plTextOnly').removeClass('plContainerized');
         // console.log('textall',$('.piThumbIconsAll').find('button'))
@@ -2988,26 +3043,26 @@ function addProductIndexThumbs(){
         // $('.piThumbIconsAll').find('button').addClass('hello').removeClass('myRedButton');
         $('#piTextAllButton').addClass('myRedButton');
 
-        $(window).scrollTop($(window).scrollTop()+1);
+        $(window).scrollTop($(window).scrollTop() + 1);
     });
-    $('#fullResultsTitle').on('click', '#piThumbsAllButton', function(){
+    $('#fullResultsTitle').on('click', '#piThumbsAllButton', function () {
         localStorage.setItem('indexThumbsState', $(this).val());
         $('.catContainer').addClass('plContainerized').removeClass('plTextOnly');
         $('#piTextAllButton').removeClass('myRedButton');
         $('#piThumbsAllButton').addClass('myRedButton');
         //         console.log('thumball', $('.piThumbIconsAll').find('button'));
 
-        $(window).scrollTop($(window).scrollTop()+1);
+        $(window).scrollTop($(window).scrollTop() + 1);
     });
 
 
-    _log('addProductIndexThumbs() End',DLOG);
+    _log('addProductIndexThumbs() End', DLOG);
 
 }
 
 
 
-// function 
+// function
 
 // function categoryDivWrap(){
 //     _log('categoryDivWrap() Start',DLOG);
@@ -3017,124 +3072,124 @@ function addProductIndexThumbs(){
 //     _log('categoryDivWrap() End',DLOG);
 // }
 
-function addIndexColumnizerControls(){
+function addIndexColumnizerControls() {
     //Adds off, right, top controls to the top index results page
-    _log('addIndexColumnizerControls() Start',DLOG);
-    var thehtml = '<span id="columnchooser" style="margin-left:auto;" >'+
-        '<input id="columnchooserstate" type="hidden" value="2" class="saveState">'+
-        '<button id=cwfull value=0  class="pure-button"><i class="fa fa-minus fa-lg"></i></button>'+
-        '<button id=cw300 value=1 class="pure-button"><i class="fa fa-bars fa-lg fa-rotate-90"></i></button>'+
-        '<button id=cw301 value=2 class="pure-button"><i class="fa fa-bars fa-lg"></i></button>'+
-        ' columns'+
-    '</span>';
+    _log('addIndexColumnizerControls() Start', DLOG);
+    var thehtml = '<span id="columnchooser" style="margin-left:auto;" >' +
+        '<input id="columnchooserstate" type="hidden" value="2" class="saveState">' +
+        '<button id=cwfull value=0  class="pure-button"><i class="fa fa-minus fa-lg"></i></button>' +
+        '<button id=cw300 value=1 class="pure-button"><i class="fa fa-bars fa-lg fa-rotate-90"></i></button>' +
+        '<button id=cw301 value=2 class="pure-button"><i class="fa fa-bars fa-lg"></i></button>' +
+        ' columns' +
+        '</span>';
     $('#fullResultsTitle').append(thehtml);
 
     restoreInputState($('#columnchooserstate'));
     // _log($('#columnchooserstate').length);
-    if($('#columnchooserstate').val() == 0){
+    if ($('#columnchooserstate').val() == 0) {
         _log('columnchooserstate off', DLOG);
         $('#cwfull').addClass('myRedButton');
-    }else if($('#columnchooserstate').val() == 1){
+    } else if ($('#columnchooserstate').val() == 1) {
         _log('columnchooserstate columns', DLOG);
         $('#cw300').addClass('myRedButton');
         $('#productIndexDiv').addClass('catColumns');
-    }else if($('#columnchooserstate').val() == 2){
+    } else if ($('#columnchooserstate').val() == 2) {
         _log('columnchooserstate lines', DLOG);
         $('#productIndexDiv').addClass('familyColumns');
         $('#cw301').addClass('myRedButton');
     }
 
-    $('#columnchooser button').on('click', function(){
+    $('#columnchooser button').on('click', function () {
         localStorage.setItem('columnchooserstate', $(this).val());
-        if(localStorage.getItem('columnchooserstate') == 0){
+        if (localStorage.getItem('columnchooserstate') == 0) {
             $('#productIndexDiv').removeClass('familyColumns').removeClass('catColumns')
-        }else if(localStorage.getItem('columnchooserstate') == 1){
+        } else if (localStorage.getItem('columnchooserstate') == 1) {
             $('#productIndexDiv').addClass('catColumns').removeClass('familyColumns');
-        }else if(localStorage.getItem('columnchooserstate') == 2){
+        } else if (localStorage.getItem('columnchooserstate') == 2) {
             $('#productIndexDiv').addClass('familyColumns').removeClass('catColumns');
         }
         $('#columnchooser button').removeClass('myRedButton');
         $(this).toggleClass('myRedButton');
-    }).css('padding','3px 3px 3px 3px');
+    }).css('padding', '3px 3px 3px 3px');
 
-    _log('addIndexColumnizerControls() End',DLOG);
+    _log('addIndexColumnizerControls() End', DLOG);
 }
 
 
 
-function addIndexPicPrev(){
-    _log('addIndexPicPrev() Start',DLOG);
-    if(localStorage.getItem('picPrevControl') == 1) {
+function addIndexPicPrev() {
+    _log('addIndexPicPrev() Start', DLOG);
+    if (localStorage.getItem('picPrevControl') == 1) {
         setTimeout(
             // GM_addStyle('.pszoomer {height:64px;}')
-            function(){
+            function () {
                 console.log('~~~~~~~~~~~~~~~indexpic')
-            $('.famTitle a').tooltipster({
-                content: '....loading',
-                functionReady: function(instance, helper){
-                    console.log('!!!!!!!!!!!!!!!!!!')
-                    var $origin = $(helper.origin);
-                    var queryCheckedURL = ($origin.attr('href').indexOf('?') != -1) ? 
-                                            ($origin.attr('href') + '&stock=1&pageSize=100') : 
-                                            ($origin.attr('href') + '?stock=1&pageSize=100');
-                    var onlink = $origin;
-                        
-                    $('.picPrevBody').html('** loading pictures**<br><div class=loader />');
+                $('.famTitle a').tooltipster({
+                    content: '....loading',
+                    functionReady: function (instance, helper) {
+                        console.log('!!!!!!!!!!!!!!!!!!')
+                        var $origin = $(helper.origin);
+                        var queryCheckedURL = ($origin.attr('href').indexOf('?') != -1) ?
+                            ($origin.attr('href') + '&stock=1&pageSize=100') :
+                            ($origin.attr('href') + '?stock=1&pageSize=100');
+                        var onlink = $origin;
 
-                    if(sessionStorage.getItem(queryCheckedURL) == undefined){
+                        $('.picPrevBody').html('** loading pictures**<br><div class=loader />');
 
-                        $.get(queryCheckedURL, function(data){
-                            console.log('data loaded')
-                            // $('.tooltipster-content img').on('load', instance.reposition);
+                        if (sessionStorage.getItem(queryCheckedURL) == undefined) {
 
-                            var $imageLinks = $(data).find('.tr-image a');
+                            $.get(queryCheckedURL, function (data) {
+                                console.log('data loaded')
+                                // $('.tooltipster-content img').on('load', instance.reposition);
 
-                            $imageLinks = filterDuplicateimageLinks($imageLinks);
-                            instance.content($imageLinks);
-                            var clearMe = setInterval(function(){
-                                instance.reposition(); 
-                                console.log('repositionoed'); 
-                                var complete = true;
-                                $('.tooltipster-content img').each(function(){
-                                    complete &= this.complete 
-                                    if (!complete){
-                                        return false;
-                                    }else{
-                                        console.log('all items loaded')
-                                        clearInterval(clearMe);
-                                    }
-                                })
-                            }, 500) 
+                                var $imageLinks = $(data).find('.tr-image a');
+
+                                $imageLinks = filterDuplicateimageLinks($imageLinks);
+                                instance.content($imageLinks);
+                                var clearMe = setInterval(function () {
+                                    instance.reposition();
+                                    console.log('repositionoed');
+                                    var complete = true;
+                                    $('.tooltipster-content img').each(function () {
+                                        complete &= this.complete
+                                        if (!complete) {
+                                            return false;
+                                        } else {
+                                            console.log('all items loaded')
+                                            clearInterval(clearMe);
+                                        }
+                                    })
+                                }, 500)
 
 
-                            $('.tooltipster-content').prepend('<span style="vertical-align:top" height="100%"> Example pictures of <b>'+
-                                onlink.text() +'</b> (up to first 100 in stock):</span><br> '
-                            );
-                            sessionStorage.setItem(queryCheckedURL, $('.tooltipster-content').html());
-                            if($('.tooltipster-content').find('img').length == 0){
-                                $('.tooltipster-content').html('----no pics exist?');
-                            }
-                            // console.log('width is:')
-                        })
+                                $('.tooltipster-content').prepend('<span style="vertical-align:top" height="100%"> Example pictures of <b>' +
+                                    onlink.text() + '</b> (up to first 100 in stock):</span><br> '
+                                );
+                                sessionStorage.setItem(queryCheckedURL, $('.tooltipster-content').html());
+                                if ($('.tooltipster-content').find('img').length == 0) {
+                                    $('.tooltipster-content').html('----no pics exist?');
+                                }
+                                // console.log('width is:')
+                            })
 
+                        }
                     }
-                }
-            });
-            // _log('tooltipster',DLOG);
-        },1000);
+                });
+                // _log('tooltipster',DLOG);
+            }, 1000);
     }
-    _log('addIndexPicPrev() End',DLOG);
+    _log('addIndexPicPrev() End', DLOG);
 }
 
-function filterDuplicateimageLinks($imageset){
+function filterDuplicateimageLinks($imageset) {
     var srcs = [],
         temp;
-        console.log('filtering stuff')
-    var x = $imageset.filter(function(){
+    console.log('filtering stuff')
+    var x = $imageset.filter(function () {
         temp = $(this).find('img').attr("src");
         // console.log($.inArray(temp, srcs), ':::::' ,temp);
-        if($.inArray(temp, srcs) < 0){
-            srcs.push(temp);   
+        if ($.inArray(temp, srcs) < 0) {
+            srcs.push(temp);
             return true;
         }
         return false;
@@ -3144,9 +3199,9 @@ function filterDuplicateimageLinks($imageset){
     return x;
 }
 
-function formatDetailPage(){
-    if($('#reportPartNumber').length){
-        _log('formatDetailPage() Start',DLOG);
+function formatDetailPage() {
+    if ($('#reportPartNumber').length) {
+        _log('formatDetailPage() Start', DLOG);
 
         // $('#bottomhalf').css({'margin-top': '10px'});
         // var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
@@ -3158,18 +3213,18 @@ function formatDetailPage(){
         // apOld.addAssociatedProductViewer();
         // addReverseFiltering(dataTable);
         addToTopButton();
-        
+
         addDetailPageEasyInfoCopy($('#content'));
 
         addDataSheetLoader();
         // addDashNDHover();
 
         // add3dCad();
-        if($('.seohtagbold').find('a[href$=525140]').length == 1){
+        if ($('.seohtagbold').find('a[href$=525140]').length == 1) {
             addCOBLEDWizard();
         }
 
-        $('td:contains("obsolete") p').css('background-color','#FF8080'); // changes the color of the obsolete callout
+        $('td:contains("obsolete") p').css('background-color', '#FF8080'); // changes the color of the obsolete callout
         // $('#content').css({'position':'relative', 'top': '45px'});
         detailPageManufacturerLogoHover();
         detailPageAssociationHover();
@@ -3183,12 +3238,12 @@ function formatDetailPage(){
 
         addManufacturerDirectLink();
         setTimeout(detailCompareList, 1);
-        _log('formatDetailPage() End',DLOG);
+        _log('formatDetailPage() End', DLOG);
     }
 }
-function preFormatDetailPage(){
-    if($('#reportPartNumber').length){
-        _log('preformatDetailPage() Start',DLOG);
+function preFormatDetailPage() {
+    if ($('#reportPartNumber').length) {
+        _log('preformatDetailPage() Start', DLOG);
         var tablegeneralcss = {
             'border-radius': '5px',
             'border-spacing': '0',
@@ -3206,13 +3261,13 @@ function preFormatDetailPage(){
         $('.request-quote-description').hide();
         // var dataTable = $('table:contains("Category")');
         var dataTable = $('#errmsgs').siblings('table:eq(1)').find('table:first');
-        
+
         //$('.beablock').removeClass('beablock');
         // $('.beablock').css({
         // 'border-radius': '5px',
         // 'border': '1px solid #ccc'
         // });
-        
+
         // priceTable.css(tablegeneralcss);
         // priceTable.find('td,th').css(trtdcss);
         // digireelTable.css(tablegeneralcss);
@@ -3221,10 +3276,10 @@ function preFormatDetailPage(){
         // discPriceTable.find('td,th').css(trtdcss);
         dataTable.css(tablegeneralcss);
         dataTable.find('td,th').css(trtdcss);
-        
-        $('#prod-att-table input[type=checkbox]').each(function(){
+
+        $('#prod-att-table input[type=checkbox]').each(function () {
             var name = $(this).attr('name');
-            $(this).addClass('css-checkbox').attr('id', name).after('<label class="css-label" for='+name+'>');
+            $(this).addClass('css-checkbox').attr('id', name).after('<label class="css-label" for=' + name + '>');
         })
 
         // $('.psdkdirchanger').parent().hide(); // removes the extra search box on the item detail page
@@ -3235,24 +3290,24 @@ function preFormatDetailPage(){
         $('.catalog-pricing').append($('.product-details-discount-pricing'));
         $('.product-details-discount-pricing br').hide();
         $('.update-quantity br').hide();
-        $('.product-details-discount-pricing tr:last').css({'background':'#eeeeee'});
-        $('#pricing th').css({'background-color':'#555'});
+        $('.product-details-discount-pricing tr:last').css({ 'background': '#eeeeee' });
+        $('#pricing th').css({ 'background-color': '#555' });
 
-        _log('preformatDetailPage() End',DLOG);
+        _log('preformatDetailPage() End', DLOG);
     }
 }
 
-function detailPageSectionJump(){
-	// var $docs = $('#tophalf .leftdivs').eq(1);
-	// var $attr = $('.prod-attributes');
-	// var $relatedSection = 
-	var $sections = $('#tophalf>div').attr()
+function detailPageSectionJump() {
+    // var $docs = $('#tophalf .leftdivs').eq(1);
+    // var $attr = $('.prod-attributes');
+    // var $relatedSection =
+    var $sections = $('#tophalf>div').attr()
 }
 
 
-function addViewMoreNumOnHover(){
+function addViewMoreNumOnHover() {
     //adds a number to associated product boxes when user hovers that box.
-    $('#additional-product-options-section').on('hover',function(){
+    $('#additional-product-options-section').on('hover', function () {
         $(this).unbind('hover');
         $('.lnkViewMoreUseWith').each(function () {
             var $morelink = $(this)
@@ -3269,65 +3324,65 @@ function addViewMoreNumOnHover(){
 }
 
 
-function detailPageManufacturerLogoHover(){
-	$('[itemprop=manufacturer] a')
-    .data('elementToLoad', '.supplier-logo')
-    .tooltipster({
-        side: 'bottom',
-        theme: 'tooltipster-shadow',
-        functionReady: easyHoverAndLoad
-    });
+function detailPageManufacturerLogoHover() {
+    $('[itemprop=manufacturer] a')
+        .data('elementToLoad', '.supplier-logo')
+        .tooltipster({
+            side: 'bottom',
+            theme: 'tooltipster-shadow',
+            functionReady: easyHoverAndLoad
+        });
 }
 
-function detailPageAssociationHover(){
-    $('.list-item-img>img').each(function() {
-        $(this).wrap('<a href="'+$(this).closest('ul').find('.list-item-number a').attr('href')+'"/>')
+function detailPageAssociationHover() {
+    $('.list-item-img>img').each(function () {
+        $(this).wrap('<a href="' + $(this).closest('ul').find('.list-item-number a').attr('href') + '"/>')
     })
     $('.list-item-img a, .list-item-number a')
-    .data('elementToLoad', '#prod-att-table, #product-photo-wrapper img:first')
-    .tooltipster({
-        distance: 30,
-        side: 'right',
-        functionReady: easyHoverAndLoad,
-        multiple: true
-    });
+        .data('elementToLoad', '#prod-att-table, #product-photo-wrapper img:first')
+        .tooltipster({
+            distance: 30,
+            side: 'right',
+            functionReady: easyHoverAndLoad,
+            multiple: true
+        });
 }
 
-function detailPageMoveManufacturerLink(){
-	$('.asscontainer ul').each(function(){
-		$(this).find('.list-item-vendor').appendTo($(this));
-	})
+function detailPageMoveManufacturerLink() {
+    $('.asscontainer ul').each(function () {
+        $(this).find('.list-item-vendor').appendTo($(this));
+    })
 }
 
-function addManufacturerDirectLink(){
-    $('.lnkMfct:first').append('<div id="manuDirLink" class="button pure-button" '+
-        'title="Opens new tab to manufacturer\'s website">'+
+function addManufacturerDirectLink() {
+    $('.lnkMfct:first').append('<div id="manuDirLink" class="button pure-button" ' +
+        'title="Opens new tab to manufacturer\'s website">' +
         '<i class="fa fa-external-link" aria-hidden="true"></i></div>')
     var supplierPageHref = $('[itemprop=manufacturer] a').attr('href')
     $('#manuDirLink').tooltipster({
-        content:"Fetching Manufactuer's Website",
-        trigger:'custom',
+        content: "Fetching Manufactuer's Website",
+        trigger: 'custom',
         'side': 'right',
         'distance': -45
     })
-    $('#manuDirLink').on('click', function(){
+    $('#manuDirLink').on('click', function () {
         console.log('clkick');
         var mlink = this;
         $(mlink).tooltipster('open');
-        setTimeout(function(){$(mlink).tooltipster('close')}, 2000)
-        $('<div>').load(supplierPageHref+' #_supplierLink', function(){
+        setTimeout(function () { $(mlink).tooltipster('close') }, 2000)
+        $('<div>').load(supplierPageHref + ' #_supplierLink', function () {
             console.log($(this).find('a').attr('href'));
             GM_openInTab($(this).find('a').attr('href'), false);
         })
     })
 }
 
-function detailCompareList(){
-    _log('detailCompareList() Start',DLOG);
+function detailCompareList() {
+    _log('detailCompareList() Start', DLOG);
 
     $('.breadcrumbs').after('<div id=staticCompareButton class="button pure-button">Compare (<span id=staticCompareCount></span>) </div>');
     $('#content').after(`
-        <div id=staticCompare style=""> 
+        <div id=staticCompare style="">
             <div id=staticCompareTitle style="margin:5px 0; font-weight:bolder;">Compare These Products</div>
             <div id=staticCompareBody></div>
             <div style="margin-top:10px;">
@@ -3341,67 +3396,67 @@ function detailCompareList(){
     setCompareCount();
 
     $('#staticCompareButton').tooltipster({
-        content:$('#staticCompare'),
-        trigger:'custom',
+        content: $('#staticCompare'),
+        trigger: 'custom',
         'side': 'bottom',
         // 'distance': ,
-        'triggerClose':{        
+        'triggerClose': {
             click: true,
             tap: true
         },
-        functionReady: function(){
+        functionReady: function () {
             loadCompareContent();
         },
     });
     $('#staticCompareButton').tooltipster('open'); //to hide staticcompare
     $('#staticCompareButton').tooltipster('close'); //to hide staticcompare
-    
-    $('#doCompare').on('click', function(){
-        var compareurl="/products/compare/en?part=";
-        var pnlist = getCompareList();
-        GM_openInTab(compareurl+ pnlist.join('&part='))
-        $('#staticCompareButton').tooltipster('close');
-    })    
 
-    $('#staticCompareButton').on('click', function(){
+    $('#doCompare').on('click', function () {
+        var compareurl = "/products/compare/en?part=";
+        var pnlist = getCompareList();
+        GM_openInTab(compareurl + pnlist.join('&part='))
+        $('#staticCompareButton').tooltipster('close');
+    })
+
+    $('#staticCompareButton').on('click', function () {
         loadCompareContent();
     })
 
-    $('#addCompare').on('click', function(){
+    $('#addCompare').on('click', function () {
         var currentPart = $('#reportPartNumber').text();
         addComparePart(currentPart)
         // storeCompareList();
         loadCompareContent();
     })
 
-    $('#clearCompare').on('click', function(){
+    $('#clearCompare').on('click', function () {
         clearCompareList();
         loadCompareContent();
     })
-    _log('detailCompareList() End',DLOG);
+    _log('detailCompareList() End', DLOG);
 }
 
-function loadCompareContent(){
+function loadCompareContent() {
     console.log('compare button clicked')
-        
+
     $('#staticCompareBody').empty();
     var currentPart = $('#reportPartNumber').text();
     var pnlist = getCompareList();
-    if(pnlist.length){
-        pnlist.forEach(function(elem, idx, array){
+    if (pnlist.length) {
+        pnlist.forEach(function (elem, idx, array) {
             $('#staticCompareBody').append(`
                 <div style="margin:5px 0px;" data-item="${elem}">
-                    ${elem} 
+                    ${elem}
                     <i class="fa fa-times-circle" aria-hidden="true" style="cursor:pointer;"></i>
                 </div>
             `);
         });
         $('#staticCompareCount').text(pnlist.length);
-        $('#staticCompareBody .fa-times-circle').on('click', function(){
+        $('#staticCompareBody .fa-times-circle').on('click', function () {
             console.log('killing part')
             removeCompareItem($(this).parent().data('data-item'))
         })
-    }else{
+    } else {
         $('#staticCompareBody').append('No items to compare.')
     }
     setCompareCount();
@@ -3409,39 +3464,39 @@ function loadCompareContent(){
     $('#staticCompareButton').tooltipster('reposition');
 }
 
-function addComparePart(pnstring){
+function addComparePart(pnstring) {
     pnstring = pnstring.trim();
     var pnlist = getCompareList();
-    if (!pnlist.includes(pnstring)){ 
+    if (!pnlist.includes(pnstring)) {
         pnlist.push(pnstring)
     }
     storeCompareList(pnlist);
 }
 
-function setCompareCount(){
+function setCompareCount() {
     $('#staticCompareCount').text(getCompareList().length);
 }
 
-function getCompareList(){
+function getCompareList() {
     var storedtext = localStorage.getItem('detailCompareList')
-    var list = (storedtext)? JSON.parse(storedtext) : [];
+    var list = (storedtext) ? JSON.parse(storedtext) : [];
     console.log(list)
- return list;
+    return list;
 }
 
-function storeCompareList(somelist){
+function storeCompareList(somelist) {
     localStorage.setItem('detailCompareList', JSON.stringify(somelist));
     console.log('stored!')
 }
 
-function clearCompareList(){
+function clearCompareList() {
     localStorage.removeItem('detailCompareList');
     console.log('list cleared!')
 }
-function removeCompareItem(item){
+function removeCompareItem(item) {
     var list = getCompareList();
     var index = list.indexOf(item);
-    list.splice(index,1)
+    list.splice(index, 1)
     storeCompareList(list);
     loadCompareContent();
     $('#staticCompareButton').tooltipster('open');
@@ -3449,178 +3504,180 @@ function removeCompareItem(item){
 
 
 
-function easyHoverAndLoad(instance,helper, ecallback){
+function easyHoverAndLoad(instance, helper, ecallback) {
     //This function loads an element from a separate page into a tooltip.
     //This function needs a data object called elementToLoad set on any tooltipster object
     //The data should contain the jquery selector of the item to load from the hovered link.
     //note: default tooltipster settings will need to be set globally or the minimum set will need to be passed in the tooltipster method
     //usage: $('a').data('elementToLoad', '#someLogoId').tooltipster({settings..., functionReady: easyHoverAndLoad})
     var $origin = $(helper.origin);
-    if($origin.data('loaded')!==true){
-        _log(helper.origin,true)
+    if ($origin.data('loaded') !== true) {
+        _log(helper.origin, true)
         $.get(
-            $origin.attr('href'), 
-            function(data){
+            $origin.attr('href'),
+            function (data) {
                 instance.content($(data).find($origin.data('elementToLoad')))
                 instance.reposition();
-                $origin.data('loaded',true)
+                $origin.data('loaded', true)
                 ecallback();
             }
-        
+
         );
     }
 }
 
-function addDetailPageEasyInfoCopy($pageobject){
-	$('.product-info-section form:last').after('<button class="easyCopy pure-button" style="margin:5px 10px 0px 0px;">Easy Data Copy</button>');
-	$('#content').after('<div id="easyCopyDialog" class="firstopen" style="display:none;">'+
-		'<div class="copytablediv">Click and drag headers to choose order.<br><table id="copytable" class="gray"><thead><tr></tr></thead><tbody><tr></tr></tbody></table></div>'+
-		'<textarea style="width:100%; height:150px;  overflow:scroll;" class="copytext"></textarea> <div style="float:right;">Ctrl+C to copy, then paste into spreadsheet</div>'+
-		'<div class="includeInfo" style="margin-top:5px;">Desired Columns<br></div>'+
-		'</div>');
+function addDetailPageEasyInfoCopy($pageobject) {
+    $('.product-info-section form:last').after('<button class="easyCopy pure-button" style="margin:5px 10px 0px 0px;">Easy Data Copy</button>');
+    $('#content').after('<div id="easyCopyDialog" class="firstopen" style="display:none;">' +
+        '<div class="copytablediv">Click and drag headers to choose order.<br><table id="copytable" class="gray"><thead><tr></tr></thead><tbody><tr></tr></tbody></table></div>' +
+        '<textarea style="width:100%; height:150px;  overflow:scroll;" class="copytext"></textarea> <div style="float:right;">Ctrl+C to copy, then paste into spreadsheet</div>' +
+        '<div class="includeInfo" style="margin-top:5px;">Desired Columns<br></div>' +
+        '</div>');
 
-	$('.easyCopy').on('click', function(){		
-		if($('#easyCopyDialog').hasClass('firstopen')){  // only make the dialog as needed.
-			//init and open dialog
-			$('#easyCopyDialog').removeClass('firstopen');
-			$('#easyCopyDialog').dialog({
+    $('.easyCopy').on('click', function () {
+        if ($('#easyCopyDialog').hasClass('firstopen')) {  // only make the dialog as needed.
+            //init and open dialog
+            $('#easyCopyDialog').removeClass('firstopen');
+            $('#easyCopyDialog').dialog({
                 autoOpen: true,
                 resizable: false,
                 // draggable: false,
-                height:600,
-                width:'80%',
+                height: 600,
+                width: '80%',
                 modal: true,
                 buttons: {
-                    "Close": function() {
+                    "Close": function () {
                         $(this).css('color', 'lightgrey');
-                        $( this ).dialog( "close" );
+                        $(this).dialog("close");
                     },
                 }
             });
 
-			buildEazyCopyCheckboxes();
-			$('.copytext').select();
-		}else{
-			//just open dialog
-			$('#easyCopyDialog').dialog('open');
-		}
-	});
+            buildEazyCopyCheckboxes();
+            $('.copytext').select();
+        } else {
+            //just open dialog
+            $('#easyCopyDialog').dialog('open');
+        }
+    });
 
 }
 
-function buildEazyCopyCheckboxes(){
+function buildEazyCopyCheckboxes() {
 
-	var info = getDetailPageInfo($('#content'));
-	var keys = Object.keys(info);
-	// console.log('local');
-	var storedKeys = [];
-	var local = localStorage.getItem('copycheckboxes')
-	if(local == undefined || local == ''){
-		storedKeys = keys;
-		localStorage.setItem('copycheckboxes', JSON.stringify(keys));
-		// console.log('storedKeys und', storedKeys);
-	}else{
-		storedKeys = JSON.parse(local);
-		// console.log('storedKeys else', storedKeys);
-	}
-	//create checkboxes
-	keys.forEach(function(el,idx,array){
-		$('.includeInfo').append('<input id="c_'+el+'" class="css-checkbox copycheckboxes" style="z-index:2005; margin-right:10px;" type="checkbox"><label class="css-label" for="c_'+el+'">'+el+'</label><br>');
-	});
-	//populate checks
-	storedKeys.forEach(function(el,idx,array){
-		$('#c_'+el).prop('checked',true);
-	});
+    var info = getDetailPageInfo($('#content'));
+    var keys = Object.keys(info);
+    // console.log('local');
+    var storedKeys = [];
+    var local = localStorage.getItem('copycheckboxes')
+    if (local == undefined || local == '') {
+        storedKeys = keys;
+        localStorage.setItem('copycheckboxes', JSON.stringify(keys));
+        // console.log('storedKeys und', storedKeys);
+    } else {
+        storedKeys = JSON.parse(local);
+        // console.log('storedKeys else', storedKeys);
+    }
+    //create checkboxes
+    keys.forEach(function (el, idx, array) {
+        $('.includeInfo').append('<input id="c_' + el + '" class="css-checkbox copycheckboxes" style="z-index:2005; margin-right:10px;" type="checkbox"><label class="css-label" for="c_' + el + '">' + el + '</label><br>');
+    });
+    //populate checks
+    storedKeys.forEach(function (el, idx, array) {
+        $('#c_' + el).prop('checked', true);
+    });
 
-	buildCopyTable(storedKeys);
+    buildCopyTable(storedKeys);
 
-	//event
-	$('.copycheckboxes').change(function() {
-		var fullinfo = getDetailPageInfo($('#content'));
-		var limitedKeys = [];
-		var localKeys = JSON.parse(localStorage.getItem('copycheckboxes'));
-		var sortedKeys = [];
-		$('.copycheckboxes:checked').each(function(){
-			limitedKeys.push(this.id.replace('c_',''));
-		});
+    //event
+    $('.copycheckboxes').change(function () {
+        var fullinfo = getDetailPageInfo($('#content'));
+        var limitedKeys = [];
+        var localKeys = JSON.parse(localStorage.getItem('copycheckboxes'));
+        var sortedKeys = [];
+        $('.copycheckboxes:checked').each(function () {
+            limitedKeys.push(this.id.replace('c_', ''));
+        });
 
-		localKeys.forEach(function(el,idx,arr){
-			if(limitedKeys.indexOf(el) !== -1){
-				sortedKeys.push(el);
-			}
-		});
+        localKeys.forEach(function (el, idx, arr) {
+            if (limitedKeys.indexOf(el) !== -1) {
+                sortedKeys.push(el);
+            }
+        });
 
-		limitedKeys.forEach(function(el,idx,arr){
-			if(sortedKeys.indexOf(el) == -1){
-				sortedKeys.push(el);
-			}
-		});
+        limitedKeys.forEach(function (el, idx, arr) {
+            if (sortedKeys.indexOf(el) == -1) {
+                sortedKeys.push(el);
+            }
+        });
 
-		localStorage.setItem('copycheckboxes', JSON.stringify(sortedKeys));
-		buildCopyTable(sortedKeys);
-	});
+        localStorage.setItem('copycheckboxes', JSON.stringify(sortedKeys));
+        buildCopyTable(sortedKeys);
+    });
 
 }
 
-function buildCopyTable(desiredkeys){
-	$('#copytable tr').empty();
-	var info = getDetailPageInfo($('#content'));
-	var keys = Object.keys(info);
+function buildCopyTable(desiredkeys) {
+    $('#copytable tr').empty();
+    var info = getDetailPageInfo($('#content'));
+    var keys = Object.keys(info);
 
-	// console.log('desiredkeys', );
-	if(desiredkeys == undefined || desiredkeys == []){
-		desiredkeys = Object.keys(info);
-	}
-	
-	desiredkeys.forEach(function(el,idx,array){
-			$('#copytable thead tr:first').append('<th class="i_'+el+'">'+el+'</th>');
-			$('#copytable tbody tr:first').append('<td>'+info[el]+'</td>');
-	});
+    // console.log('desiredkeys', );
+    if (desiredkeys == undefined || desiredkeys == []) {
+        desiredkeys = Object.keys(info);
+    }
 
-	buildCopyText(getDetailPageInfoFromTable());
+    desiredkeys.forEach(function (el, idx, array) {
+        $('#copytable thead tr:first').append('<th class="i_' + el + '">' + el + '</th>');
+        $('#copytable tbody tr:first').append('<td>' + info[el] + '</td>');
+    });
 
-	$('#copytable').dragtable({stop:function(){
-		var neworder = getDetailPageInfoFromTable();
-		var fullinfo = getDetailPageInfo($('#content'));
-		localStorage.setItem('copycheckboxes', JSON.stringify(neworder));
-		buildCopyText(neworder);
-	}});
-	//$('#copytable').change();
+    buildCopyText(getDetailPageInfoFromTable());
+
+    $('#copytable').dragtable({
+        stop: function () {
+            var neworder = getDetailPageInfoFromTable();
+            var fullinfo = getDetailPageInfo($('#content'));
+            localStorage.setItem('copycheckboxes', JSON.stringify(neworder));
+            buildCopyText(neworder);
+        }
+    });
+    //$('#copytable').change();
 }
 
-function buildCopyText(oKeys){
-	var info = getDetailPageInfo($('#content'));
-	$('.copytext').text('');
-	if (oKeys==undefined){
-		oKeys = Object.keys(info);  //order is not guaranteed! don't care for now.
-	}
+function buildCopyText(oKeys) {
+    var info = getDetailPageInfo($('#content'));
+    $('.copytext').text('');
+    if (oKeys == undefined) {
+        oKeys = Object.keys(info);  //order is not guaranteed! don't care for now.
+    }
 
-	//KEEP needed to add headings for spreadsheet
+    //KEEP needed to add headings for spreadsheet
     // oKeys.forEach(function(el, idx, array){
     // 	$('.copytext').text($('.copytext').text()+el+'\t');
     // });
     // $('.copytext').text($('.copytext').text()+'\n');
 
-    oKeys.forEach(function(el, idx, array){
-    	$('.copytext').text($('.copytext').text()+info[el]+'\t');
+    oKeys.forEach(function (el, idx, array) {
+        $('.copytext').text($('.copytext').text() + info[el] + '\t');
 
     });
-  	$('.copytext').text($('.copytext').text()+'\n');
+    $('.copytext').text($('.copytext').text() + '\n');
 
-	$('.copytext').select();
+    $('.copytext').select();
 
 }
 
-function getDetailPageInfoFromTable(){
-	var keyorder = [];
-	$('#copytable th').each(function(){
-		keyorder.push($(this).attr('class').replace('i_',''));
-	});
-	console.log(keyorder);
-	return keyorder;
+function getDetailPageInfoFromTable() {
+    var keyorder = [];
+    $('#copytable th').each(function () {
+        keyorder.push($(this).attr('class').replace('i_', ''));
+    });
+    console.log(keyorder);
+    return keyorder;
 }
 
-function getDetailPageInfo($pageobject){
+function getDetailPageInfo($pageobject) {
 
     var info = {};
     info.MPN = $pageobject.find('h1[itemprop=model]').text();
@@ -3638,72 +3695,72 @@ function getDetailPageInfo($pageobject){
     info.ROHS = $pageobject.find('.product-details tr:last').text();
     return info;
 }
-      
-function getPricingTable($priceTable){
-	var priceData = [];
-	// console.log($priceTable);
-	if($priceTable.filter(':contains(Call)').length === 0){
-		$priceTable.find('tr:gt(0)').each(function(){
-			// console.log($(this).text());
-			// console.log($(this).find('td:eq(0)').text(), $(this).find('td:eq(1)').text());
-			priceData.push([$(this).find('td:eq(0)').text(), $(this).find('td:eq(1)').text()]);
-		});
-		return priceData;
-	}else{
-		return priceData;
-	}
-}         
-         
-         
+
+function getPricingTable($priceTable) {
+    var priceData = [];
+    // console.log($priceTable);
+    if ($priceTable.filter(':contains(Call)').length === 0) {
+        $priceTable.find('tr:gt(0)').each(function () {
+            // console.log($(this).text());
+            // console.log($(this).find('td:eq(0)').text(), $(this).find('td:eq(1)').text());
+            priceData.push([$(this).find('td:eq(0)').text(), $(this).find('td:eq(1)').text()]);
+        });
+        return priceData;
+    } else {
+        return priceData;
+    }
+}
+
+
 
 //TODO finish
-function addFootprintSearch(){
+function addFootprintSearch() {
     var manufacturer = detailPageInfo.getManufacturer($('#content'));
     var manPN = detailPageInfo.getMPN($('#content'));
     // var url = 'http://www.snapeda.com/api/v1/parts/search?q=NCP2820MUTBG&manufacturers=ON%20Semiconductor&include=cad';
     // var url = 'http://www.snapeda.com/api/v1/parts/search?q='+encodeURIComponent(manPN)+'&manufacturers='+encodeURIComponent(manufacturer)+'&include=cad');
-    var url = 'http://www.snapeda.com/api/v1/parts/search?q='+encodeURIComponent(manPN)+'&manufacturers='+encodeURIComponent(manufacturer)+'&include=cad';
+    var url = 'http://www.snapeda.com/api/v1/parts/search?q=' + encodeURIComponent(manPN) + '&manufacturers=' + encodeURIComponent(manufacturer) + '&include=cad';
 
 
     $('#content').append('<div id="sometestdiv" style="display:none;"/>');
-    $('#sometestdiv').gmload(url, function(data){
+    $('#sometestdiv').gmload(url, function (data) {
         var results = JSON.parse(data.response);
         console.log('snapeda', results, results.results[0].manufacturer);
-        if (results.error == null){
+        if (results.error == null) {
             console.log(results.results[0].has_footprint, results.results[0].has_symbol, results.results[0].manufacturer);
         }
     });
 
 }
 
-function addDetailHoverMainImage(){
+function addDetailHoverMainImage() {
     $('#product-photo-wrapper img:first').tooltipster({
         content: '...loading',
         theme: 'tooltipster-shadow',
         side: 'right',
         trackTooltip: true,
         distance: -30,
-        functionReady: function(instance, helper){ $('.tooltipster-content').html('<img src="'+$(helper.origin).parent().attr('href')+'">'); instance.reposition;}
+        functionReady: function (instance, helper) { $('.tooltipster-content').html('<img src="' + $(helper.origin).parent().attr('href') + '">'); instance.reposition; }
     });
 }
 
-function add3dCad(){
-    _log('add3dCad() start',DLOG);
+function add3dCad() {
+    _log('add3dCad() start', DLOG);
     var items = $('a[href$="igs"]:first');
 
-    if (items.length !== 0 ){
-        $('#content').append('<div>sharecad</div><iframe width="800" height="800" src="//sharecad.org/cadframe/load?url='+items.attr('href')+'" scrolling="no"></iframe>');
+    if (items.length !== 0) {
+        $('#content').append('<div>sharecad</div><iframe width="800" height="800" src="//sharecad.org/cadframe/load?url=' + items.attr('href') + '" scrolling="no"></iframe>');
     }
     // if (items.length !== 0 ){
     //     // $('#content').append('<div>sharecad</div><iframe width="800" height="800" src="//sharecad.org/cadframe/load?url='+items.attr('href')+'" scrolling="no"></iframe>');
     //     $('#content').append("<div id='iframe3DviewerContainer' style='width:400px;height:210px;border-width: 2px; border-style: solid; border-color: black;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom-left-radius:5px;border-bottom-right-radius:5px;'><iframe id='iframe3dvieweronline' type='text/html' width='400' height='210' src='http://www.3dvieweronline.com/iframe.php?bg=&textcolor=&text=VIEW THE MODEL' scrolling='no' frameborder='0'/><p>Your browser does not support iframes.</p></iframe></div><div style='font-size:12px;'><strong>Powered by <a href='http://www.3dvieweronline.com' target=_blank>3D Viewer online</a></strong> Allow Pop-Up to use the viewer</div>");
     // }
 
-    _log('add3dCad() end',DLOG);
+    _log('add3dCad() end', DLOG);
 }
 
-function addCOBLEDWizard(){
-    _log('addCOBLEDWizard() start',DLOG);
+function addCOBLEDWizard() {
+    _log('addCOBLEDWizard() start', DLOG);
     var voltageOutput = 'pv48';
     var currentOutputMax = 'pv1120';
     var id = 'ledwiz';
@@ -3715,34 +3772,34 @@ function addCOBLEDWizard(){
     var param2Text = getParametricValueText(param2);
     var driverLink = '/products/en/power-supplies-external-internal-off-board/led-supplies/591038';
 
-    $('#additional-product-options-section').prepend('<div id="'+id+'" style="width:100%;" class="panel panel-default">'+
-        '<div class="panel-heading">Compatible Driver Wizard</div>'+
-            '<div class="panel-body" style="padding:10px; ">'+
-                '<div class="" style="line-height:2em; display:inline-block;">'+
-                    'Find Drivers with Vout Max of at least '+
-                    '<input id="'+param1Escaped+'" type="text" size='+param1Text.length+' value="'+param1Text+'">'+
-                    ' and Current Output Max of less than <input id="'+param2Escaped+'" type="text" value="'+param2Text+'"> '+
-                '</div>'+
-                // '<div class="" style="line-height:2em; display:inline-block;"></div>'+
-                '<div><div id="compatibleDriverWizzardButton" class="button-small pure-button">See Compatible Drivers</div></div>'+
-                '<div class="hiddenLEDForm" ></div>'+
-                // '<div class="hiddenLEDForm" style="display:none;"></div>'+
-            '</div>'+
+    $('#additional-product-options-section').prepend('<div id="' + id + '" style="width:100%;" class="panel panel-default">' +
+        '<div class="panel-heading">Compatible Driver Wizard</div>' +
+        '<div class="panel-body" style="padding:10px; ">' +
+        '<div class="" style="line-height:2em; display:inline-block;">' +
+        'Find Drivers with Vout Max of at least ' +
+        '<input id="' + param1Escaped + '" type="text" size=' + param1Text.length + ' value="' + param1Text + '">' +
+        ' and Current Output Max of less than <input id="' + param2Escaped + '" type="text" value="' + param2Text + '"> ' +
+        '</div>' +
+        // '<div class="" style="line-height:2em; display:inline-block;"></div>'+
+        '<div><div id="compatibleDriverWizzardButton" class="button-small pure-button">See Compatible Drivers</div></div>' +
+        '<div class="hiddenLEDForm" ></div>' +
+        // '<div class="hiddenLEDForm" style="display:none;"></div>'+
+        '</div>' +
         '</div>');
 
 
     // var param2Text = $('.attributes-table-main').find('tr:contains("'+param2+'")').last().find('td').text();
 
-    $('#compatibleDriverWizzardButton').click(function(){
+    $('#compatibleDriverWizzardButton').click(function () {
         console.log(driverLink);
         $('#compatibleDriverWizzardButton').after('<i class="loadingicon fa fa-spinner fa-spin fa-3x fa-fw">');
-        $('.hiddenLEDForm').load(driverLink+' [name=attform]', function(){
+        $('.hiddenLEDForm').load(driverLink + ' [name=attform]', function () {
             $('form[name=attform]').attr('target', '_blank').hide();
-            var vOptions = $(this).find('[name='+voltageOutput+'] option');
-            var cOptions = $(this).find('[name='+currentOutputMax+'] option');
+            var vOptions = $(this).find('[name=' + voltageOutput + '] option');
+            var cOptions = $(this).find('[name=' + currentOutputMax + '] option');
             // console.log(cOptions);
 
-            selectSingleValueOptions(cOptions, '<', Qty(param2Text) );
+            selectSingleValueOptions(cOptions, '<', Qty(param2Text));
             selectRangeValueOption(vOptions, Qty(param1Text));
 
             // location.assign("javascript:function methodChooser(f) { var serializedEarl = $(f).serialize(); f.method = serializedEarl.length < 1800 ? 'get' : 'post'; return true; } void(0)");
@@ -3755,23 +3812,23 @@ function addCOBLEDWizard(){
         });
     });
 
-    hoverHighlightDetailWizParams(param1, $('#'+id));
-    hoverHighlightDetailWizParams(param2, $('#'+id));
-    
-    _log('paramtext '+ param1Text + param2Text, DLOG);
+    hoverHighlightDetailWizParams(param1, $('#' + id));
+    hoverHighlightDetailWizParams(param2, $('#' + id));
 
-    _log('addCOBLEDWizard() End',DLOG);
+    _log('paramtext ' + param1Text + param2Text, DLOG);
+
+    _log('addCOBLEDWizard() End', DLOG);
 }
 
-function selectSingleValueOptions($options, operator, qtyValue ){
+function selectSingleValueOptions($options, operator, qtyValue) {
     _log('selectSingleValueOptions() Start', DLOG);
     var doNotMatch = '-*';
-    if (operator === '<'){
-        $options.each(function(){
+    if (operator === '<') {
+        $options.each(function () {
             var opText = $(this).text().trim();
-            if(doNotMatch.indexOf(opText) == -1){
-                if(qtyValue.gte(parseElemForQty($(this)))) {
-                    $(this).prop('selected',true);
+            if (doNotMatch.indexOf(opText) == -1) {
+                if (qtyValue.gte(parseElemForQty($(this)))) {
+                    $(this).prop('selected', true);
                     // console.log(parseElemForQty($(this)));
                 }
             }
@@ -3781,139 +3838,139 @@ function selectSingleValueOptions($options, operator, qtyValue ){
     _log('selectSingleValueOptions() End', DLOG);
 }
 
-function selectRangeValueOption($options, qtyValue){
+function selectRangeValueOption($options, qtyValue) {
     _log('selectRangeValueOption() Start', DLOG);
     //only checked in LED supplies family
     var doNotMatch = '-*';
-        $options.each(function(){
-            var opText = $(this).text();
-            try{
-                opText = $(this).text().trim();
-                if(doNotMatch.indexOf(opText) == -1){
-                    if(opText.indexOf('~') !== -1 || opText.indexOf('Max') !== -1){
-                        // _log('Range to Process '+ opText, DLOG);
-                        var range = processRangeText(opText);
-                        // _log('After Range Process' + range, DLOG);
-                        var fval = preProcessForQty(range[0]);
-                        var sval = preProcessForQty(range[1]);
-                        if( qtyValue.gte(fval) && qtyValue.lte(sval)){
-                            $(this).prop('selected',true);
-                        }
-                    }else{
-                        if(opText.indexOf('AC') !== -1){
+    $options.each(function () {
+        var opText = $(this).text();
+        try {
+            opText = $(this).text().trim();
+            if (doNotMatch.indexOf(opText) == -1) {
+                if (opText.indexOf('~') !== -1 || opText.indexOf('Max') !== -1) {
+                    // _log('Range to Process '+ opText, DLOG);
+                    var range = processRangeText(opText);
+                    // _log('After Range Process' + range, DLOG);
+                    var fval = preProcessForQty(range[0]);
+                    var sval = preProcessForQty(range[1]);
+                    if (qtyValue.gte(fval) && qtyValue.lte(sval)) {
+                        $(this).prop('selected', true);
+                    }
+                } else {
+                    if (opText.indexOf('AC') !== -1) {
 
-                        }else{
-                            var singleVal = preProcessForQty(opText);
-                            var singleValQty = Qty(singleVal);
-                            if(qtyValue.eq(singleValQty)){
-                                $(this).prop('selected',true);
-                            }
+                    } else {
+                        var singleVal = preProcessForQty(opText);
+                        var singleValQty = Qty(singleVal);
+                        if (qtyValue.eq(singleValQty)) {
+                            $(this).prop('selected', true);
                         }
                     }
                 }
-            }catch(e){
-                console.log('selectRangeValueOption failed to parse', opText, ' error ', e);
             }
-        });
+        } catch (e) {
+            console.log('selectRangeValueOption failed to parse', opText, ' error ', e);
+        }
+    });
     _log('selectRangeValueOption() End', DLOG);
 }
-function processRangeText(rtext){
+function processRangeText(rtext) {
     //only check in LED supplies family
-    if(rtext.indexOf('Max') !== -1){
+    if (rtext.indexOf('Max') !== -1) {
         rtext = rtext.replace(' (Max)', '');
         // console.log(' rtext ', rtext, ' base ');
         var baseUnit = rtext.replace(/^.*\d(.*)$/, "$1");
-         // console.log(opText, ' max processor');
-         return ['0 '+ baseUnit, rtext];
-    }else{
+        // console.log(opText, ' max processor');
+        return ['0 ' + baseUnit, rtext];
+    } else {
         var splitRange = rtext.split('~');
         var val1 = splitRange[0].trim();
         var val2 = splitRange[1].trim();
         var baseUnit = val2.split(' ')[1];
-        if (val1.indexOf(baseUnit) === -1){
-            if(baseUnit){
+        if (val1.indexOf(baseUnit) === -1) {
+            if (baseUnit) {
                 return [val1 + ' ' + baseUnit, val2];
-            }else{ return [val1 , val2];}
-        }else{ return splitRange;}
+            } else { return [val1, val2]; }
+        } else { return splitRange; }
     }
 }
 
-function getParametricValueText(paramtext){
-    return $('.attributes-table-main').find('th:exactly("'+paramtext+'")').parent().find('td').text();
+function getParametricValueText(paramtext) {
+    return $('.attributes-table-main').find('th:exactly("' + paramtext + '")').parent().find('td').text();
 }
 
-function hoverHighlightDetailWizParams(paramtext, $hoverObject){
-    $hoverObject.on('mouseenter', function(){
-       $('.attributes-table-main').find('th:exactly("'+paramtext+'")').parent().find('td').css({'background-color':'#ffc10e'}); 
-    }); 
-    $hoverObject.on('mouseleave', function(){
-       $('.attributes-table-main').find('th:exactly("'+paramtext+'")').parent().find('td').css({'background-color':''}); 
-    }); 
+function hoverHighlightDetailWizParams(paramtext, $hoverObject) {
+    $hoverObject.on('mouseenter', function () {
+        $('.attributes-table-main').find('th:exactly("' + paramtext + '")').parent().find('td').css({ 'background-color': '#ffc10e' });
+    });
+    $hoverObject.on('mouseleave', function () {
+        $('.attributes-table-main').find('th:exactly("' + paramtext + '")').parent().find('td').css({ 'background-color': '' });
+    });
 }
 
-function addPriceBreakHelper(){
-    _log('addPriceBreakHelper() Start',DLOG);
+function addPriceBreakHelper() {
+    _log('addPriceBreakHelper() Start', DLOG);
     var ptable = $('.product-dollars');
-    // var eurocheckRE = /(?.*,\d\d)/; 
+    // var eurocheckRE = /(?.*,\d\d)/;
     // check if part is not orderable
-    if(ptable.filter(':contains(call)').size() == 0){
+    if (ptable.filter(':contains(call)').size() == 0) {
         var pricingrows = ptable.find('tr:gt(0)');
         var tdlast = pricingrows.eq(0).find('td:last').text();
-        var isEuro = (tdlast[tdlast.length-3] == ',');  //check if the last a comma is used before the last two digits of the extend price 
+        var isEuro = (tdlast[tdlast.length - 3] == ',');  //check if the last a comma is used before the last two digits of the extend price
 
         var firstpb = simpleInternationalParse(pricingrows.eq(0).find('td:eq(0)').text(), isEuro);
-        pricingrows.each(function(index){
-            
-            if(pricingrows.eq(index+1)){
-                    // priceVal = simpleInternationalParse(price.replace(/[^0-9-.]/g, ''));
+        pricingrows.each(function (index) {
+
+            if (pricingrows.eq(index + 1)) {
+                // priceVal = simpleInternationalParse(price.replace(/[^0-9-.]/g, ''));
                 var pricebreak = simpleInternationalParse(pricingrows.eq(index).find('td:eq(0)').text(), isEuro);
                 var unitprice = simpleInternationalParse(pricingrows.eq(index).find('td:eq(1)').text(), isEuro);
-                var nextextendedprice = simpleInternationalParse(pricingrows.eq(index+1).find('td:eq(2)').text(), isEuro);
-                var breakeven = Math.ceil(nextextendedprice/unitprice);
-                if ( breakeven >= pricebreak && firstpb == 1){
+                var nextextendedprice = simpleInternationalParse(pricingrows.eq(index + 1).find('td:eq(2)').text(), isEuro);
+                var breakeven = Math.ceil(nextextendedprice / unitprice);
+                if (breakeven >= pricebreak && firstpb == 1) {
                     // console.log(pricebreak,unitprice,nextextendedprice,breakeven)
                     ptable.find('tr:first').eq(index).append('<th style=" border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">Break-Even Qty</th>');
-                    pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">'+breakeven +' </td>');
-                }               
+                    pricingrows.eq(index).append('<td style="color:green; text-align:center; border: 1px solid rgb(204, 204, 204);" title="If ordering the green quantity or more, it is a better deal to buy the next price break quantity.">' + breakeven + ' </td>');
+                }
             }
         });
     }
-    _log('addPriceBreakHelper() End',DLOG);
+    _log('addPriceBreakHelper() End', DLOG);
 }
 
-function simpleInternationalParse(text, isEuro){
+function simpleInternationalParse(text, isEuro) {
     text = text.replace(/[^0-9,.]/g, '');
-    return isEuro ? (parseFloat(text.replace(/\./g, '').replace(/\,/g, '.'))) : (parseFloat(text.replace(/,/g,'')));
+    return isEuro ? (parseFloat(text.replace(/\./g, '').replace(/\,/g, '.'))) : (parseFloat(text.replace(/,/g, '')));
 }
 
-function addDataSheetLoader(){
-        _log('addDataSheetLoader() Start',DLOG);
-        var dslink = $('.lnkDatasheet:first').attr('href');
-        var hidenav = '#navpanes=0&zoom=100';
-        var htmldatasheetlink = $('.attributes-table-main th:contains(HTML)').parent().find('a:first').attr('href');
-        // console.log('~~~~~~~~~~~~~~~~~~~~~'+htmldatasheetlink + ' dslink '+dslink)
+function addDataSheetLoader() {
+    _log('addDataSheetLoader() Start', DLOG);
+    var dslink = $('.lnkDatasheet:first').attr('href');
+    var hidenav = '#navpanes=0&zoom=100';
+    var htmldatasheetlink = $('.attributes-table-main th:contains(HTML)').parent().find('a:first').attr('href');
+    // console.log('~~~~~~~~~~~~~~~~~~~~~'+htmldatasheetlink + ' dslink '+dslink)
 
-        //KEEP different methods  KEEP*************>>>>
-        //$('#content').append('<embed src="'+dslink+'" width=100% height=800px>');
-        // $('#content').append('<embed src="'+dslink+'#toolbar=0&navpanes=0&scrollbar=0" width=100% height=auto>');
-        // $('#content').append('<object data="'+dslink+'" type="application/pdf" width=100% height=10000px>');
-        // $('#content').append('<div style="height:10000px;"><object data="'+dslink+hidenav+'" type="application/pdf" width=100% height=100%></div>');
-        // $('#content').append('<div style="height:auto;"><object data="'+dslink+'#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width=100% height=100%></div>');
-        // $('#content').append('<iframe src="http://docs.google.com/gview?url='+dslink+'" style="width:100%; height:800px;" frameborder="0"></iframe>');
-        // $('#content').append('<iframe src="http://docs.google.com/viewer?url='+htmlEscape(dslink)+'&embedded=true" width="100%" height="800px" style="border: none;"></iframe>');
-        
-        $('#content').append('<div id=datasheetdiv><div>'+
-            '<span id="datasheetchooser" class="tabbedbutton" style="" title="Enable or Disable the autoloading datasheets">'+
-            '<input id="datasheetchooserinput" value="1" class="saveState" type="hidden">' +
-            '<button id=datasheetoff value=0 class="pure-button">Off</button>'+
-            '<button id=datasheeton value=1 class="pure-button">On</button>'+
-            ' Datasheet Autoloader: '+
-            '</span></div><br>'+
+    //KEEP different methods  KEEP*************>>>>
+    //$('#content').append('<embed src="'+dslink+'" width=100% height=800px>');
+    // $('#content').append('<embed src="'+dslink+'#toolbar=0&navpanes=0&scrollbar=0" width=100% height=auto>');
+    // $('#content').append('<object data="'+dslink+'" type="application/pdf" width=100% height=10000px>');
+    // $('#content').append('<div style="height:10000px;"><object data="'+dslink+hidenav+'" type="application/pdf" width=100% height=100%></div>');
+    // $('#content').append('<div style="height:auto;"><object data="'+dslink+'#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width=100% height=100%></div>');
+    // $('#content').append('<iframe src="http://docs.google.com/gview?url='+dslink+'" style="width:100%; height:800px;" frameborder="0"></iframe>');
+    // $('#content').append('<iframe src="http://docs.google.com/viewer?url='+htmlEscape(dslink)+'&embedded=true" width="100%" height="800px" style="border: none;"></iframe>');
+
+    $('#content').append('<div id=datasheetdiv><div>' +
+        '<span id="datasheetchooser" class="tabbedbutton" style="" title="Enable or Disable the autoloading datasheets">' +
+        '<input id="datasheetchooserinput" value="1" class="saveState" type="hidden">' +
+        '<button id=datasheetoff value=0 class="pure-button">Off</button>' +
+        '<button id=datasheeton value=1 class="pure-button">On</button>' +
+        ' Datasheet Autoloader: ' +
+        '</span></div><br>' +
         '</div>');
-        addChooserButtonAction($('#datasheetchooser'), dataSheetButtonAction);
-        
+    addChooserButtonAction($('#datasheetchooser'), dataSheetButtonAction);
 
-        GM_addStyle(`
+
+    GM_addStyle(`
             #jpedal{
                 box-shadow: 0 7px 6px -6px #777;
                 margin:20px;
@@ -3924,63 +3981,63 @@ function addDataSheetLoader(){
         `)
 
 
-        if($('.lnkDatasheet:first').length > 0 && $('#datasheetchooserinput').val() == 1){
-            if(htmldatasheetlink != undefined){
-                console.log('adding html datasheet', htmldatasheetlink)
-                $('<div>').appendTo('#datasheetdiv').load(htmldatasheetlink+' '+'#pagelayout_0_content_0_richtextcontent');
-            }else{
-                console.log('adding pdf datasheet', dslink, hidenav)
-                setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink.replace('http','https')+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
-                $('.lnkDatasheet:first').wrap('<div style="background:lightgrey; padding:3px;"/>')
+    if ($('.lnkDatasheet:first').length > 0 && $('#datasheetchooserinput').val() == 1) {
+        if (htmldatasheetlink != undefined) {
+            console.log('adding html datasheet', htmldatasheetlink)
+            $('<div>').appendTo('#datasheetdiv').load(htmldatasheetlink + ' ' + '#pagelayout_0_content_0_richtextcontent');
+        } else {
+            console.log('adding pdf datasheet', dslink, hidenav)
+            setTimeout(function () { $('#datasheetdiv').append('<embed src="' + dslink.replace('http', 'https') + hidenav + '" width=100% height=' + ($(window).height() - 70) + 'px>'); }, 500);
+            $('.lnkDatasheet:first').wrap('<div style="background:lightgrey; padding:3px;"/>')
                 .after(`<a style="float:right;" href=#datasheetdiv>
                 	<button class="pure-button" style="width:40px; font-size:11px; padding:2px; margin:0px" >
                 	<i class="fa fa-arrow-circle-down fa-lg"></i></button></a>`)
-                .parent().on('click',function(){
-                	$('html,body').animate(
-			            {scrollTop: $('#datasheetdiv').position().top},
-			            {       
-			                duration: 250,
-			                easing: 'swing'
-			            }
-			        );
+                .parent().on('click', function () {
+                    $('html,body').animate(
+                        { scrollTop: $('#datasheetdiv').position().top },
+                        {
+                            duration: 250,
+                            easing: 'swing'
+                        }
+                    );
                 });
-            }
         }
-        
-        _log('addDataSheetLoader() End',DLOG);
+    }
+
+    _log('addDataSheetLoader() End', DLOG);
 }
 
-function dataSheetButtonAction(){
-    var dslink = $('.lnkDatasheet:first').attr('href').replace('http','https');
+function dataSheetButtonAction() {
+    var dslink = $('.lnkDatasheet:first').attr('href').replace('http', 'https');
     var hidenav = '#navpanes=0&zoom=100';
-    _log('Turning On Datasheets'+ dslink);
-    if($('#datasheetchooserinput').val() == 1){
+    _log('Turning On Datasheets' + dslink);
+    if ($('#datasheetchooserinput').val() == 1) {
         $('#datasheetdiv>embed').remove();
-        setTimeout(function(){$('#datasheetdiv').append('<embed src="'+dslink+hidenav+'" width=100% height='+($(window).height()-70)+'px>');},500);
+        setTimeout(function () { $('#datasheetdiv').append('<embed src="' + dslink + hidenav + '" width=100% height=' + ($(window).height() - 70) + 'px>'); }, 500);
     }
-    else if ($('#datasheetchooserinput').val() === 0){
+    else if ($('#datasheetchooserinput').val() === 0) {
         $('#datasheetdiv>embed').remove();
     }
 }
 
 
 // TODO impliment similar to opamp wiz
-function addOpAmpWiz(){
+function addOpAmpWiz() {
     getAllFilters($('.filters-panel'));
 }
 
-function getAllFilters($filtersPanel){
+function getAllFilters($filtersPanel) {
     var filters = [];
     // console.log($filtersPanel.html())
     console.log($filtersPanel.find('.filters-group:first tbody').html())
-    $filtersPanel.find('.filters-group:first tbody>tr').eq(0).find('td').each(function(item, index){
+    $filtersPanel.find('.filters-group:first tbody>tr').eq(0).find('td').each(function (item, index) {
         console.log(item, index)
         filters[index].title = $(this).text();
     });
-    $filtersPanel.find('.filters-group tbody>tr').eq(1).find('td').each(function(item, index){
+    $filtersPanel.find('.filters-group tbody>tr').eq(1).find('td').each(function (item, index) {
         filters[index].selectbox = $('this').find('select');
     });
-    $filtersPanel.find('.filters-group tbody>tr').eq(2).find('td').each(function(item, index){
+    $filtersPanel.find('.filters-group tbody>tr').eq(2).find('td').each(function (item, index) {
         filters[index].resetVal = $('this').find('button').attr('name');
     });
     console.log('filters', filters);
@@ -3995,44 +4052,44 @@ function getAllFilters($filtersPanel){
 
 
 //TODO keep and maybe use other places
-function appendURLParam(href, param, value){
-    _log('appendURLParam() Start',DLOG);
-    
-    if (href instanceof $){
+function appendURLParam(href, param, value) {
+    _log('appendURLParam() Start', DLOG);
+
+    if (href instanceof $) {
         var $a = href;
         href = $a.attr('href');
-        if( href.indexOf('?') !== -1){
-            href += '&'+param+'='+value;
-        }else{
-            href += '?'+param+'='+value;
+        if (href.indexOf('?') !== -1) {
+            href += '&' + param + '=' + value;
+        } else {
+            href += '?' + param + '=' + value;
         }
         $a.attr('href', href);
-        _log('added param to jquery object '+param ,DLOG);
+        _log('added param to jquery object ' + param, DLOG);
 
     }
-    else if ($.type(href) === 'string'){
+    else if ($.type(href) === 'string') {
         console.log('im a string');
-        if( href.indexOf('?') !== -1){
-            href += '&'+param+'='+value;
-        }else{
-            href += '?'+param+'='+value;
+        if (href.indexOf('?') !== -1) {
+            href += '&' + param + '=' + value;
+        } else {
+            href += '?' + param + '=' + value;
         }
         return href;
     }
-    _log('appendURLParam() End',DLOG);
+    _log('appendURLParam() End', DLOG);
 }
 
-function getFamilyLink(){
-    _log('getFamilyLink() Start',DLOG);
+function getFamilyLink() {
+    _log('getFamilyLink() Start', DLOG);
     var myhref = $('.seohtagbold').find('a:last').attr('href');
     var mainform = $('#mainform');
-    var modifiers = mainform.find('input[type=checkbox], input[name=quantity], input[name=ColumnSort]').serialize()+'&akamai-feo=off';
+    var modifiers = mainform.find('input[type=checkbox], input[name=quantity], input[name=ColumnSort]').serialize() + '&akamai-feo=off';
 
-    _log('getFamilyLink() End',DLOG);
+    _log('getFamilyLink() End', DLOG);
     return myhref;
 }
 
-function addStickyHeader () {
+function addStickyHeader() {
     window.eval("$(window).unbind('scroll resize');");
     $('div.stickyHeader').remove(); //remove the original so we can add the header back
     CreateFloatingHeader();
@@ -4041,8 +4098,8 @@ function addStickyHeader () {
 
     // $("#productTable thead").css('background-color', 'white');
 
-    $('.stickyThead').parent().css({'table-layout':'fixed'}); //TODO does this do anything?
-    
+    $('.stickyThead').parent().css({ 'table-layout': 'fixed' }); //TODO does this do anything?
+
 }
 
 function CreateFloatingHeader() {
@@ -4079,7 +4136,7 @@ function CreateFloatingHeader() {
     var cutoffTop = $(origTable).offset().top;
     var cutoffBottom = tableHeight + cutoffTop - headerCellHeight;
     var leftInit = $(origTable).offset().left;
-    var currentPosition = $(window).scrollTop()+50;
+    var currentPosition = $(window).scrollTop() + 50;
     $(stickyHeader).offset({ left: leftInit, top: currentPosition });
 
     // Fix to make sure it's visible on refresh
@@ -4113,7 +4170,7 @@ function UpdateFloatingHeader() {
     }
     var cutoffTop = $('#productTable').offset().top;
     var cutoffBottom = tableHeight + cutoffTop - headerCellHeight;
-    var currentTopPosition = $(window).scrollTop()+50;
+    var currentTopPosition = $(window).scrollTop() + 50;
     var currentLeftPosition = $(window).scrollLeft();
     var cutoffLeft = $('#productTable').offset().left;
 
@@ -4127,14 +4184,14 @@ function UpdateFloatingHeader() {
 }
 
 function updateTableHeaders() {
-    $(".persist-area").each(function() {
+    $(".persist-area").each(function () {
 
         var el = $(this),
             offset = el.offset(),
             scrollTop = $(window).scrollTop(),
             floatingHeader = $(".floatingHeader", this);
 
-        if((scrollTop > offset.top - 50) && (scrollTop < offset.top + el.height())) {
+        if ((scrollTop > offset.top - 50) && (scrollTop < offset.top + el.height())) {
             //_log('scrollTop = ' + scrollTop + ', offset.top = ' + offset.top + ', el.height = '+ el.height() + ' offset.left = '+ offset.left,DLOG);
             floatingHeader.css({
                 "visibility": "visible",
@@ -4152,29 +4209,29 @@ function updateTableHeaders() {
 }
 
 function addImageBar() {
-    _log('addImageBar() Start',DLOG);
-    if($('#productTable').size() == 1) {
+    _log('addImageBar() Start', DLOG);
+    if ($('#productTable').size() == 1) {
         _log('adding image bar', DLOG);
         var titleheight = 15;
         var accdivheight = 66;
         // $('#mainform').after('<div id="accDiv" class="collapsed"><div id="accContent">loading...</div></div>');
         $('#filters-panel').after(
-            '<div id="accDiv" class="collapsed">'+
-                '<div style="height:'+titleheight+'px; font-weight:bold; width:100%; border-bottom:1px solid lightgray;" id=accTitle>Find By Image</div>'+
-                '<div id="accContent">loading...</div>'+
+            '<div id="accDiv" class="collapsed">' +
+            '<div style="height:' + titleheight + 'px; font-weight:bold; width:100%; border-bottom:1px solid lightgray;" id=accTitle>Find By Image</div>' +
+            '<div id="accContent">loading...</div>' +
             '</div>');
         $('#accTitle').append('<div id="expand1"><div id="expand2">+ More Images +</div></div>');
         $('#accDiv').css({
             // 'width': ($(window).width() - 100),
             'width': '97vw',
             // 'height': '66px',
-            'height': (titleheight+accdivheight)+'px',
+            'height': (titleheight + accdivheight) + 'px',
             'border': '1px solid lightgrey',
             'box-shadow': '1px 1px 2px #aaa',
             'margin-bottom': '8px',
             'border-radius': '1px',
-            'background-color':'white',
-            'overflow':'hidden'
+            'background-color': 'white',
+            'overflow': 'hidden'
         });
         $('#accContent').css({
             'overflow': 'hidden',
@@ -4195,85 +4252,85 @@ function addImageBar() {
             'cursor': 'pointer'
         });
     }
-_log('addImageBar() tick',DLOG);
+    _log('addImageBar() tick', DLOG);
     $('#content').after('<div id="itemInfo" style="display:none;"></div>');
     // $('#itemInfo').hide();
 
     $('#content').after('<div id="bigpic" style="display:none;"></div>');
     // $('#bigpic').hide();
 
-        $('#expand2').click(function(e){
-            _log($(this).attr('id')+' acc expand click');
-            if($('#accDiv.expanded').length){
-                $('#accDiv').animate({height:(titleheight+accdivheight)+'px'}, 300);
-                $('#expand2').text('+ More Images +');
-                $('#accDiv').toggleClass('expanded collapsed');
-            }
-            else if($('#accDiv.collapsed').length){
-                $('#accDiv').animate({height:'130px'}, 300, function(){
-                    $('#accDiv').css('height','100%');
-                });
-                
-                $('#expand2').text('- Collapse -');
-                $('#accDiv').toggleClass('expanded collapsed');
-            }
-        
-    });
-
-    _log('addImageBar() End',DLOG);
-}
-
-function addToTopButton(){
-    //css in stylesheet
-    $('#content').after('<div class="totop" href="#content"><a href="#content" style="text-decoration:none; color:gray;">'+
-        '<span style="font-size:48px; font-weight:bolder;">^</span></a></div>');
-    $('.totop').on('click', function(){
-      $('html,body').animate(
-        {scrollTop: 0},
-        {       
-            duration: 250,
-            easing: 'swing'
+    $('#expand2').click(function (e) {
+        _log($(this).attr('id') + ' acc expand click');
+        if ($('#accDiv.expanded').length) {
+            $('#accDiv').animate({ height: (titleheight + accdivheight) + 'px' }, 300);
+            $('#expand2').text('+ More Images +');
+            $('#accDiv').toggleClass('expanded collapsed');
         }
-        );  
+        else if ($('#accDiv.collapsed').length) {
+            $('#accDiv').animate({ height: '130px' }, 300, function () {
+                $('#accDiv').css('height', '100%');
+            });
+
+            $('#expand2').text('- Collapse -');
+            $('#accDiv').toggleClass('expanded collapsed');
+        }
+
+    });
+
+    _log('addImageBar() End', DLOG);
+}
+
+function addToTopButton() {
+    //css in stylesheet
+    $('#content').after('<div class="totop" href="#content"><a href="#content" style="text-decoration:none; color:gray;">' +
+        '<span style="font-size:48px; font-weight:bolder;">^</span></a></div>');
+    $('.totop').on('click', function () {
+        $('html,body').animate(
+            { scrollTop: 0 },
+            {
+                duration: 250,
+                easing: 'swing'
+            }
+        );
     });
 }
 
-function addChooserButtonAction(somespan, clickfunc){
-    _log('addChooserButtonAction() Start' ,DLOG);
-    somespan.find('button').css({'padding':'3px 5px 4px 5px'}); //TODO fix
+function addChooserButtonAction(somespan, clickfunc) {
+    _log('addChooserButtonAction() Start', DLOG);
+    somespan.find('button').css({ 'padding': '3px 5px 4px 5px' }); //TODO fix
 
-    var $input = somespan.find('input') ;
+    var $input = somespan.find('input');
     var inputid = $input.attr('id');
-    restoreInputState($('#'+inputid));
+    restoreInputState($('#' + inputid));
 
-    _log('restored input state of '+inputid + ' is '+ $input.val(), DLOG);
+    _log('restored input state of ' + inputid + ' is ' + $input.val(), DLOG);
     // console.log('$input',$input);
     somespan.find('button').removeClass('myRedButton');
-    somespan.find('button[value='+$input.val()+']').addClass('myRedButton');
+    somespan.find('button[value=' + $input.val() + ']').addClass('myRedButton');
     // somespan.find('button').not('[value='+$input.val()+']').addClass('clean-gray');
-    somespan.find('button').not('[value='+$input.val()+']');
+    somespan.find('button').not('[value=' + $input.val() + ']');
 
-    somespan.on('click', 'button' , function(){
+    somespan.on('click', 'button', function () {
         var bval = $(this).val();
         $input.val(bval);
         _log('setting ' + inputid + ' to ' + $input.val() + ' button val is ' + bval, true);
-        localStorage.setItem(inputid, $(this).val());   
+        localStorage.setItem(inputid, $(this).val());
         _log('setting ' + inputid + ' to ' + $input.val() + ' button val is ' + bval, true);
-        _log('getting ' + inputid + ' is ' + localStorage.getItem(inputid) + ' button val is ' + $(this).val(), true);        
+        _log('getting ' + inputid + ' is ' + localStorage.getItem(inputid) + ' button val is ' + $(this).val(), true);
         somespan.find('button').removeClass('myRedButton');
-        somespan.find('button[value='+$input.val()+']').addClass('myRedButton');
-        somespan.find('button').not('[value='+$input.val()+']');
+        somespan.find('button[value=' + $input.val() + ']').addClass('myRedButton');
+        somespan.find('button').not('[value=' + $input.val() + ']');
         clickfunc(somespan, $(this).val());
     });
-        _log('addChooserButtonAction() End',DLOG);
+    _log('addChooserButtonAction() End', DLOG);
 }
 
 
 
-function addPowerSupplySelector(){
+function addPowerSupplySelector() {
     $('#content').after(
-        '<div id="powerselector">'+
-        '<div></div>'+
+        '<div id="powerselector">' +
+        '<div></div>' +
         '</div>'
     )
 }
@@ -4282,67 +4339,67 @@ function addPowerSupplySelector(){
 
 
 
-function addParamWizards(){
-    _log('addParamWizards() Start',DLOG);
-    var filterfunctions = [ 
-                            // ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            // ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            // ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            // ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            // ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            // ['pv659' ,'Voltage - Supply, Single/Dual',  function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            // ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            // ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            // ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            ['pv252' ,'Operating Temperature',  function(name, e){temperatureHelper(name, e);}, '+ helper'],
-                            // ['pv772' ,'Voltage - Load', function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
-                            ['pv1113' ,'Connectivity',  function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
-                            ['pv1114' ,'Peripherals',   function(name, e){checkboxHelper(name, e);}, '+checkboxes'],
-                            ['pv16' ,'Package / Case',  function(name, e){checkboxHelper2(name, e);}, '+checkboxes'],
-                            ['pv1291' ,'Supplier Device Package',   function(name, e){checkboxHelper2(name, e);}, '+checkboxes'],
+function addParamWizards() {
+    _log('addParamWizards() Start', DLOG);
+    var filterfunctions = [
+        // ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
+        // ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
+        // ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+        // ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
+        // ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+        // ['pv659' ,'Voltage - Supply, Single/Dual',  function(name, e){voltageHelper(name, e);}, '+ helper'],
+        // ['pv1525' ,'Voltage - Output 1',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+        // ['pv1526' ,'Voltage - Output 2',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+        // ['pv1527' ,'Voltage - Output 3',    function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+        ['pv252', 'Operating Temperature', function (name, e) { temperatureHelper(name, e); }, '+ helper'],
+        // ['pv772' ,'Voltage - Load', function(name, e){voltageHelperOLD(name, e);}, '+ helper'],
+        ['pv1113', 'Connectivity', function (name, e) { checkboxHelper(name, e); }, '+checkboxes'],
+        ['pv1114', 'Peripherals', function (name, e) { checkboxHelper(name, e); }, '+checkboxes'],
+        ['pv16', 'Package / Case', function (name, e) { checkboxHelper2(name, e); }, '+checkboxes'],
+        ['pv1291', 'Supplier Device Package', function (name, e) { checkboxHelper2(name, e); }, '+checkboxes'],
     ];
 
-    for (var x=0; x<filterfunctions.length; x++){
-        $('select[name="'+filterfunctions[x][0]+'"]').parent().append('<span class="adv pure-button myRedButton" order="'+x+'" > '+filterfunctions[x][3]+'</span>');
+    for (var x = 0; x < filterfunctions.length; x++) {
+        $('select[name="' + filterfunctions[x][0] + '"]').parent().append('<span class="adv pure-button myRedButton" order="' + x + '" > ' + filterfunctions[x][3] + '</span>');
     }
-    $('.adv').click(function(){
-        var i= $(this).attr('order');
-        filterfunctions[i][2]( filterfunctions[i][1], $('select[name="'+filterfunctions[i][0]+'"]'));
+    $('.adv').click(function () {
+        var i = $(this).attr('order');
+        filterfunctions[i][2](filterfunctions[i][1], $('select[name="' + filterfunctions[i][0] + '"]'));
     });
 
-    _log('addParamWizards() End',DLOG);
+    _log('addParamWizards() End', DLOG);
 }
 
-function addParamWizards2(){
-    _log('addParamWizards2() Start',DLOG);
-    var filterfunctions = [ 
-                            ['pv127' ,'Voltage - Input',        function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv569' ,'Voltage Range',        function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv48' ,'Voltage - Output',    function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv276' ,'Voltage - Supply',   function(name, e){voltageHelper(name, e);}, '+ helper'],
-                            ['pv1112' ,'Voltage - Supply (Vcc/Vdd)',    function(name, e){voltageHelper(name, e);}, '+ helper'],
+function addParamWizards2() {
+    _log('addParamWizards2() Start', DLOG);
+    var filterfunctions = [
+        ['pv127', 'Voltage - Input', function (name, e) { voltageHelper(name, e); }, '+ helper'],
+        ['pv569', 'Voltage Range', function (name, e) { voltageHelper(name, e); }, '+ helper'],
+        ['pv48', 'Voltage - Output', function (name, e) { voltageHelper(name, e); }, '+ helper'],
+        ['pv276', 'Voltage - Supply', function (name, e) { voltageHelper(name, e); }, '+ helper'],
+        ['pv1112', 'Voltage - Supply (Vcc/Vdd)', function (name, e) { voltageHelper(name, e); }, '+ helper'],
 
     ];
 
-    for (var x=0; x<filterfunctions.length; x++){
-        if($('select[name='+filterfunctions[x][0]+']').length){
+    for (var x = 0; x < filterfunctions.length; x++) {
+        if ($('select[name=' + filterfunctions[x][0] + ']').length) {
             // console.log( '------------', x, filterfunctions[x])
-            // addNewHelper(filterfunctions[x], x)  
+            // addNewHelper(filterfunctions[x], x)
             voltageHelper(filterfunctions[x])
-        } 
+        }
     }
 
-    _log('addParamWizards2() End',DLOG);
+    _log('addParamWizards2() End', DLOG);
 }
 
-function addNewHelper(filterData, x){
+function addNewHelper(filterData, x) {
     voltageHelper(filterData)
     // $('select[name="'+filterData[0]+'"]').parent().append('<span class="adv pure-button myRedButton" order="'+x+'" > '+filterData[3]+'</span>');
     // filterData[2]( filterData[1], $('select[name="'+filterData[0]+'"]'));
 }
 
-function createHelperBox(name,$selectElem, boxheight, boxwidth){
-    _log('createHelperBox() Start',DLOG);
+function createHelperBox(name, $selectElem, boxheight, boxwidth) {
+    _log('createHelperBox() Start', DLOG);
     $('.helperBox').remove(); // probly not needed
     $('#content').after('<div class="helperBox gray-grad"><div id="helpertitlemessage" style="float:left;">hello</div><button class="closeHelperBox clean-gray close">X</button><br><br><div id="helperBoxContent"></div></div>');
     $('.helperBox').css({
@@ -4353,39 +4410,40 @@ function createHelperBox(name,$selectElem, boxheight, boxwidth){
         "borderRadius": "5px",
         'box-shadow': '3px 3px 3px rgb(136, 136, 136)'
     }).hide()
-    .slideDown()
-    .position({
-        my: 'left top',
-        at: 'left top',
-        of: $selectElem
-    });
-
-    $('.closeHelperBox').click(function() {
-    $('.helperBox').slideUp(400,
-            function(){$(this).remove();
+        .slideDown()
+        .position({
+            my: 'left top',
+            at: 'left top',
+            of: $selectElem
         });
-    }); 
-    _log('createHelperBox() End',DLOG);
+
+    $('.closeHelperBox').click(function () {
+        $('.helperBox').slideUp(400,
+            function () {
+                $(this).remove();
+            });
+    });
+    _log('createHelperBox() End', DLOG);
 }
 
-function opampVoltageHelper(){
+function opampVoltageHelper() {
     // add single or dual supply range?
-    
+
 }
 
 
 
 function voltageHelper(filterData) {
-        _log('voltageHelper() Start',DLOG);
+    _log('voltageHelper() Start', DLOG);
 
     var name = filterData[1];
-    var $selectElem = $('select[name="'+filterData[0]+'"]');
-    var filterid = 'filter-'+filterData[0]
-    _log('select name is '+ name + ' '+ filterData[0]+  $selectElem.parent().prop('tagName'));
+    var $selectElem = $('select[name="' + filterData[0] + '"]');
+    var filterid = 'filter-' + filterData[0]
+    _log('select name is ' + name + ' ' + filterData[0] + $selectElem.parent().prop('tagName'));
 
     $selectElem.parent().append(
-        '<div style="display:flex;"><input id="'+filterid+'" data-name="'+name+
-        '" class="nomRangeText" type="search" autocomplete="off" placeholder="Vnom ex. 3.3" >'+
+        '<div style="display:flex;"><input id="' + filterid + '" data-name="' + name +
+        '" class="nomRangeText" type="search" autocomplete="off" placeholder="Vnom ex. 3.3" >' +
         // '<button id="'+filterid+'-button" class="clean-gray" ><i class="fa fa-tasks fa-lg" style="color:#555;"></i></button>'+
         '</div>'
     );
@@ -4393,17 +4451,17 @@ function voltageHelper(filterData) {
     //TODO differentiate between in and out.... add vin min, vin max
     //TODO add ability to select multi output devices
     //TODO deal with +- ranges
-    _log('voltagehelper name is ' +name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
+    _log('voltagehelper name is ' + name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
 
-    $('#'+filterid).change(function(e){
-        var $targetElem = $('select[name="'+this.id.replace('filter-','')+'"]');
+    $('#' + filterid).change(function (e) {
+        var $targetElem = $('select[name="' + this.id.replace('filter-', '') + '"]');
         var name = $(this).attr('data-name');
         e.preventDefault();
-        applyRangeSelect3(name, $targetElem );
+        applyRangeSelect3(name, $targetElem);
         // $('a[name=btnpv48]').show();
-    }).keyup(function(e){
-        var pv = this.id.replace('filter-','')
-        var $targetElem = $('select[name="'+pv+'"]');
+    }).keyup(function (e) {
+        var pv = this.id.replace('filter-', '')
+        var $targetElem = $('select[name="' + pv + '"]');
         var name = $(this).attr('data-name');
 
         // _log('vhelper '+this.id.replace('filter-',''));
@@ -4411,17 +4469,17 @@ function voltageHelper(filterData) {
             console.log('something is prevented')
             e.preventDefault();
             console.log('something is prevented')
-            applyRangeSelect3(name, $targetElem );
+            applyRangeSelect3(name, $targetElem);
             return false;
-        }else{
-            applyRangeSelect3(name, $targetElem );
+        } else {
+            applyRangeSelect3(name, $targetElem);
         }
         var selectedLength = $targetElem.find('option:selected').length
-        if(selectedLength){
-            $('a[name=btn'+pv+']').show();
-            $('a[name=btn'+pv+']').text('Clear '+ selectedLength+' Items');
+        if (selectedLength) {
+            $('a[name=btn' + pv + ']').show();
+            $('a[name=btn' + pv + ']').text('Clear ' + selectedLength + ' Items');
         }
-    }).keydown(function(e){
+    }).keydown(function (e) {
         if (e.keyCode == 10 || e.keyCode == 13) {
             e.preventDefault();
         }
@@ -4451,11 +4509,11 @@ function voltageHelper(filterData) {
                         <option>2</option>
                         <option>3</option>
                         <option>4</option>
-                    </select>              
+                    </select>
                 </div>
             </div>
 
-        </div>        
+        </div>
     `;
 
 
@@ -4478,16 +4536,16 @@ function voltageHelper(filterData) {
     // });
 
 
-    $('#'+filterid+'-button').click(function(e) {
+    $('#' + filterid + '-button').click(function (e) {
         e.preventDefault();
         openAdvancedVoltagePopup(this);
     });
 
-    
-    _log('voltageHelper() End',DLOG);
+
+    _log('voltageHelper() End', DLOG);
 }
 
-function openAdvancedVoltagePopup(button){
+function openAdvancedVoltagePopup(button) {
 
     $('#powerSupplyWiz').dialog('open');
 }
@@ -4497,80 +4555,80 @@ function voltageHelperOLD(name, $selectElem) {
     //TODO differentiate between in and out.... add vin min, vin max
     //TODO add ability to select multi output devices
     //TODO deal with +- ranges
-    _log('voltagehelper name is ' +name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
-    //_log(arguments.callee.caller); 
+    _log('voltagehelper name is ' + name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
+    //_log(arguments.callee.caller);
 
-    createHelperBox(name,$selectElem,'150px','200px');
+    createHelperBox(name, $selectElem, '150px', '200px');
 
-    $('#helperBoxContent').html('<label><b>desired ' + name + 
-        ':</b> <br><input id=voltin type="text" size="5"><b>Volts</b> <br>(enter key or select)</label><br>'+
+    $('#helperBoxContent').html('<label><b>desired ' + name +
+        ':</b> <br><input id=voltin type="text" size="5"><b>Volts</b> <br>(enter key or select)</label><br>' +
         '<button id=helperbutton class="clean-gray clearfix">select</button><span id=voltmess></span>');
     $('#helperbutton').css({
-        'float':'right',
-        'padding':'3px',
-        'margin-right':'10px',
-        'margin-top':'10px',
+        'float': 'right',
+        'padding': '3px',
+        'margin-right': '10px',
+        'margin-top': '10px',
     });
 
     $('#voltin').focus();
-    $('#helperbutton').click(function() {
+    $('#helperbutton').click(function () {
         // applyRangeSelect(name, $selectElem);
         applyRangeSelect2(name, $selectElem);
         buttonHighlightAction();
     });
-    $('#helperBoxContent').find('input').change(function(){
+    $('#helperBoxContent').find('input').change(function () {
         // applyRangeSelect(name, $selectElem);
         applyRangeSelect2(name, $selectElem);
         buttonHighlightAction();
     });
-    
+
     _log('end voltageHelper');
 }
 function temperatureHelper(name, $selectElem) {
     //TODO differentiate between in and out.... add vin min, vin max
     //TODO add ability to select multi output devices
     //TODO deal with +- ranges
-    _log('temperaturehelper name is ' +name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
-    //_log(arguments.callee.caller); 
+    _log('temperaturehelper name is ' + name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
+    //_log(arguments.callee.caller);
 
-    createHelperBox(name,$selectElem,'150px','200px');
+    createHelperBox(name, $selectElem, '150px', '200px');
 
-    $('#helperBoxContent').html('<label><b>desired ' + name + 
-        ':</b> <br><input id=voltin type="text" size="5"><b>C</b> <br>(enter key or select)</label><br>'+
+    $('#helperBoxContent').html('<label><b>desired ' + name +
+        ':</b> <br><input id=voltin type="text" size="5"><b>C</b> <br>(enter key or select)</label><br>' +
         '<button id=helperbutton class="clean-gray clearfix">select</button><span id=voltmess></span>');
     $('#helperbutton').css({
-        'float':'right',
-        'padding':'3px',
-        'margin-right':'10px',
-        'margin-top':'10px',
+        'float': 'right',
+        'padding': '3px',
+        'margin-right': '10px',
+        'margin-top': '10px',
     });
 
     $('#voltin').focus();
-    $('#helperbutton').click(function() {
+    $('#helperbutton').click(function () {
         // applyRangeSelect(name, $selectElem);
         applyRangeSelect2(name, $selectElem);
         buttonHighlightAction();
     });
-    $('#helperBoxContent').find('input').change(function(){
+    $('#helperBoxContent').find('input').change(function () {
         // applyRangeSelect(name, $selectElem);
         applyRangeSelect2(name, $selectElem);
         buttonHighlightAction();
     });
-    
+
     _log('end voltageHelper');
 }
 
-function voltageHelper2(name, $selectElem){
+function voltageHelper2(name, $selectElem) {
 
 }
 
 
-function dkNumberParser(){
-    
+function dkNumberParser() {
+
 }
 
 
-function applyRangeSelect4(name, $selectElem){
+function applyRangeSelect4(name, $selectElem) {
 
     // var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
     var userinputvalue = parseFloat($selectElem.parent().find('.nomRangeText').val());
@@ -4580,52 +4638,52 @@ function applyRangeSelect4(name, $selectElem){
     // var tilde regex = /~～/g ;
     var $optionList = $selectElem.find('option');
     // _log($optionList.filter(commaselector).size(), true);
-    $optionList.prop('selected',false);
-    $optionList.filter(commaselector).each(function(){
+    $optionList.prop('selected', false);
+    $optionList.filter(commaselector).each(function () {
         var thisOption = $(this);
         var splitOnComma = $(this).text().split(/[,、]/g);  // implicitly tested for comma by selector
         // _log('splitoncomma is ' +splitOnComma, true);
-        splitOnComma.forEach(function(element, index, array){
-            if ((element.indexOf('~') != -1) || (element.indexOf('～')!= -1)){
-                if(isInRange(userinputvalue, element)){
+        splitOnComma.forEach(function (element, index, array) {
+            if ((element.indexOf('~') != -1) || (element.indexOf('～') != -1)) {
+                if (isInRange(userinputvalue, element)) {
                     thisOption.prop('selected', true);
                 }
-            }else if(parseFloat(element) == userinputvalue){
+            } else if (parseFloat(element) == userinputvalue) {
                 thisOption.prop('selected', true);
                 _log(element, true);
             }
         });
     });
 
-    $optionList.not(commaselector).each(function(){
+    $optionList.not(commaselector).each(function () {
         var thisOption = $(this);
         var otext = $(this).text();
-        if ((otext.indexOf('~') != -1) || (otext.indexOf('～')!= -1)){
-                if(isInRange(userinputvalue, otext)){
-                    thisOption.prop('selected', true);
-                }
-            }else {
-                if(parseFloat(otext) == userinputvalue){
-                    thisOption.prop('selected', true);
-                    _log(otext, true);  
-                }
-                thisOption.filter(':contains("Up to")').each(function(index) {
-                    if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-                        $(this).prop('selected', true);
-                    }
-                });
-                thisOption.filter(':contains("Adj to")').each(function(index) {
-                    // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-                        $(this).prop('selected', true);
-                    // }
-                });
-                thisOption.filter(':contains("Down to")').each(function(index) {
-                    if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
-                        $(this).prop('selected', true);
-                    }
-                });
-
+        if ((otext.indexOf('~') != -1) || (otext.indexOf('～') != -1)) {
+            if (isInRange(userinputvalue, otext)) {
+                thisOption.prop('selected', true);
             }
+        } else {
+            if (parseFloat(otext) == userinputvalue) {
+                thisOption.prop('selected', true);
+                _log(otext, true);
+            }
+            thisOption.filter(':contains("Up to")').each(function (index) {
+                if ((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                    $(this).prop('selected', true);
+                }
+            });
+            thisOption.filter(':contains("Adj to")').each(function (index) {
+                // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                $(this).prop('selected', true);
+                // }
+            });
+            thisOption.filter(':contains("Down to")').each(function (index) {
+                if ((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
+                    $(this).prop('selected', true);
+                }
+            });
+
+        }
     });
 
     // getRecordsMatching();
@@ -4633,7 +4691,7 @@ function applyRangeSelect4(name, $selectElem){
     $('#voltmess').text(' ' + selNum + ' options selected in ' + name);
 }
 
-function applyRangeSelect3(name, $selectElem){
+function applyRangeSelect3(name, $selectElem) {
 
     // var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
     var userinputvalue = parseFloat($selectElem.parent().find('.nomRangeText').val());
@@ -4643,59 +4701,59 @@ function applyRangeSelect3(name, $selectElem){
     // var tilde regex = /~～/g ;
     var $optionList = $selectElem.find('option');
     // _log($optionList.filter(commaselector).size(), true);
-    $optionList.prop('selected',false);
-    $optionList.filter(commaselector).each(function(){
+    $optionList.prop('selected', false);
+    $optionList.filter(commaselector).each(function () {
         var thisOption = $(this);
         var splitOnComma = $(this).text().split(/[,、]/g);  // implicitly tested for comma by selector
         // _log('splitoncomma is ' +splitOnComma, true);
-        splitOnComma.forEach(function(element, index, array){
-            if ((element.indexOf('~') != -1) || (element.indexOf('～')!= -1)){
-                if(isInRange(userinputvalue, element)){
+        splitOnComma.forEach(function (element, index, array) {
+            if ((element.indexOf('~') != -1) || (element.indexOf('～') != -1)) {
+                if (isInRange(userinputvalue, element)) {
                     thisOption.prop('selected', true);
                 }
-            }else if(parseFloat(element) == userinputvalue){
+            } else if (parseFloat(element) == userinputvalue) {
                 thisOption.prop('selected', true);
                 _log(element, true);
             }
         });
     });
 
-    $optionList.not(commaselector).each(function(){
+    $optionList.not(commaselector).each(function () {
         var thisOption = $(this);
         var otext = $(this).text();
-        if ((otext.indexOf('~') != -1) || (otext.indexOf('～')!= -1)){
-                if(isInRange(userinputvalue, otext)){
-                    thisOption.prop('selected', true);
-                }
-            }else {
-                if(parseFloat(otext) == userinputvalue){
-                    thisOption.prop('selected', true);
-                    _log(otext, true);  
-                }
-                thisOption.filter(':contains("Up to")').each(function(index) {
-                    if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-                        $(this).prop('selected', true);
-                    }
-                });
-                thisOption.filter(':contains("Adj to")').each(function(index) {
-                    // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-                        $(this).prop('selected', true);
-                    // }
-                });
-                thisOption.filter(':contains("Down to")').each(function(index) {
-                    if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
-                        $(this).prop('selected', true);
-                    }
-                });
-
+        if ((otext.indexOf('~') != -1) || (otext.indexOf('～') != -1)) {
+            if (isInRange(userinputvalue, otext)) {
+                thisOption.prop('selected', true);
             }
+        } else {
+            if (parseFloat(otext) == userinputvalue) {
+                thisOption.prop('selected', true);
+                _log(otext, true);
+            }
+            thisOption.filter(':contains("Up to")').each(function (index) {
+                if ((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                    $(this).prop('selected', true);
+                }
+            });
+            thisOption.filter(':contains("Adj to")').each(function (index) {
+                // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                $(this).prop('selected', true);
+                // }
+            });
+            thisOption.filter(':contains("Down to")').each(function (index) {
+                if ((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
+                    $(this).prop('selected', true);
+                }
+            });
+
+        }
     });
 
     // getRecordsMatching();
     var selNum = $selectElem.find('option:selected').size();
     $('#voltmess').text(' ' + selNum + ' options selected in ' + name);
 }
-function applyRangeSelect2(name, $selectElem){
+function applyRangeSelect2(name, $selectElem) {
     var userinputvalue = parseFloat($('#helperBoxContent').find('input').val());
     var commaselector = ':contains(,),:contains(、)'; //the oddball comma is for the .jp site
     var tildeselector = ':contains(~),:contains(～)'; //the oddball tilde is for the .jp site
@@ -4704,51 +4762,51 @@ function applyRangeSelect2(name, $selectElem){
     var $optionList = $selectElem.find('option');
     // _log($optionList.filter(commaselector).size(), true);
 
-    $optionList.filter(commaselector).each(function(){
+    $optionList.filter(commaselector).each(function () {
         var thisOption = $(this);
         var splitOnComma = $(this).text().split(/[,、]/g);  // implicitly tested for comma by selector
         // _log('splitoncomma is ' +splitOnComma, true);
-        splitOnComma.forEach(function(element, index, array){
-            if ((element.indexOf('~') != -1) || (element.indexOf('～')!= -1)){
-                if(isInRange(userinputvalue, element)){
+        splitOnComma.forEach(function (element, index, array) {
+            if ((element.indexOf('~') != -1) || (element.indexOf('～') != -1)) {
+                if (isInRange(userinputvalue, element)) {
                     thisOption.prop('selected', true);
                 }
-            }else if(parseFloat(element) == userinputvalue){
+            } else if (parseFloat(element) == userinputvalue) {
                 thisOption.prop('selected', true);
                 _log(element, true);
             }
         });
     });
 
-    $optionList.not(commaselector).each(function(){
+    $optionList.not(commaselector).each(function () {
         var thisOption = $(this);
         var otext = $(this).text();
-        if ((otext.indexOf('~') != -1) || (otext.indexOf('～')!= -1)){
-                if(isInRange(userinputvalue, otext)){
-                    thisOption.prop('selected', true);
-                }
-            }else {
-                if(parseFloat(otext) == userinputvalue){
-                    thisOption.prop('selected', true);
-                    _log(otext, true);  
-                }
-                thisOption.filter(':contains("Up to")').each(function(index) {
-                    if((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-                        $(this).prop('selected', true);
-                    }
-                });
-                thisOption.filter(':contains("Adj to")').each(function(index) {
-                    // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
-                        $(this).prop('selected', true);
-                    // }
-                });
-                thisOption.filter(':contains("Down to")').each(function(index) {
-                    if((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
-                        $(this).prop('selected', true);
-                    }
-                });
-
+        if ((otext.indexOf('~') != -1) || (otext.indexOf('～') != -1)) {
+            if (isInRange(userinputvalue, otext)) {
+                thisOption.prop('selected', true);
             }
+        } else {
+            if (parseFloat(otext) == userinputvalue) {
+                thisOption.prop('selected', true);
+                _log(otext, true);
+            }
+            thisOption.filter(':contains("Up to")').each(function (index) {
+                if ((parseFloat($(this).text().split('Up to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                    $(this).prop('selected', true);
+                }
+            });
+            thisOption.filter(':contains("Adj to")').each(function (index) {
+                // if((parseFloat($(this).text().split('Adj to')[1]) >= userinputvalue) && (userinputvalue >= 0)) {
+                $(this).prop('selected', true);
+                // }
+            });
+            thisOption.filter(':contains("Down to")').each(function (index) {
+                if ((parseFloat($(this).text().split("Down to")[1]) <= userinputvalue) && (userinputvalue <= 0)) {
+                    $(this).prop('selected', true);
+                }
+            });
+
+        }
     });
 
     // getRecordsMatching();
@@ -4758,21 +4816,21 @@ function applyRangeSelect2(name, $selectElem){
 }
 
 
-function isInRange(userinput, teststring){
+function isInRange(userinput, teststring) {
     var rangeSplit = teststring.split(/[\~\～]/);
     var firstval = parseFloat(rangeSplit[0]);
     var secondval = parseFloat(rangeSplit[1]);
     //_log(rangeSplit +' '+firstval +' '+secondval,DLOG);
-    if(secondval > firstval) {
-        if(firstval <= userinput && userinput <= secondval) {
+    if (secondval > firstval) {
+        if (firstval <= userinput && userinput <= secondval) {
             // optElem.prop('selected', true);
             return true;
-        }else {return false;}
+        } else { return false; }
     } else {
-        if(secondval <= userinput && userinput <= firstval) {
+        if (secondval <= userinput && userinput <= firstval) {
             // optElem.prop('selected', true);
             return true;
-        }else {return false;}
+        } else { return false; }
     }
 }
 
@@ -4782,124 +4840,124 @@ function selectInRange(optElem, input) {
     var firstval = parseFloat(rangeSplit[0]);
     var secondval = parseFloat(rangeSplit[1]);
     //_log(rangeSplit +' '+firstval +' '+secondval,DLOG);
-    if(secondval > firstval) {
-        if(firstval <= input && input <= secondval) {
+    if (secondval > firstval) {
+        if (firstval <= input && input <= secondval) {
             optElem.prop('selected', true);
         }
     } else {
-        if(secondval <= input && input <= firstval) {
+        if (secondval <= input && input <= firstval) {
             optElem.prop('selected', true);
         }
     }
 }
 
-function checkboxHelper(name, $selectElem){
-    _log('checkboxHelper name is ' +name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG); 
-    createHelperBox(name,$selectElem,'','80%');
+function checkboxHelper(name, $selectElem) {
+    _log('checkboxHelper name is ' + name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
+    createHelperBox(name, $selectElem, '', '80%');
 
     $('#helperBoxContent').html('');
 
     var masterarray = [];
-    $selectElem.find('option').each(function(){
-        var smalla = $(this).get(0).text.replace('\\n','').replace('\\c','').replace(/\(/,'').replace(/\)/,'').replace(/\./,'').split(',');
+    $selectElem.find('option').each(function () {
+        var smalla = $(this).get(0).text.replace('\\n', '').replace('\\c', '').replace(/\(/, '').replace(/\)/, '').replace(/\./, '').split(',');
         masterarray = masterarray.concat(smalla);
         //_log(masterarray);
     });
 
-    masterarray = $.map(masterarray, function(e){return e.trim();});
+    masterarray = $.map(masterarray, function (e) { return e.trim(); });
 
     masterarray = uniqueArray(masterarray);
 
     masterarray = uniqueArray(masterarray).sort();
 
     $('#helperBoxContent').addClass('columnized5');
-    masterarray.forEach(function(e,i,a){
-       $('#helperBoxContent').append('<label><input type="checkbox"> '+e+' </input></label><br> ');
+    masterarray.forEach(function (e, i, a) {
+        $('#helperBoxContent').append('<label><input type="checkbox"> ' + e + ' </input></label><br> ');
     });
 
     $('#helperBoxContent').after('ok');
-    $('#helperBoxContent').find('input[type=checkbox]').change(function(){
+    $('#helperBoxContent').find('input[type=checkbox]').change(function () {
         // add logical AND, and OR
-        $selectElem.find('option').prop('selected',false);
+        $selectElem.find('option').prop('selected', false);
         $selectElem.attr('selectedIndex', 0);
-        _log(' ' + $('#helperBoxContent').find(':checked').length + ' checkboxes checked and '+ $selectElem.find('option').length + ' total option permutations');
+        _log(' ' + $('#helperBoxContent').find(':checked').length + ' checkboxes checked and ' + $selectElem.find('option').length + ' total option permutations');
 
         var checkedWordArray = [];
         var additiveSelector = 'option:contains("';
 
-        $('#helperBoxContent').find(':checked').each(function(index){
-            _log('length '+ $('#helperBoxContent').find(':checked').length + ' index ' + index);
-            if($('#helperBoxContent').find(':checked').length-1 == index){
+        $('#helperBoxContent').find(':checked').each(function (index) {
+            _log('length ' + $('#helperBoxContent').find(':checked').length + ' index ' + index);
+            if ($('#helperBoxContent').find(':checked').length - 1 == index) {
                 additiveSelector = additiveSelector + $(this).parent().text().trim() + '")';
-            }else{
+            } else {
                 additiveSelector = additiveSelector + $(this).parent().text().trim() + '"):contains("';
             }
         });
         _log(additiveSelector);
-        $selectElem.find(additiveSelector).prop('selected','true');
+        $selectElem.find(additiveSelector).prop('selected', 'true');
         $('#helpertitlemessage').text($selectElem.find('option:selected').length + ' lines selected using ANDed combination of checkboxes');
-        if($selectElem.find('option:selected').length > 0){
+        if ($selectElem.find('option:selected').length > 0) {
             // getRecordsMatching();
-        }else{
+        } else {
             $('#helpertitlemessage').text('There are no lines matching all checkboxes');
-        } 
+        }
     });
 
     _log('end checkboxHelper');
 }
 
-function checkboxHelper2(name, $selectElem){
-    _log('checkboxHelper2 name is ' +name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG); 
-    createHelperBox(name,$selectElem,'','40%');
+function checkboxHelper2(name, $selectElem) {
+    _log('checkboxHelper2 name is ' + name + ' $selecteelem children size is ' + $selectElem.children().size(), DLOG);
+    createHelperBox(name, $selectElem, '', '40%');
 
     $('#helperBoxContent').html('');
 
     var masterarray = [];
-    $selectElem.find('option').each(function(){
-        var smalla = $(this).get(0).text.replace('\\n','').replace('\\c','').replace(/\(/,'').replace(/\)/,'').replace(/\./,'').split(',');
+    $selectElem.find('option').each(function () {
+        var smalla = $(this).get(0).text.replace('\\n', '').replace('\\c', '').replace(/\(/, '').replace(/\)/, '').replace(/\./, '').split(',');
         masterarray = masterarray.concat(smalla);
         //_log(masterarray);
     });
     masterarray = uniqueArray(masterarray);
-    for(var y=0; y<masterarray.length; y++){
+    for (var y = 0; y < masterarray.length; y++) {
         masterarray[y] = trim(masterarray[y]);
     }
     masterarray = uniqueArray(masterarray).sort();
 
     $('#helperBoxContent').addClass('columnized5');
-    for( var x=0; x<masterarray.length; x++){
-        $('#helperBoxContent').append('<label><input type="checkbox"> '+masterarray[x]+' </input></label><br> ');
+    for (var x = 0; x < masterarray.length; x++) {
+        $('#helperBoxContent').append('<label><input type="checkbox"> ' + masterarray[x] + ' </input></label><br> ');
     }
 
     $('#helperBoxContent').after('ok');
-    $('#helperBoxContent').find('input[type=checkbox]').change(function(){
+    $('#helperBoxContent').find('input[type=checkbox]').change(function () {
         // add logical AND, and OR
-        $selectElem.find('option').prop('selected',false);
+        $selectElem.find('option').prop('selected', false);
         $selectElem.attr('selectedIndex', 0);
-        _log(' ' + $('#helperBoxContent').find(':checked').length + ' checkboxes checked and '+ $selectElem.find('option').length + ' total option permutations');
+        _log(' ' + $('#helperBoxContent').find(':checked').length + ' checkboxes checked and ' + $selectElem.find('option').length + ' total option permutations');
 
-        $('#helperBoxContent').find(':checked').each(function(index){
-            $selectElem.find('option:contains("'+$(this).parent().text().trim()+'")').prop('selected', true);
+        $('#helperBoxContent').find(':checked').each(function (index) {
+            $selectElem.find('option:contains("' + $(this).parent().text().trim() + '")').prop('selected', true);
             _log('the box was checked', true);
         });
 
         // $selectElem.find(additiveSelector).prop('selected','true');
         // $('#helpertitlemessage').text($selectElem.find('option:selected').length + ' lines selected using ORed combination of checkboxes');
         $('#helpertitlemessage').text('ORed combination of checkboxes, close to see selected');
-        if($selectElem.find('option:selected').length > 0){
+        if ($selectElem.find('option:selected').length > 0) {
             // getRecordsMatching();
-        }else{
+        } else {
             $('#helpertitlemessage').text('There are no lines matching all checkboxes');
-        } 
+        }
     });
 
     _log('end checkboxHelper2');
 }
 
-function getAttributeExampleImgs(name,$selectElem) {
-    _log('populating pictures for '+$selectElem.attr('name'));
+function getAttributeExampleImgs(name, $selectElem) {
+    _log('populating pictures for ' + $selectElem.attr('name'));
     $('#accContent').html('');
-    $selectElem.find('option').each(function(index) {
+    $selectElem.find('option').each(function (index) {
         var myURL = getURL(false, false);
         //_log('myurl'+$(this).parent().attr('name'));
         var myregex = new RegExp('&' + $(this).parent().attr('name') + '=[0-9]+', 'ig');
@@ -4907,64 +4965,64 @@ function getAttributeExampleImgs(name,$selectElem) {
         myURL = myURL.replace(myregex, '') + $(this).parent().attr('name') + '=' + $(this).val();
         //_log('regexed url '+ myURL);
         $('#accContent').append('<a id="imgprev' + index + '" href="' + myURL + '" title="' + $(this).text() + '"></a>');
-        $('#imgprev' + index).load(myURL + ' img[src*="tmb"]:first,.product-photo-wrapper img:first', function() {
-            if($(this).find('img:not([src*=tmb])').size() > 0) {
+        $('#imgprev' + index).load(myURL + ' img[src*="tmb"]:first,.product-photo-wrapper img:first', function () {
+            if ($(this).find('img:not([src*=tmb])').size() > 0) {
                 var thumb = $(this).find('img:not([src*=tmb])').attr('src').replace('_sml', '').replace('.jpg', '_tmb.jpg');
                 $(this).find('img:not([src*=tmb])').attr('src', thumb).removeAttr('title').removeAttr('width');
             }
         });
-        if(index > 30) {
+        if (index > 30) {
             return false;
         }
-        
+
     });
 }
 
 
-function addKeywordMatchedSprites(){
-    _log('addKeywordMatchedSprites() Start',DLOG);
+function addKeywordMatchedSprites() {
+    _log('addKeywordMatchedSprites() Start', DLOG);
 
-    $('.quickpick').each(function(){
+    $('.quickpick').each(function () {
         $(this).next('br').before('<div class=/>');
     });
-    _log('addKeywordMatchedSprites() End',DLOG);
+    _log('addKeywordMatchedSprites() End', DLOG);
 
 }
 
 
-function addCategorySprites2(){
-    _log('addCategorySprites() Start',DLOG);
+function addCategorySprites2() {
+    _log('addCategorySprites() Start', DLOG);
     // $('.sideIndexContent li').each(function(ind) {
     //     $(this).prepend('<span style="display:none;" class="catSprite2 '+$(this).text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
     //             '" >'+
     //             // '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
-    //             '</span>' 
+    //             '</span>'
     //     );
-        //**************************************
-        // KEEP for testing, this is the code for category images without using the sprites
-        // $('#qpDivCont').append('<a href="#' + 
-        //  $(this).text().replace(/[\s\(\)\\\/\,]/g, '') + 
-        //  '"><img align=center style="margin:2px; border:1px solid gray; border-radius:5px;" src="https://dl.dropboxusercontent.com/u/26263360/img/caticons/'+
-        //  $(this).text().replace(/[\s\(\)\\\/\,]/g, '')+'.png">' + 
-        //  $(this).text() + '</a><br>'
-        // );                   
-        //**************************************
+    //**************************************
+    // KEEP for testing, this is the code for category images without using the sprites
+    // $('#qpDivCont').append('<a href="#' +
+    //  $(this).text().replace(/[\s\(\)\\\/\,]/g, '') +
+    //  '"><img align=center style="margin:2px; border:1px solid gray; border-radius:5px;" src="https://dl.dropboxusercontent.com/u/26263360/img/caticons/'+
+    //  $(this).text().replace(/[\s\(\)\\\/\,]/g, '')+'.png">' +
+    //  $(this).text() + '</a><br>'
+    // );
+    //**************************************
     // });
-    $('.catTitle').each(function(){
-        $(this).prepend('<span class="catSprite2 '+$(this).find('a:first').text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
-                '" >'+
-                // '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
-                '</span>' 
+    $('.catTitle').each(function () {
+        $(this).prepend('<span class="catSprite2 ' + $(this).find('a:first').text().replace(/[\s\(\)\\\/\,]/g, '').toLowerCase() +
+            '" >' +
+            // '" style="margin:3px; position:relative; top:11px; border:1px solid gray; border-radius:5px; display:inline-block;" >'+
+            '</span>'
         );
 
     });
-    _log('addCategorySprites() End',DLOG);
+    _log('addCategorySprites() End', DLOG);
 }
 
 
-// Adds alternate search terms or patterns to add related categories to the Quick Filter box 
+// Adds alternate search terms or patterns to add related categories to the Quick Filter box
 function getQFAlts(searchterm) {
-    _log('getQFAlts(searchterm) function ' + searchterm,DLOG);
+    _log('getQFAlts(searchterm) function ' + searchterm, DLOG);
     var altArray = [
         [/microcontroller/i, 'mcu'],
         [/mcu/i, 'microcontroller'],
@@ -4975,41 +5033,41 @@ function getQFAlts(searchterm) {
         [/cortex/i, 'microcontroller', 'mcu'],
         [/\b(M0|M3|M4|R4)\b/, 'microcontroller', 'mcu'],
         [/bluetooth/i, 'finished', 'transceiver', 'evaluation'],
-        [/gps/i, 'finished', 'receiver', 'evaluation'], 
-        [/usb/i, 'microcontroller', 'mcu','smart cables'], 
-        [/adapters/i, 'between series', 'smart cables'], 
-        [/rj[\-\s]?\d+/i, 'modular', 'ethernet'], 
-        [/ethernet/i, 'modular'], 
-        [/sma/i, '(RF)','adapter','coaxial'], 
-        [/bnc/i, '(RF)','adapter','coaxial'], 
-        [/db-?\d+/i, 'd-sub'], 
+        [/gps/i, 'finished', 'receiver', 'evaluation'],
+        [/usb/i, 'microcontroller', 'mcu', 'smart cables'],
+        [/adapters/i, 'between series', 'smart cables'],
+        [/rj[\-\s]?\d+/i, 'modular', 'ethernet'],
+        [/ethernet/i, 'modular'],
+        [/sma/i, '(RF)', 'adapter', 'coaxial'],
+        [/bnc/i, '(RF)', 'adapter', 'coaxial'],
+        [/db-?\d+/i, 'd-sub'],
         [/sram/i, 'memory'],
-        [/eeprom/i, 'memory'], 
-        [/ssr/i, 'solid'], 
-        [/fpga/i, 'demo'], 
-        [/arduino/i, 'boards'], 
-        [/cree/i, 'led','eval'], 
-        [/rs-?\d+/i, 'uart','cables','drivers'], 
-        [/\d+k/i, 'resistor'], 
+        [/eeprom/i, 'memory'],
+        [/ssr/i, 'solid'],
+        [/fpga/i, 'demo'],
+        [/arduino/i, 'boards'],
+        [/cree/i, 'led', 'eval'],
+        [/rs-?\d+/i, 'uart', 'cables', 'drivers'],
+        [/\d+k/i, 'resistor'],
         [/\d+uf/i, 'capacitor'],
-        [/dsub/i, 'd-sub'], 
-        [/battery/i, 'batteries'], 
-        [/accessory/i, 'accessories'], 
-        [/assembly/i, 'assemblies'], 
-        [/epoxy/i, 'epoxies'], 
-        [/supply/i, 'supplies'], 
-        [/mosfet/i, 'fet'] 
+        [/dsub/i, 'd-sub'],
+        [/battery/i, 'batteries'],
+        [/accessory/i, 'accessories'],
+        [/assembly/i, 'assemblies'],
+        [/epoxy/i, 'epoxies'],
+        [/supply/i, 'supplies'],
+        [/mosfet/i, 'fet']
     ];
-    _log('altarray.length is '+altArray.length,DLOG);
-    for(var x = 0; x < altArray.length; x++) {
+    _log('altarray.length is ' + altArray.length, DLOG);
+    for (var x = 0; x < altArray.length; x++) {
         //_log(' trying ' + altArray[x][0],DLOG);
-        if(searchterm.match(altArray[x][0])) {
+        if (searchterm.match(altArray[x][0])) {
             //if(searchterm.match(/microcontroller/i)){
             var returnString = '';
-            for(var y = 1; y < altArray[x].length; y++) {
+            for (var y = 1; y < altArray[x].length; y++) {
                 returnString = returnString + ' ' + altArray[x][y];
             }
-            _log('alternate search terms are '+ returnString,DLOG);
+            _log('alternate search terms are ' + returnString, DLOG);
             return returnString;
         }
     }
@@ -5022,20 +5080,20 @@ function getQFAlts(searchterm) {
 function processInput(elem) {
     var qarray = $(elem).val().split(' ');
 
-    for(var y = 0; y < qarray.length; y++) {
+    for (var y = 0; y < qarray.length; y++) {
         qarray[y] = commonWordReplace(qarray[y]);
     }
 
     var myval = Array();
-    for(var x = 0; x < qarray.length; x++) {
+    for (var x = 0; x < qarray.length; x++) {
         //_log('alt add ' +commonWordAltAdd(qarray[x]).join(', '),DLOG);
-        if(commonWordExpand(qarray[x]) != null) {
+        if (commonWordExpand(qarray[x]) != null) {
             myval = myval.concat(commonWordExpand(qarray[x]));
             myval = myval.join(' ');
         }
     }
-    _log('logging myval '+ myval,DLOG);
-    if(myval != null) {
+    _log('logging myval ' + myval, DLOG);
+    if (myval != null) {
         qarray = myval.concat(qarray.join(' '));
     }
     $(elem).val((qarray));
@@ -5074,18 +5132,18 @@ function commonWordReplace(someword) {
         ['ssl', 'ssl | solid state lighting | led']
     ];
 
-    for(var p = 0; p < altArray.length; p++) {
-        if(someword != null && (someword.toLowerCase() == altArray[p][0])) {
-            _log(someword+' was changed to '+ altArray[p][1]);
+    for (var p = 0; p < altArray.length; p++) {
+        if (someword != null && (someword.toLowerCase() == altArray[p][0])) {
+            _log(someword + ' was changed to ' + altArray[p][1]);
             return altArray[p][1];
         }
     }
-    _log('commonWordReplace nothing returned, returning "' + someword+'"');
+    _log('commonWordReplace nothing returned, returning "' + someword + '"');
     return someword;
 }
 
 function commonWordExpand(someword) {
-    _log('commonWordExpand start someword = '+ someword);
+    _log('commonWordExpand start someword = ' + someword);
     var altArray = [
         ['battery', 'batteries'],
         ['batteries', 'battery'],
@@ -5096,17 +5154,17 @@ function commonWordExpand(someword) {
         //  ['ssl', 'ssl | solid state lighting | led'],
         ['tube', 'tubing'],
         //['suppression', 'tvs'],
-        //['capacitor', 'capacitance'], 
+        //['capacitor', 'capacitance'],
         ['epoxy', 'epoxies'],
         ['multimeter', 'DMM | multi meter']
     ];
     var retval = Array();
-    for(var p = 0; p < altArray.length; p++) {
-        if(someword.toLowerCase() == altArray[p][0]) {
-            for(u = 1; u < altArray[p].length; u++) {
+    for (var p = 0; p < altArray.length; p++) {
+        if (someword.toLowerCase() == altArray[p][0]) {
+            for (u = 1; u < altArray[p].length; u++) {
                 retval[u - 1] = altArray[p][u] + ' | ';
             }
-            _log('commonWordExpand returning retval= '+ retval);
+            _log('commonWordExpand returning retval= ' + retval);
             return retval;
         }
     }
@@ -5116,67 +5174,67 @@ function commonWordExpand(someword) {
 
 
 function addQuantityToCatFilterLinks() {
-    _log('addQuantityToCatFilterLinks() Start',DLOG);
+    _log('addQuantityToCatFilterLinks() Start', DLOG);
     try {
-        if($('a.catfilterlink').attr('href').indexOf('?') == -1) {
-            _log('catfilter links has no question questionmark '+ ($('a.catfilterlink').attr('href').indexOf('?') == -1));
-            $('a.catfilterlink').each(function() {
+        if ($('a.catfilterlink').attr('href').indexOf('?') == -1) {
+            _log('catfilter links has no question questionmark ' + ($('a.catfilterlink').attr('href').indexOf('?') == -1));
+            $('a.catfilterlink').each(function () {
                 $(this).attr('href', $(this).attr('href') + '?ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val());
             });
-        } else if($('a.catfilterlink').attr('href').indexOf('quantity=') == -1) {
-            _log('catfilter links has no quantity ' + ($('a.catfilterlink').attr('href').indexOf('quantity=') == -1 ));
-            $('a.catfilterlink').each(function() {
+        } else if ($('a.catfilterlink').attr('href').indexOf('quantity=') == -1) {
+            _log('catfilter links has no quantity ' + ($('a.catfilterlink').attr('href').indexOf('quantity=') == -1));
+            $('a.catfilterlink').each(function () {
                 $(this).attr('href', $(this).attr('href') + '&ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val());
             });
-        } else if($('a.catfilterlink').attr('href').indexOf('quantity=') != -1) {
-            _log('catfilter links has quantity ' + ($('a.catfilterlink').attr('href').indexOf('quantity=') != -1 ) + 'there are this many catfilter links '+ $('a.catfilterlink').size());
-            $('a.catfilterlink').each(function() {
+        } else if ($('a.catfilterlink').attr('href').indexOf('quantity=') != -1) {
+            _log('catfilter links has quantity ' + ($('a.catfilterlink').attr('href').indexOf('quantity=') != -1) + 'there are this many catfilter links ' + $('a.catfilterlink').size());
+            $('a.catfilterlink').each(function () {
                 $(this).attr('href', ($(this).attr('href').replace(/&quantity=\d+/i, '&ColumnSort=1000011&quantity=' + $('#qtydefaulttext').val())));
             });
-        } else if (document.location.href.search('quantity')){
-            document.location.href = document.location.href.replace(/quantity=\d+/i,'quantity='+$('#qtydefaulttext').val());
+        } else if (document.location.href.search('quantity')) {
+            document.location.href = document.location.href.replace(/quantity=\d+/i, 'quantity=' + $('#qtydefaulttext').val());
         }
-    } catch(err) {}
-    _log('addQuantityToCatFilterLinks() End',DLOG);
+    } catch (err) { }
+    _log('addQuantityToCatFilterLinks() End', DLOG);
 }
 
 
 
 
-function indexInstantFilter3(){
-    _log('indexInstantFilter3() Start',DLOG);
+function indexInstantFilter3() {
+    _log('indexInstantFilter3() Start', DLOG);
 
-    if($('body.indexPage').length>0){
-        $('#headKeySearch').keyup(function(){
+    if ($('body.indexPage').length > 0) {
+        $('#headKeySearch').keyup(function () {
             var keywords = $(this).val().trim().toLowerCase();
             var keywordarray = keywords.split(' ');
             var attrfilters = '';
-            keywordarray.forEach(function(word){
-                attrfilters += '[href*='+word+']';
+            keywordarray.forEach(function (word) {
+                attrfilters += '[href*=' + word + ']';
             });
             _log('keyword array length ' + attrfilters);
             $('.famItemContainer').addClass('hideme');
             $('.catContainer').hide();
-            $('.famItemContainer a'+attrfilters).closest('.famItemContainer').removeClass('hideme');
+            $('.famItemContainer a' + attrfilters).closest('.famItemContainer').removeClass('hideme');
 
             $('.famItemContainer').not('.hideme').closest('.catContainer').show();
             // $('.hideme').hide();
-            if($(this).val() == ''){
+            if ($(this).val() == '') {
                 $('.famItemContainer').removeClass('hideme');
                 $('.famItemContainer').closest('.catContainer').show();
             }
             console.log('hi keywords here');
         });
     }
-    _log('indexInstantFilter3() End',DLOG);
+    _log('indexInstantFilter3() End', DLOG);
 }
 
 function getURL(stripQuery, inclFormData) {
-    // strip query 
+    // strip query
     // included serialized form data
     //$('mainform')
     var querycheckedURL = (window.location.toString().indexOf('?') != -1) ? (window.location.toString() + '&"') : (window.location.toString() + '?');
-    if(stripQuery) {
+    if (stripQuery) {
         querycheckedURL = (window.location.toString().split('?')[0] + '?');
     }
     var serializedFormData = $('#mainform').serialize();
@@ -5184,145 +5242,146 @@ function getURL(stripQuery, inclFormData) {
     return myloc;
 }
 
-function addStickyFilters(){
-    //adds stickyfilters to multi select boxes 
-    
-        $('option').mousedown(function(e,index) {
-            if(!e.ctrlKey && !e.shiftKey){
-                e.preventDefault();
-                $(this).prop('selected', $(this).prop('selected') ? false : true);
-                //e.parent().prop('selectedIndex',index);
-                return false;
-            }
-        });
+function addStickyFilters() {
+    //adds stickyfilters to multi select boxes
+
+    $('option').mousedown(function (e, index) {
+        if (!e.ctrlKey && !e.shiftKey) {
+            e.preventDefault();
+            $(this).prop('selected', $(this).prop('selected') ? false : true);
+            //e.parent().prop('selectedIndex',index);
+            return false;
+        }
+    });
 }
 
-function addApplyFiltersButtonHighlight(){
-    _log('addApplyFiltersButtonHighlight() Start',DLOG);
-    $('#mainform').on('mouseup','option,input[type=reset],input[value=Reset]', function(e){
+function addApplyFiltersButtonHighlight() {
+    _log('addApplyFiltersButtonHighlight() Start', DLOG);
+    $('#mainform').on('mouseup', 'option,input[type=reset],input[value=Reset]', function (e) {
         buttonHighlightAction();
     });
-    $('#mainform').on('change', 'input[type=checkbox], input[type=text]', function(e){
+    $('#mainform').on('change', 'input[type=checkbox], input[type=text]', function (e) {
         $('input[value="Apply Filters"]').addClass('myRedButton');
         // $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
     });
-    $('#mainform').on('keyup', 'input[type=checkbox], input[type=text]', function(e){
+    $('#mainform').on('keyup', 'input[type=checkbox], input[type=text]', function (e) {
         $('input[value="Apply Filters"]').addClass('myRedButton');
         // $('input[value="Apply Filters"]').removeClass('button-small pure-button').addClass('thoughtbot2');
     });
-    $('#mainform').on('click','.clearselect', function(e){
+    $('#mainform').on('click', '.clearselect', function (e) {
         //dependancy on clearselect link being added/existing
         buttonHighlightAction();
         $(this).hide();
     });
-    _log('addApplyFiltersButtonHighlight() End',DLOG);
+    _log('addApplyFiltersButtonHighlight() End', DLOG);
 }
 
 function buttonHighlightAction() {
-    setTimeout(function(){
-        if($('#mainform option:selected').length>0){
-            $('input[value="Apply Filters"]').toggleClass('myRedButton',true);
-        }else{
-            $('input[value="Apply Filters"]').toggleClass('myRedButton',false);
-        }       
-    },10);
+    setTimeout(function () {
+        if ($('#mainform option:selected').length > 0) {
+            $('input[value="Apply Filters"]').toggleClass('myRedButton', true);
+        } else {
+            $('input[value="Apply Filters"]').toggleClass('myRedButton', false);
+        }
+    }, 10);
 }
 
 
 
-function searchButtonHighlight(){
-    $('.dkdirchanger2').on('keyup', function(){
-        if($(this).val().length !== 0){
+function searchButtonHighlight() {
+    $('.dkdirchanger2').on('keyup', function () {
+        if ($(this).val().length !== 0) {
             $('#searchbutton').addClass('myRedButton');
-        }else{
+        } else {
             $('#searchbutton').removeClass('myRedButton');
         }
     });
 }
 
-function addEvents(){
-    _log('addEvents() Start',DLOG);
+function addEvents() {
+    _log('addEvents() Start', DLOG);
 
 
     //adds rudimentary spell check
-    if(localStorage.getItem('spellcheck') == 1){
-        $('#headKeySearch').blur(function(){ processInput(this); }); 
-        $('#headKeySearch').keydown(function(myevent){ 
-            _log(myevent.keyCode +' keydown event happend');
-            if(myevent.keyCode == 13){
-                _log('event 13 happend '+ this + ' has been passed');
+    if (localStorage.getItem('spellcheck') == 1) {
+        $('#headKeySearch').blur(function () { processInput(this); });
+        $('#headKeySearch').keydown(function (myevent) {
+            _log(myevent.keyCode + ' keydown event happend');
+            if (myevent.keyCode == 13) {
+                _log('event 13 happend ' + this + ' has been passed');
                 processInput(this);
             }
         });
     }
 
-    _log('addEvents() End',DLOG);
+    _log('addEvents() End', DLOG);
 }
 
-function addColumnHider(){
-    _log('addColumnHider() Start',DLOG);
+function addColumnHider() {
+    _log('addColumnHider() Start', DLOG);
     $('.page-slector').append('<button id=showCols style="margin:2px 5px; display:inline-block;"class="button-small pure-button">Show hidden Columns</button>');
-    $('#showCols').click(function(e){
+    $('#showCols').click(function (e) {
         e.preventDefault();
         $('.hiddenCol').fadeIn(800);
         $('#showCols').removeClass('myRedButton');
         _log('showing hidden columns');
     });
 
-    $('#productTable').find('th').each(function(i,e){
-        $(this).attr('title','double-click to hide column');
+    $('#productTable').find('th').each(function (i, e) {
+        $(this).attr('title', 'double-click to hide column');
     });
 
-    $('#productTable').on('dblclick', 'th',function(){
-        var colIndex = $(this).index()+1;
-        _log($(this).text()+' acc expand click is sibling number ' + $(this).index() );
+    $('#productTable').on('dblclick', 'th', function () {
+        var colIndex = $(this).index() + 1;
+        _log($(this).text() + ' acc expand click is sibling number ' + $(this).index());
         _log('trying to hide col ' + colIndex);
         // $('.stickyHeader').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
         // $('.stickyHeader').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-        $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-        $('#showCols').addClass('myRedButton');   
+        $('#productTable').find('td:nth-child(' + colIndex + '),th:nth-child(' + colIndex + ')').addClass('hiddenCol').fadeOut(400);
+        $('#showCols').addClass('myRedButton');
     });
     addDashedColumnsHider();
-    _log('addColumnHider() End',DLOG);
+    _log('addColumnHider() End', DLOG);
 }
 
 
-function addDashedColumnsHider(){
+function addDashedColumnsHider() {
     //dev
-    _log('addDashedColumnsHider() Start',DLOG);    
+    _log('addDashedColumnsHider() Start', DLOG);
     $('.page-slector').append('<button id=identCols style="margin:2px 5px; display:inline-block;"class="button-small pure-button">Hide Identical Columns</button>');
-    $('#identCols').click(function(e){
+    $('#identCols').click(function (e) {
         e.preventDefault();
         hideIdenticalColumns();
     });
-    _log('addDashedColumnsHider() End',DLOG);
+    _log('addDashedColumnsHider() End', DLOG);
 }
 
 
-function hideIdenticalColumns(){
-        $('#productTable').find('th').each(function(){
-        var colIndex = $(this).index()+1;
-        var firstText = $('#productTable').find('tbody td:nth-child('+colIndex+')').first();
+function hideIdenticalColumns() {
+    $('#productTable').find('th').each(function () {
+        var colIndex = $(this).index() + 1;
+        var firstText = $('#productTable').find('tbody td:nth-child(' + colIndex + ')').first();
         console.log('firstMathcolumn' + firstText.html());
         // _log('first text is' + firstText.html());
-        var result = $('#productTable').find('tbody td:nth-child('+colIndex+')').filter( function(index){
-            if($(this).html() != firstText.html()){
+        var result = $('#productTable').find('tbody td:nth-child(' + colIndex + ')').filter(function (index) {
+            if ($(this).html() != firstText.html()) {
                 return false;
-            }else{
+            } else {
                 return true;
-            }});
-        _log( $(this).html() + 'and first result '+ firstText.html() +' :' +
-         result.length + 'tbody tr count: ' + $('#productTable').find('tbody>tr').length);
-        if(result.length == $('#productTable').find('tbody>tr').length){
-            $('#productTable').find('td:nth-child('+colIndex+'),th:nth-child('+colIndex+')').addClass('hiddenCol').fadeOut(400);
-            $('#showCols').addClass('myRedButton');   
+            }
+        });
+        _log($(this).html() + 'and first result ' + firstText.html() + ' :' +
+            result.length + 'tbody tr count: ' + $('#productTable').find('tbody>tr').length);
+        if (result.length == $('#productTable').find('tbody>tr').length) {
+            $('#productTable').find('td:nth-child(' + colIndex + '),th:nth-child(' + colIndex + ')').addClass('hiddenCol').fadeOut(400);
+            $('#showCols').addClass('myRedButton');
         }
     });
 }
 
 
 
-function augmentCompareParts(){
+function augmentCompareParts() {
     GM_addStyle(`
         .compare-preview img{
             margin: 5px;
@@ -5364,33 +5423,33 @@ function augmentCompareParts(){
     `);
 
     $('.th-compareParts').text('Select Parts to...')
-    $('#products-compare').css({'background-color':'#888'})
-    $('#compare-button').attr('value',"Compare")
+    $('#products-compare').css({ 'background-color': '#888' })
+    $('#compare-button').attr('value', "Compare")
     $('#products-compare').append('<input class="button button-small pure-button" id="unhideslected-button" title="Hides lines with uncheck boxes" value="Hide Un-checked" style="background-image: none;" type="button">')
     $('#products-compare').append('<input class="button button-small pure-button" id="comparecart-button" value="Add to Cart" style="background-image: none;" type="button">')
     $('#products-compare').append('<div class=compare-preview></div>')
-    $('#products-compare').find('input').css({'margin':'8px 6px 12px 6px'})
+    $('#products-compare').find('input').css({ 'margin': '8px 6px 12px 6px' })
 
-    $('#unhideslected-button').on('click', function(){
+    $('#unhideslected-button').on('click', function () {
         // $('tr[itemtype="http://schema.org/Product"]')
-        if($('.hiding-unchecked').length === 0){
+        if ($('.hiding-unchecked').length === 0) {
             $('.tr-compareParts input').closest('tr').hide();
             $('.tr-compareParts input:checked').closest('tr').show();
-            $(this).addClass('hiding-unchecked').attr('value','Show Un-checked')
+            $(this).addClass('hiding-unchecked').attr('value', 'Show Un-checked')
 
-        }else{
+        } else {
             $('.tr-compareParts input').closest('tr').show();
             $(this).removeClass('hiding-unchecked');
-            $(this).attr('value','Hide Un-checked')
-        }   
+            $(this).attr('value', 'Hide Un-checked')
+        }
     })
 
-    $('#productTable').on('click', '.tr-compareParts input', function(){
+    $('#productTable').on('click', '.tr-compareParts input', function () {
 
         fillComparePreview()
 
         $('.compare-img-container').tooltipster({
-            functionInit: function(instance,helper){ 
+            functionInit: function (instance, helper) {
                 // instance.content($(instance.origin).data('urldata'))
                 // console.log($(instance.origin))
                 instance.content($(helper.origin).data('descdata'))
@@ -5399,15 +5458,15 @@ function augmentCompareParts(){
         })
     })
 
-    $('.compare-preview').on('click','.compare-img-container',function(){
+    $('.compare-preview').on('click', '.compare-img-container', function () {
         var urldata = $(this).data('urldata');
         $('.tr-compareParts').removeClass('highlightrow');
-        $('.tr-image a[href="'+urldata+'"]').closest('tr').find('.tr-compareParts').addClass('highlightrow');
-        var mypos = $('.tr-image a[href="'+urldata+'"]').position().top - 200;
-        // alert('hi')  
+        $('.tr-image a[href="' + urldata + '"]').closest('tr').find('.tr-compareParts').addClass('highlightrow');
+        var mypos = $('.tr-image a[href="' + urldata + '"]').position().top - 200;
+        // alert('hi')
         $('html,body').animate(
-            {scrollTop: mypos},
-            {       
+            { scrollTop: mypos },
+            {
                 duration: 250,
                 easing: 'swing'
             }
@@ -5415,94 +5474,94 @@ function augmentCompareParts(){
     });
 
     $('.compare-preview')
-    .on('mouseenter','.compare-img-container',
-        function(){
-            var urldata = $(this).data('urldata');
-            $('.tr-compareParts').removeClass('highlightrow');
-            $('.tr-image a[href="'+urldata+'"]').closest('tr').find('.tr-compareParts').addClass('highlightrow');
-    })
-    .on('mouseleave', '.compare-img-container', function(){$('.tr-compareParts').removeClass('highlightrow');    }
-    );
+        .on('mouseenter', '.compare-img-container',
+            function () {
+                var urldata = $(this).data('urldata');
+                $('.tr-compareParts').removeClass('highlightrow');
+                $('.tr-image a[href="' + urldata + '"]').closest('tr').find('.tr-compareParts').addClass('highlightrow');
+            })
+        .on('mouseleave', '.compare-img-container', function () { $('.tr-compareParts').removeClass('highlightrow'); }
+        );
 
-    $('#products-compare').on('click', '.removerx', function(){
+    $('#products-compare').on('click', '.removerx', function () {
         var urldata = $(this).closest('.compare-img-container').data('urldata');
-        $('.tr-image a[href="'+urldata+'"]').closest('tr').find('input[type=checkbox]').prop('checked',false);
+        $('.tr-image a[href="' + urldata + '"]').closest('tr').find('input[type=checkbox]').prop('checked', false);
         fillComparePreview()
     })
 }
 
-function fillComparePreview(){
+function fillComparePreview() {
     $('.compare-preview').empty()
     $('.tr-compareParts').removeClass('highlightrow');
-    $('.tr-compareParts input:checked').each(function(){
+    $('.tr-compareParts input:checked').each(function () {
         $('.compare-preview').append('<div class="compare-img-container"><span class=removerx><i class="fa fa-times-circle"></i></span></div>')
         var urldata = $(this).closest('tr').find('.pszoomer').parent().attr('href');
         var descdata = $(this).closest('tr').find('.tr-description').text();
         // alert( descdata)
         $('.compare-img-container:last')
-        .append($(this).closest('tr').find('.pszoomer').clone())
-        .data('urldata', urldata)
-        .data('descdata',descdata)
+            .append($(this).closest('tr').find('.pszoomer').clone())
+            .data('urldata', urldata)
+            .data('descdata', descdata)
     })
 }
 
-function addPriceHover(){
-    _log('addPriceHover() Start',DLOG);
+function addPriceHover() {
+    _log('addPriceHover() Start', DLOG);
     //adds price hover over td.tr-unitprice
 
     $('td.tr-unitPrice')
-    .data('elementToLoad', '.catalog-pricing')
-    .tooltipster({
-        content: 'loading...',
-        side: 'right',
-        theme: 'tooltipster-shadow',
-        distance: -40,
-        functionReady: loadPrices
-    });
+        .data('elementToLoad', '.catalog-pricing')
+        .tooltipster({
+            content: 'loading...',
+            side: 'right',
+            theme: 'tooltipster-shadow',
+            distance: -40,
+            functionReady: loadPrices
+        });
 
-    _log('addPriceHover() End',DLOG);
+    _log('addPriceHover() End', DLOG);
 }
 
-function loadPrices(instance,helper){
-    _log('loadPrices() Start',DLOG);
+function loadPrices(instance, helper) {
+    _log('loadPrices() Start', DLOG);
     var $origin = $(helper.origin);
-    if($origin.data('loaded')!==true){
+    if ($origin.data('loaded') !== true) {
         $.get(
-            $origin.closest('tr').find('a[itemprop=url]').attr('href'), 
-            function(data){
+            $origin.closest('tr').find('a[itemprop=url]').attr('href'),
+            function (data) {
                 instance.content($(data).find($origin.data('elementToLoad')))
                 instance.reposition();
-                $origin.data('loaded',true)
+                $origin.data('loaded', true)
             }
         );
     }
-    _log('loadPrices() End',DLOG);
+    _log('loadPrices() End', DLOG);
 }
 
-function combinePN(){
-    _log('combinePN() Start',DLOG);
+function combinePN() {
+    _log('combinePN() Start', DLOG);
     // var productTable = $('#productTable').eq(0).detach();
     var productTable = $('#productTable').eq(0);
     var mfpnIndex = productTable.find('th').index($('th.th-mfgPartNumber')) + 1;
 
-    productTable.find('td:nth-child(' + mfpnIndex + ')').each(function() {
+    productTable.find('td:nth-child(' + mfpnIndex + ')').each(function () {
         // $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().text());
         $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().html());
-        $(this).find('a:last').css({'color':'black'}).attr('title','Manufacturer Landing Page');
+        $(this).find('a:last').css({ 'color': 'black' }).attr('title', 'Manufacturer Landing Page');
         //$(this).css('white-space', 'nowrap');
-        
+
     });
-    
-    var firstcol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex)-1) + '),th:nth-child(' + (parseInt(mfpnIndex)-1) + ')');
-    var seccol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex)+1) + '),th:nth-child(' + (parseInt(mfpnIndex)+1) + ')');
+
+    var firstcol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex) - 1) + '),th:nth-child(' + (parseInt(mfpnIndex) - 1) + ')');
+    var seccol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex) + 1) + '),th:nth-child(' + (parseInt(mfpnIndex) + 1) + ')');
     firstcol.remove();
     seccol.remove();
 
     $('a[href*=1000002]').parent().empty(); // remove
-    productTable.find('th.th-mfgPartNumber').each(function() {
+    productTable.find('th.th-mfgPartNumber').each(function () {
         $(this).text('Part# & Manu');
     });
-    productTable.find('th:contains("Number")').each(function() {
+    productTable.find('th:contains("Number")').each(function () {
         $(this).text($(this).text().replace('Number', '#'));
     });
     $('#ColSort1000002,#ColSort-1000002,#ColSort1000001,#ColSort-1000001').parent().parent().empty();
@@ -5510,15 +5569,15 @@ function combinePN(){
     // $('.quantity-form').css({'position':'relative', 'left': ($('.qtyAvailable:first').position().left-19)+'px'});// hack to fix position
 
     // Take care of NEW and Rohs icons
-    $('.product-indicator-collection').css({'opacity':'.25', 'float':'right'});
+    $('.product-indicator-collection').css({ 'opacity': '.25', 'float': 'right' });
 
     // console.log(productTable);
     addHoverLogo(productTable);
-    _log('combinePN() End',DLOG);
+    _log('combinePN() End', DLOG);
 }
 
-function combinePNAfterLoad($targetProductTable){
-    _log('combinePNAfterLoad() Start',DLOG);
+function combinePNAfterLoad($targetProductTable) {
+    _log('combinePNAfterLoad() Start', DLOG);
     // var productTable = $('#productTable').eq(0).detach();
     var productTable = $targetProductTable.eq(0);
     var mfpnIndex = productTable.find('tbody>tr:first>td').index('.th-mfgPartNumber') + 1;
@@ -5527,29 +5586,29 @@ function combinePNAfterLoad($targetProductTable){
     console.log('mfpnIndex', mfpnIndex, productTable.find('tbody>tr:first>td').index('.th-mfgPartNumber'))
     // console.log('right here',productTable.find('tbody>tr:first>td').html())
     // console.log( 'mfpnIndex', mfpnIndex, productTable.find('.rd-compare-parts').length, productTable, productTable.find('.mfg-partnumber:first'))
-    productTable.find('td:nth-child(' + mfpnIndex + ')').each(function() {
+    productTable.find('td:nth-child(' + mfpnIndex + ')').each(function () {
         $(this).append('<br>' + $(this).prev().html() + '<br>' + $(this).next().html());
-        $(this).find('a:last').css({'color':'black'}).attr('title','Manufacturer Landing Page');
-        
+        $(this).find('a:last').css({ 'color': 'black' }).attr('title', 'Manufacturer Landing Page');
+
     });
-    
-    var firstcol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex)-1) + '),th:nth-child(' + (parseInt(mfpnIndex)-1) + ')');
-    var seccol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex)+1) + '),th:nth-child(' + (parseInt(mfpnIndex)+1) + ')');
+
+    var firstcol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex) - 1) + '),th:nth-child(' + (parseInt(mfpnIndex) - 1) + ')');
+    var seccol = productTable.find('td:nth-child(' + (parseInt(mfpnIndex) + 1) + '),th:nth-child(' + (parseInt(mfpnIndex) + 1) + ')');
     // console.log(firstcol,seccol)
     firstcol.remove();
     seccol.remove();
 
     // Take care of NEW and Rohs icons
-    productTable.find('.product-indicator-collection').css({'opacity':'.25', 'float':'right'});
+    productTable.find('.product-indicator-collection').css({ 'opacity': '.25', 'float': 'right' });
 
     addHoverLogo(productTable);
-    _log('combinePNAfterLoad() End',DLOG);
+    _log('combinePNAfterLoad() End', DLOG);
     return productTable;
 }
 
-function addHoverLogo($productTable){
+function addHoverLogo($productTable) {
     //intends to add logo when hovering over manufacturers links, mostly on filter results page.
-	$productTable.find('span[itemtype$="Organization"] a').data('elementToLoad', '.supplier-logo').tooltipster({
+    $productTable.find('span[itemtype$="Organization"] a').data('elementToLoad', '.supplier-logo').tooltipster({
         content: $('<div class=logoHover> <div class=logoHoverContent> </div><div class=logoHoverTitle></div></div>'),
         side: 'top',
         functionReady: easyHoverAndLoad
@@ -5557,45 +5616,45 @@ function addHoverLogo($productTable){
 }
 
 function picsToAccel() {
-    _log('picsToAccel() Start',DLOG);
+    _log('picsToAccel() Start', DLOG);
     $('#accContent').empty();
     //var pictureLinkSet = $('img[src*="_tmb"]').parent(); // find the links wrapping all tmb images
     // var pictureSet = $('img[src*="_tmb"]'); // find the links wrapping all tmb images
     var pictureSet = $('#productTable .pszoomer'); // find the links wrapping all tmb images
-    var piclinkhtml ='';
-    pictureSet.each(function(mykey, myvalue) {
+    var piclinkhtml = '';
+    pictureSet.each(function (mykey, myvalue) {
         //if statement to cull out consecutive images
-        if(pictureSet.eq(mykey - 1).attr('src') != $(this).attr('src')) { 
+        if (pictureSet.eq(mykey - 1).attr('src') != $(this).attr('src')) {
             var imganchor = $(this).parent();
             imganchor.attr('id', 'popthumb' + mykey);
-            piclinkhtml = piclinkhtml +'<a href="#popthumb'+ mykey +'" data-pop="#popthumb'+ mykey +'">'+ imganchor.html() + '</a>';
-        } else {}
+            piclinkhtml = piclinkhtml + '<a href="#popthumb' + mykey + '" data-pop="#popthumb' + mykey + '">' + imganchor.html() + '</a>';
+        } else { }
     });
-    _log('picsToAccel() tick1',DLOG);
+    _log('picsToAccel() tick1', DLOG);
     $('#accContent').append(piclinkhtml);
     // _log('picsToAccel() tick2',DLOG);
     // $('#accContent img').each(function(){ $(this).attr('src', $(this).attr('data-blzsrc'));});//probably don't need this anymore
     // _log('picsToAccel() afterpicturelinkset ',DLOG);
 
     $('#accContent').append('<< last one');
-    
-    $('#accContent').on('click','a', function(e){
+
+    $('#accContent').on('click', 'a', function (e) {
         e.preventDefault();
         var thishref = $(this).attr('data-pop');
         var pos = $(thishref).position().top;
-        $("html").animate({scrollTop:pos-200},{
+        $("html").animate({ scrollTop: pos - 200 }, {
             duration: 500,
-            easing: 'swing', 
-            complete: function(){
-                        $(thishref).parent().parent().css('background-color', '');
-                        $(thishref).parent().parent().animate({
-                            'backgroundColor': 'pink'
-                        }, 500).animate({
-                            'backgroundColor': 'lightcyan'
-                        }, 1500);
+            easing: 'swing',
+            complete: function () {
+                $(thishref).parent().parent().css('background-color', '');
+                $(thishref).parent().parent().animate({
+                    'backgroundColor': 'pink'
+                }, 500).animate({
+                    'backgroundColor': 'lightcyan'
+                }, 1500);
             }
         });
-    });  
+    });
     // })
 
     $('#accContent').find('img').toggleClass('pszoomer accelimg hoverborder');
@@ -5614,25 +5673,25 @@ function picsToAccel() {
     //     }, 1500);
     // });
 
-    _log('picsToAccel() End',DLOG);
+    _log('picsToAccel() End', DLOG);
 }
 
-function infoHoverIn2(e){
+function infoHoverIn2(e) {
     // var infoselector = $(this).parent().attr('href').replace('<a href="', '').replace('"/>', '');
     var targetImageID = $(this).parent().attr('href');
-    _log('targetImageID is '+$(targetImageID).attr('href')+ ' .... '+ targetImageID  );
+    _log('targetImageID is ' + $(targetImageID).attr('href') + ' .... ' + targetImageID);
     var info = '';
     var thisitem = $(this);
-    $(targetImageID).parent().siblings().each(function(mykey, myval) {
-        info += '<b>' + $('#productTable>thead>tr:first>th:eq(' + (mykey + 1) + ')').text() + '</b> : ' + 
-        $(this).text() + '<br>';
+    $(targetImageID).parent().siblings().each(function (mykey, myval) {
+        info += '<b>' + $('#productTable>thead>tr:first>th:eq(' + (mykey + 1) + ')').text() + '</b> : ' +
+            $(this).text() + '<br>';
     });
-    $('#itemInfo').html(info).show();   
+    $('#itemInfo').html(info).show();
     $('#itemInfo').position({
         'my': 'left top',
         'at': 'left bottom',
         'of': thisitem,
-        'collision':'flip',
+        'collision': 'flip',
         'offset': '0 0',
     });
 
@@ -5648,7 +5707,7 @@ function infoHoverIn2(e){
     //});
 
     //css for border in stylesheet
- }
+}
 
 function infoHoverOut(e) {
     $('#itemInfo').hide();
@@ -5663,7 +5722,7 @@ function showAccelTmb(e) {
         'at': 'right top',
         'of': $('#itemInfo'),
         'offset': '5 0',
-        'collision':'flip',
+        'collision': 'flip',
     });
 }
 
@@ -5671,45 +5730,45 @@ function hideAccelTmb(e) {
     $('#bigpic').hide();
 }
 
-function addBreadcrumbHover(){
+function addBreadcrumbHover() {
     //add hover over to the category link of the bread crumbs
-    _log('addBreadcrumbHover() Start',DLOG);
+    _log('addBreadcrumbHover() Start', DLOG);
     $('.breadcrumbs').find('a:eq(1)').append(' <i class="fa fa-caret-down fa-lg" style="color:red;"></i>');
 
     $('.breadcrumbs').find('a:eq(1)').tooltipster({
         functionReady: loadBreadcrumbHover
     });
 
-    _log('addBreadcrumbHover() End',DLOG);
+    _log('addBreadcrumbHover() End', DLOG);
 }
 
-function loadBreadcrumbHover(instance, helper){
+function loadBreadcrumbHover(instance, helper) {
     var $hoveredObj = $(this);
-    if($('.tooltipster-content').find('ul').length){
+    if ($('.tooltipster-content').find('ul').length) {
         //do nothing because it has already been loaded once
-    } else{
+    } else {
         $('.tooltipster-content').html('Loading....');
-        $('.tooltipster-content').load( $(helper.origin).attr('href') + ' .catfiltersub', function(){
+        $('.tooltipster-content').load($(helper.origin).attr('href') + ' .catfiltersub', function () {
             var linkcount = $(this).find('li').length;
-            if(linkcount > 25){
+            if (linkcount > 25) {
                 $(this).addClass('columnized3');
-                $(this).parent().css({'overflow':'auto'});
-                $(this).parent().css({'width': '97%'});
+                $(this).parent().css({ 'overflow': 'auto' });
+                $(this).parent().css({ 'width': '97%' });
             }
             instance.reposition();
         });
     }
 }
 
-function addCanonicalLinkToBreadCrumbs(){
-	_log('addCanonicalLinkToBreadCrumbs() Start',DLOG);
-	var canlink = $('link[rel=canonical]').attr('href');
-	var mpn = $('h1[itemprop=model]').text();
-	var dkpn = $('#reportPartNumber').text();
-	console.log('canlink ', canlink)
-	$('.breadcrumbs').append('<i class="fa fa-link canlink" aria-hidden="true"></i>')
+function addCanonicalLinkToBreadCrumbs() {
+    _log('addCanonicalLinkToBreadCrumbs() Start', DLOG);
+    var canlink = $('link[rel=canonical]').attr('href');
+    var mpn = $('h1[itemprop=model]').text();
+    var dkpn = $('#reportPartNumber').text();
+    console.log('canlink ', canlink)
+    $('.breadcrumbs').append('<i class="fa fa-link canlink" aria-hidden="true"></i>')
 
-	$('#content').append(`
+    $('#content').append(`
 		<div id="clipmecontainer" style="display:none;">
 			<div id=canonicalContainer>
 				<button class="canonicalCopy button pure-button"  title="Copy true page URL to clipboard rather than a long filtered URL" data-clipboard-text="${canlink}">
@@ -5721,74 +5780,74 @@ function addCanonicalLinkToBreadCrumbs(){
 			</div>
 		</div>
 	`);
-	$('.mpncopy').attr('data-clipboard-text',"<i>Markup</i> <b>text</b>. Paste me into a rich text editor.");
+    $('.mpncopy').attr('data-clipboard-text', "<i>Markup</i> <b>text</b>. Paste me into a rich text editor.");
 
-	$('.canlink').tooltipster({
-		content: $('#canonicalContainer')
-	});
+    $('.canlink').tooltipster({
+        content: $('#canonicalContainer')
+    });
 
     var clip = new Clipboard('.canonicalCopy', {
-        "text": function(trigger){
+        "text": function (trigger) {
             return $(trigger).attr('data-clipboard-text');
         }
     });
-    
-    clip.on('success', function(trigger){
-    	// alert('success!')
-    	// console.log(trigger)
-    	$(trigger.trigger).text('copied!')
+
+    clip.on('success', function (trigger) {
+        // alert('success!')
+        // console.log(trigger)
+        $(trigger.trigger).text('copied!')
     })
 
-	_log('addCanonicalLinkToBreadCrumbs() End',DLOG);
+    _log('addCanonicalLinkToBreadCrumbs() End', DLOG);
 }
 
 //--------------------------------------------------
 
 
-var detailPageInfo = (function(){
-    return{  
-        getImage : function($pageobject){return $pageobject.find('img[itemprop=image],img[src*=nophoto]').css({'width': '48px', 'height': '48px'});},
-        getMPN : function($pageobject){return $pageobject.find('h1[itemprop=model]').text();},
-        getManufacturer : function($pageobject){return $pageobject.find('h2[itemprop=manufacturer]').text();}, //could also do contents()
-        getDescription : function($pageobject){return $pageobject.find('td[itemprop=description]').text();},
-        getPackaging : function($pageobject){return $pageobject.find('.attributes-table-main a[href*="Standard%20Packaging%20Help"]').last().closest('tr').find('td').text();},
-        getUnitPrice : function($pageobject){return $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(1)').contents();},
-        getQuantityAvailable : function($pageobject){return $pageobject.find('#quantityavailable').html().split('<br>')[0];},
-        getMinQuantity : function($pageobject){return $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(0)').text();}
+var detailPageInfo = (function () {
+    return {
+        getImage: function ($pageobject) { return $pageobject.find('img[itemprop=image],img[src*=nophoto]').css({ 'width': '48px', 'height': '48px' }); },
+        getMPN: function ($pageobject) { return $pageobject.find('h1[itemprop=model]').text(); },
+        getManufacturer: function ($pageobject) { return $pageobject.find('h2[itemprop=manufacturer]').text(); }, //could also do contents()
+        getDescription: function ($pageobject) { return $pageobject.find('td[itemprop=description]').text(); },
+        getPackaging: function ($pageobject) { return $pageobject.find('.attributes-table-main a[href*="Standard%20Packaging%20Help"]').last().closest('tr').find('td').text(); },
+        getUnitPrice: function ($pageobject) { return $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(1)').contents(); },
+        getQuantityAvailable: function ($pageobject) { return $pageobject.find('#quantityavailable').html().split('<br>')[0]; },
+        getMinQuantity: function ($pageobject) { return $pageobject.find('#pricing>tbody>tr:eq(1)>td:eq(0)').text(); }
     };
 })();
 
-var detailPageInfo2 = (function(){
-    return{  
-        getImage : function(pageobject){return '<img width="48px" height="48px" src="'+pageobject.imageLink+'">';},
-        getMPN : function(pageobject){return pageobject.manufacturerPartNumber;},
-        getManufacturer : function(pageobject){return pageobject.manufacturer;}, //could also do contents()
-        getDescription : function(pageobject){return pageobject.description;},
-        getPackaging : function(pageobject){return pageobject.packageType;},
-        getUnitPrice : function(pageobject){return pageobject.unitPrice;},
-        getQuantityAvailable : function(pageobject){return pageobject.quantityAvailable;},
-        getMinQuantity : function(pageobject){return pageobject.minimumOrderQuantity;},
-        getDetailLink : function(pageobject){return pageobject.detailLink;},
-        getDkpn : function(pageobject){return pageobject.reportPartNumber;},
-        getNonStock : function(pageobject){return pageobject.nonStock;}
+var detailPageInfo2 = (function () {
+    return {
+        getImage: function (pageobject) { return '<img width="48px" height="48px" src="' + pageobject.imageLink + '">'; },
+        getMPN: function (pageobject) { return pageobject.manufacturerPartNumber; },
+        getManufacturer: function (pageobject) { return pageobject.manufacturer; }, //could also do contents()
+        getDescription: function (pageobject) { return pageobject.description; },
+        getPackaging: function (pageobject) { return pageobject.packageType; },
+        getUnitPrice: function (pageobject) { return pageobject.unitPrice; },
+        getQuantityAvailable: function (pageobject) { return pageobject.quantityAvailable; },
+        getMinQuantity: function (pageobject) { return pageobject.minimumOrderQuantity; },
+        getDetailLink: function (pageobject) { return pageobject.detailLink; },
+        getDkpn: function (pageobject) { return pageobject.reportPartNumber; },
+        getNonStock: function (pageobject) { return pageobject.nonStock; }
     };
 })();
 
 
 
 
-//*************************** TODO fix collision events 
+//*************************** TODO fix collision events
 // function addDashNDHover(){
 //     var DashNDConfig = {
-//         id:'DashNDHover', 
+//         id:'DashNDHover',
 //         title : 'Associated Product',
-//         message : 'Loading....', 
-//         hoverOver : $('a:contains("-ND")'), 
+//         message : 'Loading....',
+//         hoverOver : $('a:contains("-ND")'),
 //         highlight : true,
-//         interactive : true, 
+//         interactive : true,
 //         my : 'left bottom',
-//         at : 'right top', 
-//         offset : '0 -20', 
+//         at : 'right top',
+//         offset : '0 -20',
 //         collision : 'fit flipfit',
 //         someFunc : loadDashNDHover
 //     };
@@ -5799,11 +5858,11 @@ var detailPageInfo2 = (function(){
 //     $("#DashNDHoverContent").text('Loading....');
 //     //_log('wcon title '+ wcon.title);
 //     $("#DashNDHoverContent").load($hoveredObj.attr('href')+' table[itemtype="http://schema.org/Product"]', function(){
-//         //edit add to order button functionality so it will work    
+//         //edit add to order button functionality so it will work
 //         $('#DashNDHover').position({
 //             my : 'left bottom',
 //             at : 'right top',
-//             of: $hoveredObj, 
+//             of: $hoveredObj,
 //             offset : '0 -10',
 //             collision : 'fit fit'
 //         });
@@ -5814,31 +5873,31 @@ var detailPageInfo2 = (function(){
 
 
 
-function addCartHover(){
-     _log('addCartHover() Start',DLOG);
+function addCartHover() {
+    _log('addCartHover() Start', DLOG);
     //avoid applying cart logic to the cart page
-    if(window.location.pathname.indexOf('Ordering') == -1 ){
+    if (window.location.pathname.indexOf('Ordering') == -1) {
         //If cart get's too tall cart appears above hovered icon. Not sure how to fix.
         $('#cartlink')
-        .data('elementToLoad','#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_ordOrderDetails')
-        .tooltipster({
-            side:'left',
-            content:'...loading',
-            functionReady: function (instance, helper) { easyHoverAndLoad(instance, helper, loadCartCount)},
-            functionPosition: function(instance,helper,position){
-                position.coord.top += 20;
-                position.coord.left -= 20;
-                return position
-            }
-        });
+            .data('elementToLoad', '#cartDetails')
+            .tooltipster({
+                side: 'left',
+                content: '...loading',
+                functionReady: function (instance, helper) { easyHoverAndLoad(instance, helper, loadCartCount) },
+                functionPosition: function (instance, helper, position) {
+                    position.coord.top += 20;
+                    position.coord.left -= 20;
+                    return position
+                }
+            });
         // loadCartDetails();
     }
-    _log('addCartHover() End',DLOG);
+    _log('addCartHover() End', DLOG);
 
 }
 
-function loadCartCount() { 
-    $('#cartquant').text(' (' + ($('img[src*="close-x"]').length) + ')');
+function loadCartCount() {
+    $('#cartquant').text(' (' + ($('.detailRow_index').length) + ')');
 }
 
 
@@ -5857,67 +5916,67 @@ function loadCartCount() {
 
 
 
-function getImageLinks(){
+function getImageLinks() {
     //for detail page image holder
-    _log('getImageLinks() Start',DLOG);
+    _log('getImageLinks() Start', DLOG);
     var imageURLs = [];
-    var images = $('.attributes-table-main').find('a[href$=jpg], a[href$=JPG]').each(function(){
+    var images = $('.attributes-table-main').find('a[href$=jpg], a[href$=JPG]').each(function () {
         imageURLs.push($(this).attr('href'));
     });
     images.parent().parent().hide();
-    _log('getImageLinks() End',DLOG);
+    _log('getImageLinks() End', DLOG);
     return imageURLs;
 }
 
 
 // Loging function
-function _log(somestring, detailed_logging, textcolor, bgcolor){
-    if (detailed_logging == null) detailed_logging=true;
-    try{
-        if(detailed_logging == true){console.log('%c'+(Date.now()-starttimestamp)+'ms '+(Date.now()-sincelast)+'[as] '+somestring, 'background: '+bgcolor+'; color:'+textcolor+';');}
+function _log(somestring, detailed_logging, textcolor, bgcolor) {
+    if (detailed_logging == null) detailed_logging = true;
+    try {
+        if (detailed_logging == true) { console.log('%c' + (Date.now() - starttimestamp) + 'ms ' + (Date.now() - sincelast) + '[as] ' + somestring, 'background: ' + bgcolor + '; color:' + textcolor + ';'); }
         sincelast = Date.now();
     }
-    catch(err){}
+    catch (err) { }
 }
 
 
 
-function formatFastAddPage(){
-    if($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtQty1').length){
+function formatFastAddPage() {
+    if ($('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtQty1').length) {
         $('p').add('#aspnetForm').show();
-        $('#mainContent').before('<b>Quick Paste</b><br>Copy multiple part numbers and quantities from a spreadsheet and paste into this box (experimental).  '+
-            '<br>Exclude any header lines.  It should be able to pick out Quantity and Part Number in either order. Customer Ref not yet supported.  <br />'+
+        $('#mainContent').before('<b>Quick Paste</b><br>Copy multiple part numbers and quantities from a spreadsheet and paste into this box (experimental).  ' +
+            '<br>Exclude any header lines.  It should be able to pick out Quantity and Part Number in either order. Customer Ref not yet supported.  <br />' +
             '<textarea rows="2" cols="40" id="pastebox"></textarea> <br /><div class="pure-button button-small myRedButton" style="width:40px">OK</div>');
-        
-        $('#pastebox').change(function(){
+
+        $('#pastebox').change(function () {
             var lines = $('#pastebox').val().split(/\n\r?/gi);
             var line = [];
             var cols = [];
             var farray = [];
-            for(var x=0; x<=lines.length; x++){
+            for (var x = 0; x <= lines.length; x++) {
                 line = lines[x];
-                if(line != undefined){
-                    if(line.split(/\t/g).length == 2){
+                if (line != undefined) {
+                    if (line.split(/\t/g).length == 2) {
                         cols = line.split(/\t/g);
-                        if (cols[0].indexOf('-ND') != -1){
-                            farray.push([cols[0],cols[1]]);
-                            _log('DK# in first column, adding to farray '+ [cols[0],cols[1]] );
-                        }else if (cols[1].indexOf('-ND') != -1){
-                            farray.push([cols[1],cols[0]]);
-                            _log('DK# in second column, adding to farray '+ [cols[1],cols[0]] );
-                        }else {
+                        if (cols[0].indexOf('-ND') != -1) {
+                            farray.push([cols[0], cols[1]]);
+                            _log('DK# in first column, adding to farray ' + [cols[0], cols[1]]);
+                        } else if (cols[1].indexOf('-ND') != -1) {
+                            farray.push([cols[1], cols[0]]);
+                            _log('DK# in second column, adding to farray ' + [cols[1], cols[0]]);
+                        } else {
                             alert('not finding -nd');
                         }
                     }
 
                 }
-                
+
                 _log(farray.length);
                 //_log(lines[x]);
             }
             addMoreRows(farray);
             var $onRow = $('.oddrow:first');
-            for(var x=0; x<farray.length; x++){
+            for (var x = 0; x < farray.length; x++) {
                 $onRow.find('input:eq(0)').val(farray[x][1]);
                 $onRow.find('input:eq(1)').val(farray[x][0]);
                 $onRow = $onRow.next();
@@ -5926,22 +5985,22 @@ function formatFastAddPage(){
         });
     }
 }
-function addMoreRows(farray){
-    if(farray.length > 20){
-        for(var x=21; x<farray.length; x++){
+function addMoreRows(farray) {
+    if (farray.length > 20) {
+        for (var x = 21; x < farray.length; x++) {
             $('#ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_tblAddParts').find('tr:last').after(
-                '<tr class="evenrow" style="border-width:1px;border-style:solid;">'+
-                '<td class="tblborder" style="border-width:1px;border-style:solid;">'+ x +
-                '</td>'+
-                '<td class="tblborder" style="border-width:1px;border-style:solid;">'+
-                '<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtQty'+x+
-                '" type="text" style="width:65px;" maxlength="9" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtQty'+x+'">'+
-                '</td>'+
-                '<td class="tblborder" style="border-width:1px;border-style:solid;">'+
-                '<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtPart'+x+'" type="text" style="width:290px;" maxlength="48" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtPart'+x+'">'+
-                '</td>'+
-                '<td class="tblborder" style="border-width:1px;border-style:solid;">'+
-                '<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtCref'+x+'" type="text" style="width:145px;" maxlength="48" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtCref'+x+'">'+
+                '<tr class="evenrow" style="border-width:1px;border-style:solid;">' +
+                '<td class="tblborder" style="border-width:1px;border-style:solid;">' + x +
+                '</td>' +
+                '<td class="tblborder" style="border-width:1px;border-style:solid;">' +
+                '<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtQty' + x +
+                '" type="text" style="width:65px;" maxlength="9" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtQty' + x + '">' +
+                '</td>' +
+                '<td class="tblborder" style="border-width:1px;border-style:solid;">' +
+                '<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtPart' + x + '" type="text" style="width:290px;" maxlength="48" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtPart' + x + '">' +
+                '</td>' +
+                '<td class="tblborder" style="border-width:1px;border-style:solid;">' +
+                '<input id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_txtCref' + x + '" type="text" style="width:145px;" maxlength="48" name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtCref' + x + '">' +
                 '</td>'
             );
         }
