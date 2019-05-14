@@ -15,27 +15,27 @@
 // @exclude     http://www.digikey.com
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require     https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/highcharts.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.localScroll.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.hoverIntent.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.spellchecker.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/quantities.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.jqpagination.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/dklib.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/fixedsticky.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster.bundle.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.lazyloadxt.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/jquery.dragtable.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/highcharts.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/jquery.localScroll.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/jquery.hoverIntent.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/jquery.spellchecker.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/quantities.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/jquery.jqpagination.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/dklib.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/fixedsticky.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/tooltipster.bundle.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/jquery.lazyloadxt.js
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/jquery.dragtable.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.8/clipboard.min.js
-// @require     https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/familyimages.js
-// @resource    buttonCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/buttons.css
+// @require     https://raw.githack.com/bombledmonk/advancedsearch/master/familyimages.js
+// @resource    buttonCSS https://raw.githack.com/bombledmonk/advancedsearch/master/buttons.css
 // @resource    jQueryUICSS https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css
-// @resource    advCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/advancedsearch.css
-// @resource    normalizeCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/base.css
-// @resource    pureCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/pure.css
-// @resource    stickyCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/fixedsticky.css
-// @resource    tooltipsterCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster.bundle.css
-// @resource    tooltipster-shadowCSS https://raw.githubusercontent.com/bombledmonk/advancedsearch/master/tooltipster-sideTip-shadow.min.css
+// @resource    advCSS https://raw.githack.com/bombledmonk/advancedsearch/master/advancedsearch.css
+// @resource    normalizeCSS https://raw.githack.com/bombledmonk/advancedsearch/master/base.css
+// @resource    pureCSS https://raw.githack.com/bombledmonk/advancedsearch/master/pure.css
+// @resource    stickyCSS https://raw.githack.com/bombledmonk/advancedsearch/master/fixedsticky.css
+// @resource    tooltipsterCSS https://raw.githack.com/bombledmonk/advancedsearch/master/tooltipster.bundle.css
+// @resource    tooltipster-shadowCSS https://raw.githack.com/bombledmonk/advancedsearch/master/tooltipster-sideTip-shadow.min.css
 // @connect     self
 // @connect     digikey.com
 // @updateURL   https://hest.pro/s/advancedupdate
@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.4.4
+// @version     4.3.4.5
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -241,6 +241,7 @@
 //4.3.4.1 	fixed pick with images
 //4.3.4.2 	pick with images tweak
 //4.3.4.4   fixed more filters button.
+//4.3.4.5   switched from rawgit to raw.githack.com
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
