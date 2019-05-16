@@ -714,7 +714,7 @@ p.alert{
 
 #itemInfo {
 	position: absolute;
-	z-index: 8;
+	z-index: 1005;
 	background-color: white;
 	padding: 10px;
 	border: 2px solid grey;
