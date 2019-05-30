@@ -46,7 +46,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.5
+// @version     4.3.5.1
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -243,6 +243,7 @@
 //4.3.4.4   fixed more filters button.
 //4.3.4.5   switched from rawgit to raw.githack.com
 //4.3.5     added apply next to filter, added data to imagefilters
+//4.3.5.1   visualpicker fixes
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
@@ -1612,7 +1613,7 @@ function addVisualPicker() {
     _log('addVisualPicker() tick', DLOG);
     // var dialogHeight = ($(window).height() * 0.8);
     // var dialogHeight = (window.innerHeight * 0.8);
-    var dialogHeight = window.innerHeight * 0.8;
+    var dialogHeight = $('#visualpickerdiv').closest('.ui-dialog').height() - 200;
     _log('addVisualPicker() tick', DLOG);
     // var dialogWidth = ($(window).width() * 0.8);
     // var dialogWidth = ($(window).width() * 0.8);
@@ -1622,7 +1623,7 @@ function addVisualPicker() {
     $('.filters-headline').append('<i class="fa fa-picture-o pickericon fa-lg" title="Pick With Images" style="float:right; margin-left:3px; cursor:pointer;"></i>');
     $('#content').after(
         '<div id="visualpickerdiv" class="firstopen" style="display:none;">' +
-        '<div class="pickerbody" style="overflow-y:scroll; height:' + (dialogHeight - 90) + 'px;"></div>' +
+        '<div class="pickerbody" style="overflow-y:scroll;"></div>' +
         '<div class="pickerbuttondiv" style="height:30px">' +
         '<div class="moreadder" style="height:30px">' +
         '<span class=moreoptionsmessage /><button class="pure-button myRedButton addmoreoptions">Add More Lines</button>' +
@@ -1766,6 +1767,7 @@ function openVisualPickerNoWrap() {
     p.data('theoptions', $options);
 
     $("#visualpickerdiv").dialog('open');
+    $('.pickerbody').css('height', $('#visualpickerdiv').closest('.ui-dialog').height() - 100);
     $('.addmoreoptions').show();
     addImagesToVisualPicker();
 }
@@ -1839,9 +1841,9 @@ function getSingleOptionImageSet($option, filtername) {
             var $headerRow = dd.find('#productTable>thead>tr:first th')
             console.log($headerRow.html())
             var $images = dd.find('.pszoomer').addClass('pszoomervp').removeClass('pszoomer');
-            $images.each(function(index,value){
+            $images.each(function (index, value) {
                 var thisdata = '';
-                $(this).closest('tr').find('td').each( function(mykey, myval){
+                $(this).closest('tr').find('td').each(function (mykey, myval) {
                     // console.log('my key is'+ mykey)
                     // console.log(dd.find('#producTable>thead>tr:first th').length)
                     thisdata += '<b>' + $headerRow.eq(mykey + 1).text() + '</b> : ' +
@@ -1938,7 +1940,7 @@ function visualPickerHoverIn(e) {
     var info = '';
     var thisitem = $(this);
     console.log(thisitem.data('parameters'))
-    $('#itemInfo').html(thisitem.data('parameters')).css('z-index',2000);
+    $('#itemInfo').html(thisitem.data('parameters')).css('z-index', 2000);
     $('#itemInfo').show();
     $('#itemInfo').position({
         'my': 'left top',
@@ -1950,7 +1952,7 @@ function visualPickerHoverIn(e) {
 
 }
 
-function getImageHoverData(){
+function getImageHoverData() {
 
 }
 
@@ -2669,9 +2671,9 @@ function squishedFilters() {
     $selects.parent().addClass('fullwidth');
 }
 
-function addSmallApply(){
-    $('.clear-filters').after('<span class="smallapply" style="display:none;float:right; cursor:pointer; text-decoration:underline;">apply</span>')
-    $('.smallapply').click(function () { $('.search-form').submit()});
+function addSmallApply() {
+    $('.clear-filters').after('<span class="smallapply" style="display:none;float:right; cursor:pointer; text-decoration:underline;">Apply</span>')
+    $('.smallapply').click(function () { $('.search-form').submit() });
     $('.search-form select').change(function () {
         $(this).closest('div').find('.smallapply').show();
     })
@@ -4270,10 +4272,10 @@ function addImageBar() {
         // $('#mainform').after('<div id="accDiv" class="collapsed"><div id="accContent">loading...</div></div>');
         $('#filters-panel').after(
             '<div id="accDiv" class="collapsed">' +
-                '<div style="height:' + titleheight + 
-                    'px; font-weight:bold; width:100%; border-bottom:1px solid lightgray;" id=accTitle>Find By Image'+
-                '</div>' +
-                '<div id="accContent">loading...</div>' +
+            '<div style="height:' + titleheight +
+            'px; font-weight:bold; width:100%; border-bottom:1px solid lightgray;" id=accTitle>Find By Image' +
+            '</div>' +
+            '<div id="accContent">loading...</div>' +
             '</div>');
         $('#accTitle').append('<div id="expand1"><div id="expand2">+ More Images +</div></div>');
         $('#accDiv').css({

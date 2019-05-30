@@ -819,7 +819,7 @@ option:hover{
 	padding:10px; 
 	display:flex; 
 	row:rtl;
-	min-height: 70px;
+	min-height: 84px;
 }
 
 .pickerItemNotSelected {
