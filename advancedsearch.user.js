@@ -11,6 +11,7 @@
 // @include     http*www.digikey.*/product-detail/en/*
 // @include     http*digikey.*/product-detail/*/*
 // @include     http*digikey.*/short/*
+// @include     http*digikey.*/number/*
 // @exclude     http*digikey.*/classic/Ordering/FastAdd*
 // @exclude     http://www.digikey.com
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
@@ -46,7 +47,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.5.1
+// @version     4.3.5.2
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -244,6 +245,7 @@
 //4.3.4.5   switched from rawgit to raw.githack.com
 //4.3.5     added apply next to filter, added data to imagefilters
 //4.3.5.1   visualpicker fixes
+//4.3.5.2   fixed base part number url resolution
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
