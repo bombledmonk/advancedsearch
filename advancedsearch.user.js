@@ -47,7 +47,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.5.2
+// @version     4.3.5.3
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -246,6 +246,8 @@
 //4.3.5     added apply next to filter, added data to imagefilters
 //4.3.5.1   visualpicker fixes
 //4.3.5.2   fixed base part number url resolution
+//4.3.5.2   fixed header update
+
 
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
@@ -324,6 +326,7 @@ greasemonkey version: ${GM.info.version}
         .content-keywordSearch-form{display:none;}
         .ui-dialog-title{padding-left:60px;}
         #content{box-sizing:border-box;}
+        .header__bottom{display:none;}
         `
     );
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
