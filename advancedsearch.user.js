@@ -327,6 +327,7 @@ greasemonkey version: ${GM.info.version}
         .ui-dialog-title{padding-left:60px;}
         #content{box-sizing:border-box;}
         .header__bottom{display:none;}
+        .flymenu {display:none;}
         `
     );
     // GM_addStyle("#header {display: none;} #content hr {display:none;} #footer {display:none;} #content>p {display:none;} ");
