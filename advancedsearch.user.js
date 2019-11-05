@@ -47,7 +47,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.5.3
+// @version     4.3.5.4
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -247,6 +247,7 @@
 //4.3.5.1   visualpicker fixes
 //4.3.5.2   fixed base part number url resolution
 //4.3.5.2   fixed header update
+//4.3.5.4   fixed header blocking issue
 
 
 //TODO explore easy voltage search when there is a min and max column
