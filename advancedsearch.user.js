@@ -47,7 +47,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.5.4
+// @version     4.3.5.5
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -248,6 +248,7 @@
 //4.3.5.2   fixed base part number url resolution
 //4.3.5.2   fixed header update
 //4.3.5.4   fixed header blocking issue
+//4.3.5.4   fixed pricehover
 
 
 //TODO explore easy voltage search when there is a min and max column
@@ -276,7 +277,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '11/7/18';  // I usually forget this
+var lastUpdate = '11/19/19';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';
 // redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -5574,7 +5575,7 @@ function addPriceHover() {
     //adds price hover over td.tr-unitprice
 
     $('td.tr-unitPrice')
-        .data('elementToLoad', '.catalog-pricing')
+        .data('elementToLoad', '.product-dollars')
         .tooltipster({
             content: 'loading...',
             side: 'right',
@@ -5591,7 +5592,7 @@ function loadPrices(instance, helper) {
     var $origin = $(helper.origin);
     if ($origin.data('loaded') !== true) {
         $.get(
-            $origin.closest('tr').find('a[itemprop=url]').attr('href'),
+            $origin.closest('tr').find('.tr-mfgPartNumber>a').attr('href'),
             function (data) {
                 instance.content($(data).find($origin.data('elementToLoad')))
                 instance.reposition();
