@@ -47,7 +47,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.5.5
+// @version     4.3.5.6
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -249,8 +249,9 @@
 //4.3.5.2   fixed header update
 //4.3.5.4   fixed header blocking issue
 //4.3.5.4   fixed pricehover
+//4.3.5.6   updated family images
 
-
+//TODO copy rich text link for PLP PNs https://stackoverflow.com/questions/23934656/javascript-copy-rich-text-contents-to-clipboard
 //TODO explore easy voltage search when there is a min and max column
 //TODO fix colmath sorting isues
 //TODO add copy info button  possibly on filter results page
@@ -277,7 +278,7 @@
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '11/19/19';  // I usually forget this
+var lastUpdate = '12/10/19';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';
 // redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -1386,66 +1387,71 @@ function compactRows2() {
     _log('compactRows() End', DLOG);
 }
 
-function addClipboardCopyToDetail() {
-    _log('addClipboardCopyToDetail() Start', DLOG);
-    $('#product-details td').each(function () {
-        if ($(this).children().length > 0) {
-            $(this).children(':first').after('<button class="copyContent button pure-button" title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>');
-        } else {
-            $(this).append('<button class="copyContent button pure-button"  title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>')
-        }
-    });
-    $('.lnkMfct').css({ 'display': 'inline-block' });
-    $('.copyContent').tooltipster({
-        content: "copied!",
-        trigger: 'custom',
-        'side': 'right',
-        'distance': -45
-    })
-    $('.copyContent').tooltipster({
-        content: "Copy Field to Clipboard",
-        // "trigger":'hover',
-        'side': 'right',
-        'distance': -45,
-        'multiple': true
-    })
-    GM_addStyle(`
-        td .copyContent{
-            float:right;
-            visibility:hidden;
-            margin: -4px 0px;
-        }
-        td:hover .copyContent{
-            visibility:visible;
-        }
-    `);
-    var clip = new Clipboard('.copyContent', {
-        text: function (trigger) {
-            return $(trigger).closest('td').text().trim();
-        }
-    })
-    clip.on('success', function (e) {
-        $(e.trigger).tooltipster('open');
-        setTimeout(function () { $(e.trigger).tooltipster('close') }, 800)
-    });
+// function addClipboardCopyToDetail() {
+//     _log('addClipboardCopyToDetail() Start', DLOG);
+//     $('#product-details td').each(function () {
+//         if ($(this).children().length > 0) {
+//             $(this).children(':first').after('<button class="copyContent button pure-button" title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>');
+//         } else {
+//             $(this).append('<button class="copyContent button pure-button"  title="Copy to Clipboard"><i class="fa fa-files-o"></i></button>')
+//         }
+//     });
+//     $('.lnkMfct').css({ 'display': 'inline-block' });
+//     $('.copyContent').tooltipster({
+//         content: "copied!",
+//         trigger: 'custom',
+//         'side': 'right',
+//         'distance': -45
+//     })
+//     $('.copyContent').tooltipster({
+//         content: "Copy Field to Clipboard",
+//         // "trigger":'hover',
+//         'side': 'right',
+//         'distance': -45,
+//         'multiple': true
+//     })
+//     GM_addStyle(`
+//         td .copyContent{
+//             float:right;
+//             visibility:hidden;
+//             margin: -4px 0px;
+//         }
+//         td:hover .copyContent{
+//             visibility:visible;
+//         }
+//     `);
+//     var clip = new Clipboard('.copyContent', {
+//         text: function (trigger) {
+//             return $(trigger).closest('td').text().trim();
+//         }
+//     })
+//     clip.on('success', function (e) {
+//         $(e.trigger).tooltipster('open');
+//         setTimeout(function () { $(e.trigger).tooltipster('close') }, 800)
+//     });
 
-    _log('addClipboardCopyToDetail() End', DLOG);
-}
+//     _log('addClipboardCopyToDetail() End', DLOG);
+// }
 
 function addClipboardCopyToResultsTable() {
     _log('addClipboardCopyToResultsTable() Start', DLOG);
-
+//#TODO copy rich text data to include link, not just text
     $('#content').append(`
 		<div id="clipmecontainer" style="display:none;">
-		<button class="copyContent button pure-button"  title="Copy to Clipboard">
-			<i class="fa fa-files-o"></i> Copy Text
-		</button></div>
+            <button class="copyContent button pure-button"  title="Copy to Clipboard">
+                <i class="fa fa-files-o"></i> Copy Text
+            </button>
+            <button class="copyFormattedContent button pure-button"  title="Copy to Clipboard">
+                <i class="fa fa-files-o"></i> Copy Link
+            </button>
+        </div>
 	`);
 
     $('#productTable').on('mouseenter', '.tr-dkPartNumber, .tr-mfgPartNumber', function () {
 
         $(this).find('a:not(.tooltipstered)').tooltipster({
             content: $('.copyContent:last'),
+            // content: $('#clipmecontainer:last'),
             'side': 'right',
             'distance': -45,
             'multiple': true,
@@ -1454,6 +1460,8 @@ function addClipboardCopyToResultsTable() {
             'functionReady': function (instance, helper) {
                 $('.copyContent').html('<i class="fa fa-files-o"></i> Copy Text')
                 $('.copyContent').attr('data-clipboard-text', $(helper.origin).text().trim());
+                $('.copyFormattedContent').html('<i class="fa fa-files-o"></i> Copy Formatted Link')
+                $('.copyFormattedContent').attr('data-clipboard-text', $(helper.origin).text().trim());
                 // console.log('~~~~~~~~~~~~~~~~~', instance, helper);
                 $(helper.tooltip).find('.tooltipster-content').css('padding', '2px')
                 instance.reposition();
@@ -1471,8 +1479,22 @@ function addClipboardCopyToResultsTable() {
         // console.log(trigger)
         $(trigger.trigger).text('copied!')
     })
+
+    $
+
     _log('addClipboardCopyToResultsTable() End', DLOG);
 }
+
+function copyToClip(str) {
+    function listener(e) {
+        e.clipboardData.setData("text/html", str);
+        e.clipboardData.setData("text/plain", str);
+        e.preventDefault();
+    }
+    document.addEventListener("copy", listener);
+    document.execCommand("copy");
+    document.removeEventListener("copy", listener);
+};
 
 function addMorePartsToTable() {
     _log('addMorePartsToTable() Start', DLOG);
