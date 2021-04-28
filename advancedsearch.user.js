@@ -47,7 +47,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
 // @grant       GM_openInTab
-// @version     4.3.5.6
+// @version     4.3.5.7
 // ==/UserScript==
 
 // Copyright (c) 2019, Ben Hest
@@ -250,6 +250,7 @@
 //4.3.5.4   fixed header blocking issue
 //4.3.5.4   fixed pricehover
 //4.3.5.6   updated family images
+//4.3.5.7   fixed charting and column math.
 
 //TODO copy rich text link for PLP PNs https://stackoverflow.com/questions/23934656/javascript-copy-rich-text-contents-to-clipboard
 //TODO explore easy voltage search when there is a min and max column
@@ -272,13 +273,14 @@
 //TODO implement offscreen table wrap
 //TODO add more voltage ranges
 //TODO fix differentiation of 3d models and cad models in filter pages
+//TODO fix content max-width
 
 // [at]include      http*digikey.*/classic/Orderi2ng/FastAdd* add the fastadd features
 
 var starttimestamp = Date.now();
 var sincelast = Date.now();
 var version = GM_info.script.version;
-var lastUpdate = '12/10/19';  // I usually forget this
+var lastUpdate = '4/28/21';  // I usually forget this
 var downloadLink = 'https://hest.pro/s/advancedmanualupdate';
 // redirects to https://rawgit.com/bombledmonk/advancedsearch/master/advancedsearch.user.js
 var DLOG = false; //control detailed logging.
@@ -2365,7 +2367,8 @@ function getDataPoint(xcol, ycol, xunit, yunit, $row) {
     if (x !== null && y !== null) {
         return {
             'name': $row.find('.mfg-partnumber a:first').text(),
-            'dkname': $row.find('meta[itemprop=productid]').attr('content').replace('sku:', ''),
+            //'dkname': $row.find('meta[itemprop=productid]').attr('content').replace('sku:', ''),
+            'dkname': $row.find('meta[title="Compare Parts"]').attr('for'),
             'x': toUnit(x, xunit).scalar,
             'y': toUnit(y, yunit).scalar,
             'usablePoint': true
